@@ -4,8 +4,8 @@ Implements a priority-based configuration loading system:
 1. System defaults (hardcoded)
 2. System config (config/default/system.yaml)
 3. Environment config (config/default/{environment}.yaml)
-4. Customer config (config/{customer}/default.yaml)
-5. Platform config (config/{customer}/{platform}/rules.yaml)
+4. Customer config (config/adset/allocator/{customer}/default.yaml)
+5. Platform config (config/adset/allocator/{customer}/{platform}/rules.yaml)
 6. Environment variables
 7. CLI/runtime overrides
 """
@@ -72,21 +72,21 @@ class ConfigManager:
         config_dict = self._get_system_defaults()
 
         # Layer 1: Default config file
-        default_config_path = Path("config/default/system.yaml")
+        default_config_path = Path("config/adset/allocator/system.yaml")
         if default_config_path.exists():
             config_dict = self._deep_merge(
                 config_dict, self._load_yaml(default_config_path)
             )
 
         # Layer 2: Environment config
-        env_config_path = Path(f"config/default/{self.environment}.yaml")
+        env_config_path = Path(f"config/adset/allocator/{self.environment}.yaml")
         if env_config_path.exists():
             config_dict = self._deep_merge(
                 config_dict, self._load_yaml(env_config_path)
             )
 
         # Layer 3: Customer base config
-        customer_base_path = Path(f"config/{self.customer}/default.yaml")
+        customer_base_path = Path(f"config/adset/allocator/{self.customer}/default.yaml")
         if customer_base_path.exists():
             config_dict = self._deep_merge(
                 config_dict, self._load_yaml(customer_base_path)
@@ -97,7 +97,7 @@ class ConfigManager:
             rules_dict = self._load_yaml(self.config_path_override)
         else:
             platform_rules_path = Path(
-                f"config/{self.customer}/{self.platform}/rules.yaml"
+                f"config/adset/allocator/{self.customer}/{self.platform}/rules.yaml"
             )
             if platform_rules_path.exists():
                 rules_dict = self._load_yaml(platform_rules_path)
@@ -106,6 +106,15 @@ class ConfigManager:
 
         # Layer 5: Environment variable overrides
         config_dict = self._apply_env_overrides(config_dict)
+
+        # Transform rolling_windows from dict to list if needed
+        if "rolling_windows" in rules_dict and isinstance(rules_dict["rolling_windows"], dict):
+            # Convert dict format {short_window_days: 7, long_window_days: 14} to list [7, 14]
+            rolling_windows_dict = rules_dict["rolling_windows"]
+            rules_dict["rolling_windows"] = [
+                rolling_windows_dict.get("short_window_days", 7),
+                rolling_windows_dict.get("long_window_days", 14),
+            ]
 
         # Create config objects
         self._config = SystemConfig(**config_dict)

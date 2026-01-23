@@ -12,7 +12,7 @@ import time
 
 import pytest
 
-from src.workflows.base import Workflow, WorkflowResult, WorkflowMetrics
+from src.adset.features.workflows.base import Workflow, WorkflowResult, WorkflowMetrics
 
 
 class TestWorkflowResult:
@@ -187,7 +187,7 @@ class TestWorkflow:
         """Test initializing Workflow with default parameters."""
         workflow = ConcreteWorkflow()
 
-        assert workflow.config_path == "config/default/rules.yaml"
+        assert workflow.config_path == "config/adset/allocator/rules.yaml"
         assert workflow.verbose is True
         assert isinstance(workflow.metrics, WorkflowMetrics)
 
@@ -440,7 +440,7 @@ class TestWorkflow:
 
         assert config == mock_config
         mock_parser_class.assert_called_once_with(
-            config_path="config/default/rules.yaml",
+            config_path="config/adset/allocator/rules.yaml",
             customer_name="test_customer",
             platform="meta",
         )

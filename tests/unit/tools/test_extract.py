@@ -26,7 +26,7 @@ class TestBuildAggDict:
 
     def test_basic_aggregation(self):
         """Test building basic aggregation dictionary"""
-        from src.cli.commands.extract import _build_agg_dict
+        from src.adset.cli.commands.extract import _build_agg_dict
 
         sum_cols = ["spend", "impressions", "clicks"]
         mean_cols = ["ctr", "cpc"]
@@ -50,7 +50,7 @@ class TestBuildAggDict:
 
     def test_empty_column_lists(self):
         """Test with empty column lists"""
-        from src.cli.commands.extract import _build_agg_dict
+        from src.adset.cli.commands.extract import _build_agg_dict
 
         result = _build_agg_dict([], [], [], ["adset_id"], ["adset_id"])
 
@@ -58,7 +58,7 @@ class TestBuildAggDict:
 
     def test_other_cols_default_to_first(self):
         """Test that other columns default to 'first' aggregation"""
-        from src.cli.commands.extract import _build_agg_dict
+        from src.adset.cli.commands.extract import _build_agg_dict
 
         result = _build_agg_dict(
             sum_cols=["spend"],
@@ -77,7 +77,7 @@ class TestRecalculateROASMetrics:
 
     def test_recalculate_revenue_metrics(self):
         """Test revenue metric calculations"""
-        from src.cli.commands.extract import _calculate_revenue_metrics
+        from src.adset.cli.commands.extract import _calculate_revenue_metrics
 
         df = pd.DataFrame(
             {
@@ -97,7 +97,7 @@ class TestRecalculateROASMetrics:
 
     def test_recalculate_revenue_metrics_handles_zero(self):
         """Test revenue metrics with zero impressions/clicks"""
-        from src.cli.commands.extract import _calculate_revenue_metrics
+        from src.adset.cli.commands.extract import _calculate_revenue_metrics
 
         df = pd.DataFrame(
             {"revenue": [100.0, 200.0], "impressions": [0, 1000], "clicks": [100, 0]}
@@ -114,7 +114,7 @@ class TestRecalculateROASMetrics:
 
     def test_calculate_roas_comparisons(self):
         """Test ROAS comparison metrics"""
-        from src.cli.commands.extract import _calculate_roas_comparisons
+        from src.adset.cli.commands.extract import _calculate_roas_comparisons
 
         df = pd.DataFrame(
             {
@@ -139,7 +139,7 @@ class TestRecalculateROASMetrics:
 
     def test_calculate_roas_comparisons_missing_columns(self):
         """Test ROAS comparisons with missing columns"""
-        from src.cli.commands.extract import _calculate_roas_comparisons
+        from src.adset.cli.commands.extract import _calculate_roas_comparisons
 
         df = pd.DataFrame(
             {
@@ -163,7 +163,7 @@ class TestRollingMetrics:
 
     def test_calc_roas_rolling_metrics(self):
         """Test ROAS rolling window calculations"""
-        from src.cli.commands.extract import _calc_roas_rolling_metrics
+        from src.adset.cli.commands.extract import _calc_roas_rolling_metrics
 
         df = pd.DataFrame(
             {
@@ -195,7 +195,7 @@ class TestRollingMetrics:
 
     def test_calc_spend_rolling_metrics(self):
         """Test spend rolling window calculations"""
-        from src.cli.commands.extract import _calc_spend_rolling_metrics
+        from src.adset.cli.commands.extract import _calc_spend_rolling_metrics
 
         df = pd.DataFrame(
             {
@@ -219,7 +219,7 @@ class TestRollingMetrics:
 
     def test_calc_roas_std_metrics(self):
         """Test ROAS rolling standard deviation calculations"""
-        from src.cli.commands.extract import _calc_roas_std_metrics
+        from src.adset.cli.commands.extract import _calc_roas_std_metrics
 
         df = pd.DataFrame(
             {
@@ -241,7 +241,7 @@ class TestRollingMetrics:
 
     def test_calc_roas_trend(self):
         """Test ROAS trend calculation"""
-        from src.cli.commands.extract import _calc_roas_trend
+        from src.adset.cli.commands.extract import _calc_roas_trend
 
         df = pd.DataFrame(
             {
@@ -272,7 +272,7 @@ class TestRollingMetrics:
 
     def test_calc_rolling_window_coverage(self):
         """Test rolling window coverage calculation"""
-        from src.cli.commands.extract import _calc_rolling_window_coverage
+        from src.adset.cli.commands.extract import _calc_rolling_window_coverage
 
         df = pd.DataFrame(
             {
@@ -308,7 +308,7 @@ class TestLaggedFeatures:
 
     def test_create_lagged_roas_features(self):
         """Test creation of lagged ROAS features"""
-        from src.cli.commands.extract import _create_lagged_features
+        from src.adset.cli.commands.extract import _create_lagged_features
 
         df = pd.DataFrame(
             {
@@ -331,7 +331,7 @@ class TestLaggedFeatures:
 
     def test_create_lagged_spend_features(self):
         """Test creation of lagged spend features"""
-        from src.cli.commands.extract import _create_lagged_features
+        from src.adset.cli.commands.extract import _create_lagged_features
 
         df = pd.DataFrame(
             {
@@ -362,7 +362,7 @@ class TestLaggedFeatures:
 
     def test_lagged_features_per_adset(self):
         """Test that lagging is done per adset (not globally)"""
-        from src.cli.commands.extract import _create_lagged_features
+        from src.adset.cli.commands.extract import _create_lagged_features
 
         df = pd.DataFrame(
             {
@@ -388,7 +388,7 @@ class TestBudgetMetrics:
 
     def test_recalculate_budget_metrics(self):
         """Test budget utilization and headroom calculations"""
-        from src.cli.commands.extract import _recalculate_budget_metrics
+        from src.adset.cli.commands.extract import _recalculate_budget_metrics
 
         df = pd.DataFrame(
             {
@@ -416,7 +416,7 @@ class TestBudgetMetrics:
 
     def test_budget_metrics_handles_zero_budget(self):
         """Test budget metrics with zero budget"""
-        from src.cli.commands.extract import _recalculate_budget_metrics
+        from src.adset.cli.commands.extract import _recalculate_budget_metrics
 
         df = pd.DataFrame(
             {
@@ -438,7 +438,7 @@ class TestCostMetrics:
 
     def test_recalculate_cost_metrics(self):
         """Test CPC, CPM, CTR calculations"""
-        from src.cli.commands.extract import _recalculate_cost_metrics
+        from src.adset.cli.commands.extract import _recalculate_cost_metrics
 
         df = pd.DataFrame(
             {
@@ -461,7 +461,7 @@ class TestCostMetrics:
 
     def test_cost_metrics_handles_zero_clicks_impressions(self):
         """Test cost metrics with zero clicks/impressions"""
-        from src.cli.commands.extract import _recalculate_cost_metrics
+        from src.adset.cli.commands.extract import _recalculate_cost_metrics
 
         df = pd.DataFrame(
             {"spend": [100.0, 200.0], "clicks": [0, 100], "impressions": [1000, 0]}
@@ -483,7 +483,7 @@ class TestEngagementMetrics:
 
     def test_recalculate_engagement_metrics(self):
         """Test engagement rate and reach efficiency"""
-        from src.cli.commands.extract import _recalculate_engagement_metrics
+        from src.adset.cli.commands.extract import _recalculate_engagement_metrics
 
         df = pd.DataFrame(
             {
@@ -508,7 +508,7 @@ class TestInteractionMetrics:
 
     def test_recalc_interaction_metrics(self):
         """Test ROAS-spend and CTR-CPC interactions"""
-        from src.cli.commands.extract import _recalc_interaction_metrics
+        from src.adset.cli.commands.extract import _recalc_interaction_metrics
 
         df = pd.DataFrame(
             {
@@ -539,7 +539,7 @@ class TestRollingMetricsIntegration:
 
     def test_calculate_rolling_metrics_missing_columns(self):
         """Test rolling metrics with missing required columns"""
-        from src.cli.commands.extract import _calculate_rolling_metrics
+        from src.adset.cli.commands.extract import _calculate_rolling_metrics
 
         # Missing purchase_roas column
         df = pd.DataFrame(
@@ -551,10 +551,10 @@ class TestRollingMetricsIntegration:
         # Should return unchanged if required columns missing
         assert "purchase_roas_rolling_7d" not in result.columns
 
-    @patch("src.cli.commands.extract.logger")
+    @patch("src.adset.cli.commands.extract.logger")
     def test_calculate_rolling_metrics_full_pipeline(self, mock_logger):
         """Test full rolling metrics calculation pipeline"""
-        from src.cli.commands.extract import _calculate_rolling_metrics
+        from src.adset.cli.commands.extract import _calculate_rolling_metrics
 
         df = pd.DataFrame(
             {

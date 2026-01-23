@@ -3,7 +3,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src.features.feature_store import FeatureStore
+from src.adset.features.feature_store import FeatureStore
 from src.utils import Config
 
 

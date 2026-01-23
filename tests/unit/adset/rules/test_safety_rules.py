@@ -9,7 +9,7 @@ Tests hard constraints for budget allocation including:
 """
 
 from unittest.mock import Mock
-from src.adset.lib.safety_rules import SafetyRules
+from src.adset.allocator.lib.safety_rules import SafetyRules
 
 
 class TestSafetyRules:

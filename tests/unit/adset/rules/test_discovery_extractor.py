@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from src.adset.lib.discovery_models import DiscoveredRule
-from src.adset.lib.discovery_extractor import RuleExtractor
+from src.adset.allocator.lib.discovery_models import DiscoveredRule
+from src.adset.allocator.lib.discovery_extractor import RuleExtractor
 
 
 @pytest.fixture

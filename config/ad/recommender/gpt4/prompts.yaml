@@ -1,0 +1,1005 @@
+# GPT-4 Vision API Prompt Templates
+
+# Extractor configuration
+extractor_type: "gpt4_feature_extractor"
+extractor_version: "1.0"
+description: "Prompt templates for GPT-4 Vision API feature extraction"
+# This file contains the prompt template used for image feature extraction
+
+version: "1.0"
+description: "GPT-4 Vision API prompt templates for feature extraction"
+
+prompt_template: |
+  
+  
+  You are extracting {len_image_filenames} {performance_type}-performing ad images to identify visual characteristics that contribute to their performance.
+  
+  extraction PROCESS:
+  For each image, follow these steps:
+  1. OBSERVE: Carefully examine the entire image, noting key visual elements.
+  2. EVALUATE: Systematically evaluate each category using the provided criteria.
+  3. CLASSIFY: Select the option that most closely matches the observed characteristics.
+  4. VERIFY: Check that your classifications are internally consistent and accurately represent the image.
+  
+  For each image, extract and extract the following structured information:
+  
+  **VISUAL ELEMENTS:**
+  - Primary Colors: List 3-5 dominant colors (e.g., ["blue", "white", "gray"])
+    * Identify the most prominent colors that occupy >15% of the image area.
+    * Use standard color names (e.g., "blue", "red", "white", not "sky blue" or "crimson").
+  
+  - Color Harmony: Choose from [Complementary/Monochromatic/Analogous/Triadic]
+    * Complementary: Colors opposite on color wheel (e.g., blue/orange, red/green). Clear contrast between dominant colors.
+    * Monochromatic: Variations of a single hue (e.g., light blue, blue, dark blue). Same color family with different shades.
+    * Analogous: Colors adjacent on color wheel (e.g., blue, green, teal). Harmonious, related colors.
+    * Triadic: Three evenly spaced colors on color wheel (e.g., red, yellow, blue). Balanced color scheme.
+    * If uncertain, identify the color wheel relationship and choose accordingly.
+  
+  - Contrast Level: Choose from [High/Medium/Low]
+    * High: Clear distinction between light and dark areas, typically with >50% brightness difference between main elements. Strong shadows or highlights are clearly visible.
+    * Medium: Moderate distinction between elements, with 20-50% brightness difference. Some shadows or highlights present but not dramatic.
+    * Low: Minimal distinction between elements, with <20% brightness difference. Flat lighting with little variation in brightness.
+    * If uncertain, estimate the brightness difference percentage and choose accordingly.
+  
+  - Brightness: Choose from [Bright/Medium/Dark]
+    * Bright: Overall image is well-lit, >70% of image area is in light tones. Minimal dark areas.
+    * Medium: Balanced lighting, 30-70% of image area in mid-tones. Mix of light and dark areas.
+    * Dark: Overall image is dimly lit, >70% of image area is in dark tones. Minimal bright areas.
+    * If uncertain, estimate the percentage of light/dark areas and choose accordingly.
+  
+  - Color Saturation: Choose from [high/medium/low]
+    * high: Colors are vivid and intense, strong color presence.
+    * medium: Colors are moderately saturated, balanced intensity.
+    * low: Colors are muted or desaturated, soft appearance.
+    * If uncertain, evaluate the intensity of colors in the image.
+  
+  - Color Vibrancy: Choose from [vibrant/moderate/muted]
+    * vibrant: Colors are energetic and lively, high energy feel.
+    * moderate: Colors have moderate energy and liveliness.
+    * muted: Colors are subdued and calm, low energy feel.
+    * If uncertain, evaluate the energy level conveyed by colors.
+  
+  - Color Diversity: Choose from [monochrome/limited/moderate/diverse]
+    * monochrome: Single color family or grayscale, minimal color variety.
+    * limited: 2-3 color families, restricted color palette.
+    * moderate: 4-5 color families, balanced color variety.
+    * diverse: 6+ color families, wide color variety.
+    * If uncertain, count the distinct color families present.
+  
+  - Color Balance: Choose from [warm-dominant/cool-dominant/balanced/unbalanced]
+    * warm-dominant: Warm tones (yellow, orange, red) dominate >60% of image.
+    * cool-dominant: Cool tones (blue, cyan, green) dominate >60% of image.
+    * balanced: Warm and cool tones are roughly equal (40-60% each).
+    * unbalanced: Extreme dominance of one temperature, >80% warm or cool.
+    * If uncertain, evaluate the proportion of warm vs cool tones.
+  
+  - Background Tone Contrast: Choose from [high/moderate/low/similar]
+    * high: Background and foreground have clearly different tones, strong contrast.
+    * moderate: Background and foreground have moderate tone difference.
+    * low: Background and foreground have similar tones, low contrast.
+    * similar: Background and foreground tones are very similar or identical.
+    * If uncertain, compare the tone of background vs foreground/subject.
+  
+  - Element Separation: Choose from [clear/moderate/blended]
+    * clear: Visual elements are clearly separated with distinct boundaries.
+    * moderate: Elements have some separation but boundaries may be soft.
+    * blended: Elements blend together, boundaries are unclear or merged.
+    * If uncertain, evaluate how clearly different elements can be distinguished.
+  
+  - Local Contrast: Choose from [high/medium/low]
+    * high: Significant contrast variation across different regions of the image.
+    * medium: Moderate contrast variation between regions.
+    * low: Minimal contrast variation, relatively uniform contrast across image.
+    * If uncertain, compare contrast levels in different areas of the image.
+  
+  - Highlight Ratio: Choose from [extensive/moderate/minimal]
+    * extensive: High-light areas occupy >40% of image area.
+    * moderate: High-light areas occupy 20-40% of image area.
+    * minimal: High-light areas occupy <20% of image area.
+    * If uncertain, estimate the percentage of bright/highlight areas.
+  
+  **COMPOSITION:**
+  - Product Placement: Choose from [Center/Left/Right/Top/Bottom]
+    * Center: Product's center point is within 40% of image center (both horizontal and vertical).
+    * Left: Product's center point is in left 40% of image width.
+    * Right: Product's center point is in right 40% of image width.
+    * Top: Product's center point is in top 40% of image height.
+    * Bottom: Product's center point is in bottom 40% of image height.
+    * If product spans multiple zones, choose based on the center point of the product.
+  
+  - Background Type: Choose from [White/Studio/Home/Office/Outdoor/Abstract/Other]
+    * White: Solid white or near-white background (>80% white).
+    * Studio: Controlled lighting environment, neutral background, professional setup.
+    * Home: Residential interior setting (living room, kitchen, bedroom, etc.).
+    * Office: Business or workspace environment.
+    * Outdoor: Natural outdoor setting (nature, streets, parks, etc.).
+    * Abstract: Non-representational or heavily edited background.
+    * Other: Does not fit above categories.
+    * If uncertain, identify the dominant background element and choose accordingly.
+  
+  - Image Style: Choose from [Minimalist/Busy/Professional/Amateur/Lifestyle/Product-focused]
+    * Minimalist: Clean, simple composition with few elements. Lots of negative space.
+    * Busy: Many elements, complex composition, little negative space.
+    * Professional: High-quality production, polished appearance, commercial-grade.
+    * Amateur: Lower production quality, unpolished, consumer-level photography.
+    * Lifestyle: Shows product in use, contextual setting, aspirational or practical scene.
+    * Product-focused: Product is the clear main subject, minimal context.
+    * If uncertain, evaluate the number of elements and production quality.
+  
+  - Framing: Choose from [Close-up/Medium shot/Wide shot/Full scene]
+    * Close-up: Product fills >50% of frame, details are prominent.
+    * Medium shot: Product occupies 20-50% of frame, some context visible.
+    * Wide shot: Product occupies <20% of frame, extensive context visible.
+    * Full scene: Entire environment visible, product is part of larger scene.
+    * If uncertain, estimate the product-to-frame ratio and choose accordingly.
+  
+  - Visual Complexity: Choose from [minimal/simple/moderate/complex/cluttered]
+    * minimal: 1-3 main visual elements, very clean composition.
+    * simple: 4-6 visual elements, organized layout.
+    * moderate: 7-10 visual elements, balanced composition.
+    * complex: 11-15 visual elements, detailed but organized.
+    * cluttered: >15 visual elements or disorganized layout, overwhelming.
+    * If uncertain, count the distinct visual elements and choose accordingly.
+  
+  - Primary Focal Point: Choose from [product/text/person/background/unclear]
+    * product: Product is the clear visual focus, draws immediate attention.
+    * text: Text elements (headlines, labels) are the primary focus.
+    * person: Human subjects are the primary focus.
+    * background: Background or environment is the primary focus.
+    * unclear: No clear focal point, attention is scattered.
+    * If uncertain, identify what first draws your eye and choose accordingly.
+  
+  - Visual Flow: Choose from [natural/forced/scattered/blocked]
+    * natural: Eye moves smoothly through the image, clear visual path.
+    * forced: Eye is directed by design elements (arrows, lines, contrast).
+    * scattered: No clear visual path, attention jumps between elements.
+    * blocked: Visual path is interrupted or obstructed.
+    * If uncertain, trace the eye movement path and choose accordingly.
+  
+  - Balance Type: Choose from [symmetrical/asymmetrical/radial/off-balance]
+    * symmetrical: Elements are mirrored or evenly distributed on both sides.
+    * asymmetrical: Elements are balanced but not mirrored, visual weight is distributed.
+    * radial: Elements radiate from a central point.
+    * off-balance: Visual weight is unevenly distributed, feels unstable.
+    * If uncertain, evaluate the distribution of visual weight and choose accordingly.
+  
+  - Negative Space Usage: Choose from [generous/balanced/minimal/cramped]
+    * generous: >40% of image is empty space, breathing room.
+    * balanced: 20-40% empty space, comfortable spacing.
+    * minimal: 10-20% empty space, elements are close together.
+    * cramped: <10% empty space, elements are crowded.
+    * If uncertain, estimate the percentage of empty space and choose accordingly.
+  
+  - Rule of Thirds: Choose from [yes/no/partial]
+    * yes: Main elements align with rule of thirds grid lines or intersections.
+    * no: Main elements do not follow rule of thirds.
+    * partial: Some elements follow rule of thirds, others do not.
+    * If uncertain, evaluate if key elements align with imaginary 3x3 grid.
+  
+  - Golden Ratio: Choose from [yes/no/partial]
+    * yes: Composition follows golden ratio proportions (approximately 1.618:1).
+    * no: Composition does not follow golden ratio.
+    * partial: Some elements follow golden ratio, others do not.
+    * If uncertain, evaluate if key proportions match golden ratio.
+  
+  - Symmetry Type: Choose from [horizontal/vertical/radial/diagonal/none]
+    * horizontal: Image has horizontal symmetry (mirror image across horizontal axis).
+    * vertical: Image has vertical symmetry (mirror image across vertical axis).
+    * radial: Image has radial symmetry (elements radiate from center).
+    * diagonal: Image has diagonal symmetry.
+    * none: No clear symmetry pattern.
+    * If uncertain, identify the symmetry axis or pattern.
+  
+  - Depth Layers: Choose from [flat/shallow/moderate/deep/very-deep]
+    * flat: Image appears two-dimensional, minimal depth perception.
+    * shallow: Slight depth perception, 2-3 distinct layers.
+    * moderate: Clear depth perception, 3-4 distinct layers.
+    * deep: Strong depth perception, 4-5 distinct layers.
+    * very-deep: Very strong depth perception, 5+ distinct layers.
+    * If uncertain, count the number of distinct depth layers.
+  
+  - Leading Lines: Choose from [strong/moderate/weak/none]
+    * strong: Clear lines that strongly guide the eye through the image.
+    * moderate: Some lines guide the eye but not prominently.
+    * weak: Minimal lines that weakly guide the eye.
+    * none: No clear lines that guide the eye.
+    * If uncertain, identify lines that direct visual attention.
+  
+  - Horizon Position: Choose from [top/center/bottom/none]
+    * top: Horizon line is in upper third of image.
+    * center: Horizon line is in middle third of image.
+    * bottom: Horizon line is in lower third of image.
+    * none: No visible horizon line (indoor, abstract, or no sky visible).
+    * If uncertain, locate the horizon line if visible.
+  
+  - Vertical Alignment: Choose from [top/center/bottom]
+    * top: Main elements are aligned in upper portion of image.
+    * center: Main elements are aligned in middle portion of image.
+    * bottom: Main elements are aligned in lower portion of image.
+    * If uncertain, identify where the main elements are vertically positioned.
+  
+  - Horizontal Alignment: Choose from [left/center/right]
+    * left: Main elements are aligned on left side of image.
+    * center: Main elements are aligned in center of image.
+    * right: Main elements are aligned on right side of image.
+    * If uncertain, identify where the main elements are horizontally positioned.
+  
+  - Perspective Type: Choose from [one-point/two-point/three-point/flat/none]
+    * one-point: Single vanishing point, parallel lines converge to one point.
+    * two-point: Two vanishing points, typical of corner views.
+    * three-point: Three vanishing points, includes vertical perspective.
+    * flat: No perspective, two-dimensional appearance.
+    * none: Perspective is not clearly identifiable.
+    * If uncertain, identify vanishing points and perspective lines.
+  
+  - Focal Point Count: Choose from [single/dual/multiple/scattered]
+    * single: One clear focal point draws attention.
+    * dual: Two distinct focal points compete for attention.
+    * multiple: Three or more focal points.
+    * scattered: Attention is scattered across many points, no clear focus.
+    * If uncertain, count the number of distinct attention-drawing elements.
+  
+  - Eye Tracking Path: Choose from [linear/circular/z-pattern/random]
+    * linear: Eye moves in a straight line through the image.
+    * circular: Eye moves in a circular or curved path.
+    * z-pattern: Eye follows a Z-shaped path (common in Western reading patterns).
+    * random: Eye movement is random, no clear path.
+    * If uncertain, trace the natural eye movement through the image.
+  
+  **LIGHTING:**
+  - Lighting Type: Choose from [Natural/Artificial/Mixed]
+    * Natural: Sunlight or ambient natural light, soft shadows, organic feel.
+    * Artificial: Studio lights, flash, or artificial light sources, controlled shadows.
+    * Mixed: Combination of natural and artificial light sources.
+    * If uncertain, identify the primary light source and choose accordingly.
+  
+  - Temperature: Choose from [Warm/Cool/Neutral]
+    * Warm: Yellow, orange, or red tones dominate (>60% of image has warm tones).
+    * Cool: Blue, cyan, or green tones dominate (>60% of image has cool tones).
+    * Neutral: Balanced warm and cool tones, or white-balanced appearance.
+    * If uncertain, evaluate the dominant color temperature and choose accordingly.
+  
+  - Direction: Choose from [Front/Back/Side/Overhead]
+    * Front: Light source is in front of subject, minimal shadows on visible surfaces.
+    * Back: Light source is behind subject, subject may be silhouetted or rim-lit.
+    * Side: Light source is from left or right, strong side shadows.
+    * Overhead: Light source is above subject, shadows fall downward.
+    * If uncertain, identify shadow direction and choose accordingly.
+  
+  - Lighting Style: Choose from [natural/studio/dramatic/flat/mixed]
+    * natural: Soft, even lighting that mimics natural conditions.
+    * studio: Controlled, professional lighting setup, even illumination.
+    * dramatic: Strong contrast, deep shadows, high-impact lighting.
+    * flat: Even, low-contrast lighting with minimal shadows.
+    * mixed: Combination of different lighting styles.
+    * If uncertain, evaluate the contrast and shadow characteristics.
+  
+  - Brightness Distribution: Choose from [even/gradient/spotted/harsh]
+    * even: Uniform brightness across the image, no significant variation.
+    * gradient: Smooth transition from light to dark areas.
+    * spotted: Uneven brightness with distinct light and dark patches.
+    * harsh: Sharp transitions between light and dark, strong contrast zones.
+    * If uncertain, evaluate the brightness variation pattern.
+  
+  - Shadow Quality: Choose from [soft/hard/mixed/none]
+    * soft: Shadows have soft, gradual edges, diffused appearance.
+    * hard: Shadows have sharp, defined edges, clear boundaries.
+    * mixed: Combination of soft and hard shadows.
+    * none: No visible shadows in the image.
+    * If uncertain, evaluate the edge quality of shadows.
+  
+  - Highlight Intensity: Choose from [strong/moderate/weak/none]
+    * strong: Bright highlights are very prominent and intense.
+    * moderate: Highlights are visible but not overpowering.
+    * weak: Highlights are subtle or barely visible.
+    * none: No clear highlights in the image.
+    * If uncertain, evaluate the brightness and prominence of highlight areas.
+  
+  - Lighting Consistency: Choose from [consistent/varied/inconsistent]
+    * consistent: Lighting is uniform and consistent across the image.
+    * varied: Lighting varies but in a controlled, intentional way.
+    * inconsistent: Lighting is inconsistent, appears unintentional or problematic.
+    * If uncertain, evaluate if lighting quality is uniform across the image.
+  
+  - Shadow Direction: Choose from [front/back/side/overhead/multiple/none]
+    * front: Shadows fall behind objects, light from front.
+    * back: Shadows fall in front of objects, light from back.
+    * side: Shadows fall to one side, light from side.
+    * overhead: Shadows fall downward, light from above.
+    * multiple: Multiple shadow directions, multiple light sources.
+    * none: No visible shadows to determine direction.
+    * If uncertain, identify the direction shadows fall.
+  
+  - Mood Lighting: Choose from [dramatic/romantic/clinical/natural/mysterious/energetic]
+    * dramatic: Strong contrast, deep shadows, high-impact lighting.
+    * romantic: Soft, warm, flattering lighting.
+    * clinical: Bright, even, neutral lighting (medical/technical feel).
+    * natural: Mimics natural light conditions.
+    * mysterious: Dark, shadowy, enigmatic lighting.
+    * energetic: Bright, vibrant, high-energy lighting.
+    * If uncertain, evaluate the emotional mood created by lighting.
+  
+  - Time of Day: Choose from [morning/afternoon/evening/night/dawn/dusk/indeterminate]
+    * morning: Early morning light, typically soft and warm.
+    * afternoon: Midday light, typically bright and direct.
+    * evening: Late afternoon/early evening light, warm tones.
+    * night: Nighttime, artificial or low light.
+    * dawn: Early morning twilight, soft and cool.
+    * dusk: Evening twilight, warm and soft.
+    * indeterminate: Cannot determine time of day from lighting.
+    * If uncertain, infer time from lighting characteristics.
+  
+  - Lighting Color: Choose from [white/warm/cool/colored/mixed]
+    * white: Neutral white light, no color cast.
+    * warm: Yellow, orange, or red-tinted light.
+    * cool: Blue or cyan-tinted light.
+    * colored: Distinct color cast (not white/warm/cool).
+    * mixed: Combination of different colored lights.
+    * If uncertain, evaluate the color temperature of the light source.
+  
+  **CONTENT ELEMENTS:**
+  - Product Presentation: Choose from [Close-up/Full product/In use/With props]
+    * Close-up: Product details are emphasized, product fills significant portion of frame.
+    * Full product: Entire product is visible, product is main subject.
+    * In use: Product is shown being used or in action.
+    * With props: Product is shown with additional objects or context elements.
+    * If uncertain, evaluate what aspect of the product is emphasized.
+  
+  - Product Angle: Choose from [Front/Side/45-degree/Overhead/Other]
+    * Front: Product is viewed from the front, front-facing features are visible.
+    * Side: Product is viewed from the side, side profile is visible.
+    * 45-degree: Product is viewed at approximately 45-degree angle, showing front and side.
+    * Overhead: Product is viewed from above, top-down perspective.
+    * Other: Does not fit above categories (e.g., back view, extreme angle).
+    * If uncertain, identify the viewing angle relative to the product.
+  
+  - Text Elements: List any text elements (e.g., ["Headline", "Price"] or ["None"])
+    * Identify all readable text in the image.
+    * Common elements: Headline, Subheadline, Price, Call-to-Action, Brand Name, Features, etc.
+    * If no text is visible, use ["None"].
+    * Be specific and list all distinct text elements.
+  
+  - Human Elements: Choose from [None/Person visible/Face visible/Lifestyle context]
+    * None: No human subjects are visible in the image.
+    * Person visible: Human figure(s) are visible but face is not clearly shown.
+    * Face visible: Human face(s) are clearly visible and recognizable.
+    * Lifestyle context: Human presence is implied through lifestyle elements (e.g., hands using product, personal items).
+    * If uncertain, evaluate the visibility and prominence of human elements.
+  
+  - Props/Context: Choose from [None/Home setting/Office/Outdoor/Studio/Other]
+    * None: No contextual props or settings, product is isolated.
+    * Home setting: Residential interior elements (furniture, home decor, etc.).
+    * Office: Business or workspace elements.
+    * Outdoor: Natural or outdoor environment elements.
+    * Studio: Neutral studio setting, minimal context.
+    * Other: Does not fit above categories.
+    * If uncertain, identify the dominant contextual elements.
+  
+  **PRODUCT extraction:**
+  - Product to Frame Ratio: Estimate percentage (0-100) of frame occupied by product
+    * Calculate by dividing the product's visible area by the total frame area.
+    * Round to nearest 5% (e.g., 15%, 20%, 25%, etc.).
+    * Include the entire product including any visible parts extending beyond main body.
+    * If product is partially cropped, estimate based on visible portion.
+  
+  - Product Position: Choose from [center/top-left/top-right/bottom-left/bottom-right]
+    * center: Product's center point is within 40% of image center (both axes).
+    * top-left: Product's center point is in top-left quadrant.
+    * top-right: Product's center point is in top-right quadrant.
+    * bottom-left: Product's center point is in bottom-left quadrant.
+    * bottom-right: Product's center point is in bottom-right quadrant.
+    * If product spans multiple quadrants, choose based on the center point.
+  
+  - Camera Perspective: Choose from [eye-level/high-angle/low-angle/aerial]
+    * eye-level: Camera is at approximately eye level with the product, horizontal view.
+    * high-angle: Camera is above the product, looking down.
+    * low-angle: Camera is below the product, looking up.
+    * aerial: Camera is directly above or at very high angle, top-down view.
+    * If uncertain, evaluate the camera position relative to the product.
+  
+  - Product Visibility: Choose from [full/partial/obscured]
+    * full: Entire product is visible, no parts are hidden or cut off.
+    * partial: Some parts of the product are visible but not the complete product.
+    * obscured: Product is partially hidden by other elements or out of focus.
+    * If uncertain, evaluate how much of the product is clearly visible.
+  
+  - Visual Prominence: Choose from [dominant/balanced/subtle]
+    * dominant: Product is the clear visual focus, immediately draws attention (>60% of visual weight).
+    * balanced: Product shares visual prominence with other elements (30-60% of visual weight).
+    * subtle: Product is present but not the main focus (<30% of visual weight).
+    * If uncertain, evaluate the product's visual weight relative to other elements.
+  
+  - Product Context: Choose from [isolated/lifestyle/comparison/technical]
+    * isolated: Product is shown alone, minimal or no context.
+    * lifestyle: Product is shown in use or in a lifestyle setting.
+    * comparison: Product is shown alongside other products or alternatives.
+    * technical: Product is shown with technical details, specifications, or diagrams.
+    * If uncertain, evaluate the type of context surrounding the product.
+  
+  **SCENE extraction:**
+  - Scene Type: Choose from [indoor/outdoor/studio/abstract/whole-house]
+    * indoor: Interior space with walls, ceiling, or indoor environment visible.
+    * outdoor: Natural or urban outdoor environment, sky or outdoor elements visible.
+    * studio: Controlled studio environment, neutral background, professional setup.
+    * abstract: Non-representational or heavily edited background, not clearly indoor/outdoor.
+    * whole-house: Entire house or building exterior is visible.
+    * If uncertain, identify the dominant environment type.
+  
+  - Environmental Context: Choose from [home/office/outdoor/industrial/retail/none]
+    * home: Residential setting, home interior or exterior.
+    * office: Business or workspace environment.
+    * outdoor: Natural outdoor setting (nature, parks, streets, etc.).
+    * industrial: Industrial or warehouse setting.
+    * retail: Retail or commercial setting.
+    * none: No specific environmental context, neutral or abstract.
+    * If uncertain, identify the specific environment type.
+  
+  - Specific Location: Choose from [garage/kitchen/living-room/bedroom/office/backyard/entire-house/camping-site/roadside/other]
+    * Choose the most specific location that matches the image.
+    * If location is not clearly identifiable, use "other".
+    * Be precise: if it's clearly a kitchen, use "kitchen", not "home".
+  
+  - Usage Scenario: Choose from [in-use/display/installation/storage/powering-home]
+    * in-use: Product is actively being used or in operation.
+    * display: Product is shown for display purposes, not in use.
+    * installation: Product is shown during or after installation.
+    * storage: Product is shown in storage or not in active use.
+    * powering-home: Product is shown powering a home or large system.
+    * If uncertain, evaluate how the product is presented in the scene.
+  
+  - Human Presence: true/false (whether humans are visible in the image)
+    * true: Any human figure, face, or body part is visible in the image.
+    * false: No human elements are visible.
+    * Be strict: only count actual human presence, not implied presence.
+  
+  - Lifestyle Appeal: Choose from [aspirational/practical/technical/neutral]
+    * aspirational: Shows desirable lifestyle, luxury, or ideal scenario.
+    * practical: Shows practical, everyday use or realistic scenario.
+    * technical: Emphasizes technical features, specifications, or functionality.
+    * neutral: No strong lifestyle message, straightforward product presentation.
+    * If uncertain, evaluate the emotional or practical message conveyed.
+  
+  - Product Count: Choose from [single/dual/multiple]
+    * single: One product is visible in the image.
+    * dual: Two products are visible in the image.
+    * multiple: Three or more products are visible in the image.
+    * If uncertain, count the number of distinct products.
+  
+  - Product Interaction: Choose from [static/in-motion/human-interaction/environment-interaction]
+    * static: Product is stationary, not moving.
+    * in-motion: Product is shown moving or in motion.
+    * human-interaction: Product is being used or touched by humans.
+    * environment-interaction: Product is interacting with environment (e.g., powering devices).
+    * If uncertain, evaluate how the product relates to its surroundings.
+  
+  - Product State: Choose from [new/used/damaged/perfect/aged]
+    * new: Product appears brand new, pristine condition.
+    * used: Product shows signs of use or wear.
+    * damaged: Product shows damage or defects.
+    * perfect: Product is in perfect, flawless condition.
+    * aged: Product shows aging or weathered appearance.
+    * If uncertain, evaluate the condition and appearance of the product.
+  
+  - Product Scale: Choose from [very-large/large/normal/small/very-small]
+    * very-large: Product appears very large relative to frame (>70% of frame).
+    * large: Product appears large relative to frame (50-70% of frame).
+    * normal: Product appears normal size relative to frame (20-50% of frame).
+    * small: Product appears small relative to frame (10-20% of frame).
+    * very-small: Product appears very small relative to frame (<10% of frame).
+    * If uncertain, estimate product size relative to image frame.
+  
+  - Product Orientation: Choose from [upright/horizontal/diagonal/rotated]
+    * upright: Product is in normal vertical orientation.
+    * horizontal: Product is lying horizontally.
+    * diagonal: Product is at an angle, neither vertical nor horizontal.
+    * rotated: Product is rotated from normal orientation.
+    * If uncertain, evaluate the product's orientation relative to normal position.
+  
+  - Weather Condition: Choose from [sunny/cloudy/rainy/snowy/foggy/indoor]
+    * sunny: Clear sky, bright sunlight visible.
+    * cloudy: Cloudy sky, overcast conditions.
+    * rainy: Rain visible or wet conditions.
+    * snowy: Snow visible or snowy conditions.
+    * foggy: Fog or mist visible.
+    * indoor: Indoor setting, weather not applicable.
+    * If uncertain, identify visible weather elements.
+  
+  - Time Period: Choose from [day/night/dawn/dusk/indeterminate]
+    * day: Daytime, bright natural or artificial light.
+    * night: Nighttime, dark with artificial lighting.
+    * dawn: Early morning, soft light.
+    * dusk: Evening, soft warm light.
+    * indeterminate: Cannot determine time period.
+    * If uncertain, infer from lighting and scene elements.
+  
+  - Season: Choose from [spring/summer/fall/winter/none]
+    * spring: Spring elements visible (flowers, green leaves, mild weather).
+    * summer: Summer elements visible (lush vegetation, warm weather, bright sun).
+    * fall: Fall elements visible (falling leaves, autumn colors, cooler weather).
+    * winter: Winter elements visible (snow, bare trees, cold weather).
+    * none: No seasonal indicators or indoor setting.
+    * If uncertain, identify seasonal elements in the scene.
+  
+  - Atmosphere: Choose from [cozy/energetic/peaceful/industrial/luxurious/casual]
+    * cozy: Warm, comfortable, intimate feeling.
+    * energetic: Dynamic, active, high-energy feeling.
+    * peaceful: Calm, serene, tranquil feeling.
+    * industrial: Utilitarian, functional, workspace feeling.
+    * luxurious: High-end, premium, sophisticated feeling.
+    * casual: Relaxed, informal, everyday feeling.
+    * If uncertain, evaluate the overall mood and atmosphere.
+  
+  - Person Count: Choose from [none/single/dual/multiple]
+    * none: No people visible in the image.
+    * single: One person visible.
+    * dual: Two people visible.
+    * multiple: Three or more people visible.
+    * If uncertain, count the number of distinct people.
+  
+  - Person Age Group: Choose from [child/youth/middle-aged/elderly/mixed/none]
+    * child: Children (approximately <12 years old).
+    * youth: Young adults (approximately 12-30 years old).
+    * middle-aged: Middle-aged adults (approximately 30-60 years old).
+    * elderly: Elderly adults (approximately >60 years old).
+    * mixed: Multiple age groups present.
+    * none: No people visible.
+    * If uncertain, estimate age based on appearance.
+  
+  - Person Gender: Choose from [male/female/mixed/none]
+    * male: Only male persons visible.
+    * female: Only female persons visible.
+    * mixed: Both male and female persons visible.
+    * none: No people visible.
+    * If uncertain, identify gender based on appearance.
+  
+  - Person Ethnicity: Choose from [caucasian/african/asian/mixed/none]
+    * caucasian: Caucasian/White persons visible.
+    * african: African/Black persons visible.
+    * asian: Asian persons visible.
+    * mixed: Multiple ethnicities visible.
+    * none: No people visible.
+    * If uncertain, identify ethnicity based on appearance.
+  
+  - Person Relationship Type: Choose from [individual/couple/family/friends/colleagues/mixed]
+    * individual: Single person alone.
+    * couple: Two people in romantic or couple relationship.
+    * family: Family members (parents, children, etc.).
+    * friends: Friends or social group.
+    * colleagues: Work colleagues or professional relationship.
+    * mixed: Multiple relationship types or unclear.
+    * If uncertain, evaluate the relationship between people.
+  
+  - Person Activity: Choose from [using-product/observing/posing/none]
+    * using-product: Person is actively using the product.
+    * observing: Person is looking at or observing the product.
+    * posing: Person is posing with the product.
+    * none: No people visible or people not interacting with product.
+    * If uncertain, evaluate how people relate to the product.
+  
+  - Object Diversity: Choose from [single-type/few-types/moderate-diverse/highly-diverse]
+    * single-type: Only one type of object visible.
+    * few-types: 2-3 types of objects visible.
+    * moderate-diverse: 4-6 types of objects visible.
+    * highly-diverse: 7+ types of objects visible.
+    * If uncertain, count the distinct types of objects.
+  
+  - Temporal Context: Choose from [before/during/after/ongoing/static]
+    * before: Shows situation before product use or action.
+    * during: Shows product in use or action happening.
+    * after: Shows situation after product use or action.
+    * ongoing: Shows continuous or ongoing action.
+    * static: No temporal context, static presentation.
+    * If uncertain, evaluate if image shows a moment in time.
+  
+  - Relationship Depiction: Choose from [product-alone/product-with-people/product-with-objects/product-in-environment/mixed]
+    * product-alone: Product shown by itself, isolated.
+    * product-with-people: Product shown with people.
+    * product-with-objects: Product shown with other objects.
+    * product-in-environment: Product shown in environmental context.
+    * mixed: Combination of above relationships.
+    * If uncertain, evaluate what elements are shown with the product.
+  
+  - Use Case Clarity: Choose from [very-clear/clear/moderate/unclear]
+    * very-clear: Product use case is extremely clear and obvious.
+    * clear: Product use case is clear and understandable.
+    * moderate: Product use case is somewhat clear but could be clearer.
+    * unclear: Product use case is unclear or ambiguous.
+    * If uncertain, evaluate how clearly the product's purpose is shown.
+  
+  - Problem Solution Narrative: Choose from [problem-shown/solution-shown/both/none]
+    * problem-shown: Image shows a problem or challenge.
+    * solution-shown: Image shows a solution or benefit.
+    * both: Image shows both problem and solution.
+    * none: No problem-solution narrative visible.
+    * If uncertain, evaluate if image tells a problem-solution story.
+  
+  - Furniture Presence: Choose from [yes/no]
+    * yes: Furniture (chairs, tables, sofas, etc.) is visible.
+    * no: No furniture visible.
+    * If uncertain, identify if furniture elements are present.
+  
+  - Appliance Presence: Choose from [yes/no]
+    * yes: Appliances (refrigerator, oven, etc.) are visible.
+    * no: No appliances visible.
+    * If uncertain, identify if appliances are present.
+  
+  - Vehicle Presence: Choose from [yes/no]
+    * yes: Vehicles (cars, trucks, etc.) are visible.
+    * no: No vehicles visible.
+    * If uncertain, identify if vehicles are present.
+  
+  - Outdoor Equipment Presence: Choose from [yes/no]
+    * yes: Outdoor equipment (camping gear, sports equipment, etc.) is visible.
+    * no: No outdoor equipment visible.
+    * If uncertain, identify if outdoor equipment is present.
+  
+  - Electronic Devices Presence: Choose from [yes/no]
+    * yes: Electronic devices (phones, computers, etc.) are visible.
+    * no: No electronic devices visible.
+    * If uncertain, identify if electronic devices are present.
+  
+  - Natural Elements Presence: Choose from [yes/no]
+    * yes: Natural elements (plants, sky, water, etc.) are visible.
+    * no: No natural elements visible.
+    * If uncertain, identify if natural elements are present.
+  
+  - Architectural Elements Presence: Choose from [yes/no]
+    * yes: Architectural elements (walls, doors, windows, structures) are visible.
+    * no: No architectural elements visible.
+    * If uncertain, identify if architectural elements are present.
+  
+  - Background Content Type: Choose from [solid-color/gradient/pattern/photographic/abstract/textured]
+    * solid-color: Single solid color background.
+    * gradient: Gradient or color transition background.
+    * pattern: Patterned or repeated design background.
+    * photographic: Real photographic background.
+    * abstract: Abstract or non-representational background.
+    * textured: Textured surface background.
+    * If uncertain, identify the background content type.
+  
+  - Background Complexity: Choose from [simple/moderate/complex]
+    * simple: Background is simple with few elements.
+    * moderate: Background has moderate detail and elements.
+    * complex: Background is complex with many elements.
+    * If uncertain, evaluate the number of elements in the background.
+  
+  - Background Relevance: Choose from [highly-relevant/moderately-relevant/irrelevant/distracting]
+    * highly-relevant: Background strongly relates to product or theme.
+    * moderately-relevant: Background somewhat relates to product or theme.
+    * irrelevant: Background does not relate to product or theme.
+    * distracting: Background distracts from product or message.
+    * If uncertain, evaluate how background relates to product.
+  
+  - Foreground Background Separation: Choose from [clear/moderate/blended]
+    * clear: Foreground and background are clearly separated.
+    * moderate: Foreground and background have moderate separation.
+    * blended: Foreground and background blend together.
+    * If uncertain, evaluate the separation between foreground and background.
+  
+  - Content Storytelling: Choose from [strong/moderate/weak/none]
+    * strong: Image tells a clear, compelling story.
+    * moderate: Image has some narrative elements.
+    * weak: Image has minimal storytelling.
+    * none: Image has no narrative or story.
+    * If uncertain, evaluate if image conveys a story or narrative.
+  
+  **TECHNICAL QUALITY:**
+  - Image Quality: Choose from [Professional/Amateur/High-res/Low-res]
+    * Professional: High production quality, polished, commercial-grade photography.
+    * Amateur: Lower production quality, unpolished, consumer-level photography.
+    * High-res: High resolution, sharp details, clear image quality.
+    * Low-res: Low resolution, pixelated, or blurry image quality.
+    * If uncertain, evaluate the production quality and resolution.
+  
+  - Brand Consistency: Choose from [Strong/Moderate/Weak/None]
+    * Strong: Clear brand elements (logo, colors, style) are prominently and consistently displayed.
+    * Moderate: Some brand elements are present but not dominant.
+    * Weak: Brand elements are minimal or barely visible.
+    * None: No clear brand elements are visible.
+    * If uncertain, evaluate the visibility and prominence of brand elements.
+  
+  - Call-to-Action Visuals: List any CTA elements (e.g., ["Arrows", "Highlighting"] or ["None"])
+    * Identify all visual elements that guide action (arrows, buttons, highlights, etc.).
+    * Common elements: Arrows, Buttons, Highlighting, Borders, Badges, etc.
+    * If no CTA visuals are present, use ["None"].
+    * Be specific and list all distinct CTA visual elements.
+  
+  - Content Clarity: Choose from [very-clear/clear/moderate/unclear]
+    * very-clear: Image content is extremely clear and easy to understand.
+    * clear: Image content is clear and understandable.
+    * moderate: Image content is somewhat clear but could be clearer.
+    * unclear: Image content is unclear or confusing.
+    * If uncertain, evaluate how easily the image can be understood.
+  
+  - Visual Impact: Choose from [strong/moderate/weak]
+    * strong: Image has strong visual impact and grabs attention.
+    * moderate: Image has moderate visual impact.
+    * weak: Image has weak visual impact, less attention-grabbing.
+    * If uncertain, evaluate the overall visual strength of the image.
+  
+  - Information Density: Choose from [high/moderate/low]
+    * high: Image contains high amount of information.
+    * moderate: Image contains moderate amount of information.
+    * low: Image contains low amount of information.
+    * If uncertain, evaluate how much information is conveyed.
+  
+  - Content Authenticity: Choose from [authentic/staged/artificial]
+    * authentic: Image appears natural and authentic.
+    * staged: Image appears staged or set up.
+    * artificial: Image appears artificial or heavily edited.
+    * If uncertain, evaluate the naturalness of the image.
+  
+  - Sharpness: Choose from [very-sharp/sharp/moderate/soft/blurry]
+    * very-sharp: Image is extremely sharp with crisp details.
+    * sharp: Image is sharp with clear details.
+    * moderate: Image has moderate sharpness.
+    * soft: Image is soft with reduced sharpness.
+    * blurry: Image is blurry or out of focus.
+    * If uncertain, evaluate the focus and detail clarity.
+  
+  - Exposure Quality: Choose from [perfect/good/overexposed/underexposed/mixed]
+    * perfect: Exposure is perfect, well-balanced.
+    * good: Exposure is good with minor issues.
+    * overexposed: Image is too bright, overexposed.
+    * underexposed: Image is too dark, underexposed.
+    * mixed: Exposure varies across image.
+    * If uncertain, evaluate the overall exposure quality.
+  
+  - Noise Level: Choose from [none/low/moderate/high]
+    * none: No visible noise or grain.
+    * low: Minimal noise, very clean image.
+    * moderate: Moderate noise visible.
+    * high: High noise, grainy appearance.
+    * If uncertain, evaluate the noise or grain in the image.
+  
+  **OVERALL ASSESSMENT:**
+  - Primary Appeal: Choose from [Product-focused/Lifestyle/Emotional/Functional/Price-focused]
+    * Product-focused: Emphasizes the product itself, product features, or product benefits.
+    * Lifestyle: Emphasizes lifestyle, aspirational scenarios, or contextual use.
+    * Emotional: Emphasizes emotional connection, feelings, or emotional benefits.
+    * Functional: Emphasizes practical functionality, utility, or performance.
+    * Price-focused: Emphasizes price, value, discounts, or affordability.
+    * If uncertain, identify the primary message or appeal of the image.
+  
+  - Target Audience: Choose from [Young/Professional/Family/General/Other]
+    * Young: Targets younger demographic (teens, young adults, typically <30).
+    * Professional: Targets professionals, business users, or career-focused individuals.
+    * Family: Targets families, parents, or family-oriented consumers.
+    * General: Targets broad, general audience without specific demographic focus.
+    * Other: Targets specific niche audience not covered above.
+    * If uncertain, evaluate the imagery, messaging, and context to identify target demographic.
+  
+  - Emotional Tone: Choose from [Exciting/Calm/Professional/Friendly/Urgent/Other]
+    * Exciting: Energetic, dynamic, thrilling, or high-energy feeling.
+    * Calm: Peaceful, serene, relaxed, or tranquil feeling.
+    * Professional: Formal, business-like, authoritative, or corporate feeling.
+    * Friendly: Warm, approachable, welcoming, or personable feeling.
+    * Urgent: Time-sensitive, immediate action needed, or pressing feeling.
+    * Other: Does not fit above categories or has unique emotional tone.
+    * If uncertain, evaluate the emotional feeling conveyed by the image.
+  
+  - Urgency Level: Choose from [high/medium/low/none]
+    * high: Image conveys high urgency or time-sensitivity.
+    * medium: Image conveys moderate urgency.
+    * low: Image conveys low urgency.
+    * none: Image conveys no urgency.
+    * If uncertain, evaluate if image suggests time pressure or urgency.
+  
+  - Value Proposition: Choose from [quality/price/convenience/innovation/lifestyle/none]
+    * quality: Emphasizes product quality or premium features.
+    * price: Emphasizes price, value, or affordability.
+    * convenience: Emphasizes convenience or ease of use.
+    * innovation: Emphasizes innovation or cutting-edge features.
+    * lifestyle: Emphasizes lifestyle benefits or aspirational value.
+    * none: No clear value proposition emphasized.
+    * If uncertain, identify the primary value message.
+  
+  **SOCIAL PROOF:**
+  - Testimonial Presence: Choose from [yes/no]
+    * yes: User testimonials or reviews are visible in the image.
+    * no: No testimonials or reviews visible.
+    * If uncertain, identify if testimonials are present.
+  
+  - Rating Display: Choose from [stars/number/none]
+    * stars: Rating shown as stars (e.g., ★★★★☆).
+    * number: Rating shown as number (e.g., 4.5/5).
+    * none: No rating display visible.
+    * If uncertain, identify how ratings are displayed.
+  
+  - User Count: Choose from [none/single/multiple/many]
+    * none: No indication of user count.
+    * single: Suggests single user (e.g., "1 user").
+    * multiple: Suggests multiple users (e.g., "100+ users").
+    * many: Suggests many users (e.g., "10,000+ users").
+    * If uncertain, evaluate implied user count from image.
+  
+  - Social Media Elements: Choose from [none/share-button/like-count/comment-count/follow-button/verified-badge/multiple]
+    * none: No social media elements visible.
+    * share-button: Share button visible.
+    * like-count: Like count or likes visible.
+    * comment-count: Comment count visible.
+    * follow-button: Follow button visible.
+    * verified-badge: Verified badge or checkmark visible.
+    * multiple: Multiple social media elements visible.
+    * If uncertain, identify social media elements present.
+  
+  **SCENE CONTEXT:**
+  - Scene Mood: Choose from [positive/neutral/negative]
+    * positive: Scene conveys positive, upbeat mood.
+    * neutral: Scene conveys neutral mood.
+    * negative: Scene conveys negative or concerning mood.
+    * If uncertain, evaluate the overall mood of the scene.
+  
+  - Activity Level: Choose from [active/static/moderate]
+    * active: Scene shows high activity or movement.
+    * static: Scene shows no activity, static.
+    * moderate: Scene shows moderate activity.
+    * If uncertain, evaluate the level of activity in the scene.
+  
+  - Spatial Relationship: Choose from [close/moderate/distant]
+    * close: Main elements are close together.
+    * moderate: Main elements have moderate distance.
+    * distant: Main elements are far apart.
+    * If uncertain, evaluate the spatial distance between main elements.
+  
+  - Context Richness: Choose from [rich/moderate/sparse]
+    * rich: Scene provides rich contextual information.
+    * moderate: Scene provides moderate context.
+    * sparse: Scene provides minimal context.
+    * If uncertain, evaluate how much contextual information is provided.
+  
+          extract these images: {image_filenames_str}
+  
+  CONSISTENCY CHECKS:
+  After classifying each image, verify the following:
+  1. Related fields are consistent (e.g., if scene_type is "indoor", environmental_context should not be "outdoor").
+  2. Lighting fields are consistent (e.g., if lighting_type is "Natural", lighting_style should not be "studio").
+  3. Product fields are consistent (e.g., if product_visibility is "full", product_to_frame_ratio should be >20%).
+  4. Composition fields are consistent (e.g., if visual_complexity is "minimal", image_style should not be "Busy").
+  
+  If you find inconsistencies, review and correct them before finalizing your extraction.
+  
+  Provide a detailed extraction for each image focusing on what makes it effective or ineffective for driving clicks.
+  
+  Return your response in this exact JSON format:
+  {{
+      "analyses": [
+          {{
+              "filename": "image_name.jpg",
+              "performance_label": "{performance_type}",
+              "visual_elements": {{
+                  "primary_colors": ["color1", "color2", "color3"],
+                  "color_harmony": "type",
+                  "contrast_level": "level",
+                  "brightness": "level",
+                  "color_saturation": "high",
+                  "color_vibrancy": "vibrant",
+                  "color_diversity": "moderate",
+                  "color_balance": "balanced",
+                  "background_tone_contrast": "moderate",
+                  "element_separation": "clear",
+                  "local_contrast": "medium",
+                  "highlight_ratio": "moderate"
+              }},
+              "composition": {{
+                  "product_placement": "position",
+                  "background_type": "type",
+                  "image_style": "style",
+                  "framing": "type",
+                  "visual_complexity": "complexity",
+                  "primary_focal_point": "focal_point",
+                  "visual_flow": "flow",
+                  "balance_type": "balance",
+                  "negative_space_usage": "space_usage",
+                  "rule_of_thirds": "yes",
+                  "golden_ratio": "no",
+                  "symmetry_type": "none",
+                  "depth_layers": "moderate",
+                  "leading_lines": "moderate",
+                  "horizon_position": "none",
+                  "vertical_alignment": "center",
+                  "horizontal_alignment": "center",
+                  "perspective_type": "flat",
+                  "focal_point_count": "single",
+                  "eye_tracking_path": "linear"
+              }},
+              "lighting": {{
+                  "lighting_type": "type",
+                  "temperature": "temp",
+                  "direction": "direction",
+                  "lighting_style": "style",
+                  "brightness_distribution": "distribution",
+                  "shadow_quality": "soft",
+                  "highlight_intensity": "moderate",
+                  "lighting_consistency": "consistent",
+                  "shadow_direction": "side",
+                  "mood_lighting": "natural",
+                  "time_of_day": "indeterminate",
+                  "lighting_color": "white"
+              }},
+              "content_elements": {{
+                  "product_presentation": "type",
+                  "product_angle": "angle",
+                  "text_elements": ["element1", "element2"],
+                  "human_elements": "description",
+                  "props_context": "description",
+                  "product_to_frame_ratio": 50,
+                  "product_position": "center",
+                  "camera_perspective": "eye-level",
+                  "product_visibility": "full",
+                  "visual_prominence": "balanced",
+                  "product_context": "isolated",
+                  "scene_type": "indoor",
+                  "environmental_context": "home",
+                  "specific_location": "other",
+                  "usage_scenario": "display",
+                  "human_presence": false,
+                  "lifestyle_appeal": "neutral",
+                  "product_count": "single",
+                  "product_interaction": "static",
+                  "product_state": "new",
+                  "product_scale": "normal",
+                  "product_orientation": "upright",
+                  "weather_condition": "indoor",
+                  "time_period": "indeterminate",
+                  "season": "none",
+                  "atmosphere": "neutral",
+                  "person_count": "none",
+                  "person_age_group": "none",
+                  "person_gender": "none",
+                  "person_ethnicity": "none",
+                  "person_relationship_type": "none",
+                  "person_activity": "none",
+                  "object_diversity": "moderate-diverse",
+                  "temporal_context": "static",
+                  "relationship_depiction": "product-alone",
+                  "use_case_clarity": "clear",
+                  "problem_solution_narrative": "none",
+                  "furniture_presence": "no",
+                  "appliance_presence": "no",
+                  "vehicle_presence": "no",
+                  "outdoor_equipment_presence": "no",
+                  "electronic_devices_presence": "no",
+                  "natural_elements_presence": "no",
+                  "architectural_elements_presence": "no",
+                  "background_content_type": "photographic",
+                  "background_complexity": "moderate",
+                  "background_relevance": "moderately-relevant",
+                  "foreground_background_separation": "clear",
+                  "content_storytelling": "moderate"
+              }},
+              "technical_quality": {{
+                  "image_quality": "quality",
+                  "brand_consistency": "level",
+                  "cta_visuals": ["element1", "element2"],
+                  "content_clarity": "clear",
+                  "visual_impact": "moderate",
+                  "information_density": "moderate",
+                  "content_authenticity": "authentic",
+                  "sharpness": "sharp",
+                  "exposure_quality": "good",
+                  "noise_level": "low"
+              }},
+              "overall_assessment": {{
+                  "primary_appeal": "appeal",
+                  "target_audience": "audience",
+                  "emotional_tone": "tone",
+                  "urgency_level": "none",
+                  "value_proposition": "none"
+              }},
+              "social_proof": {{
+                  "testimonial_presence": "no",
+                  "rating_display": "none",
+                  "user_count": "none",
+                  "social_media_elements": "none"
+              }},
+              "scene_context": {{
+                  "scene_mood": "neutral",
+                  "activity_level": "static",
+                  "spatial_relationship": "moderate",
+                  "context_richness": "moderate"
+              }}
+          }}
+      ]
+  }}
+  

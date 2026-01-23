@@ -60,7 +60,7 @@ def add_config_argument(parser):
         default=None,
         help=(
             "Path to rules.yaml configuration file. "
-            "If None, looks for config/{customer}/{platform}/rules.yaml "
+            "If None, looks for config/adset/allocator/{customer}/{platform}/rules.yaml "
             "(default: None, uses customer/platform path)"
         ),
     )

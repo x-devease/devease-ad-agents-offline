@@ -3,7 +3,7 @@ Unit tests for summary.py module.
 Tests the complete rule execution functions.
 """
 
-from src.adset.utils.summary import (
+from src.adset.allocator.utils.summary import (
     apply_post_modifications,
     calculate_budget_adjustment,
     execute_all_rules,
@@ -81,20 +81,22 @@ class TestSummary:
 
     def test_execute_all_rules_low(self):
         """Test execute_all_rules for low performing adset"""
+        current_budget = 100.0
         (
-            final_adjustment,
+            final_budget,
             reason,
             decision_path,
             post_modifications,
         ) = execute_all_rules(
             roas_7d=1.0,
             roas_trend=-0.10,
+            current_budget=current_budget,
             health_score=0.4,
             days_active=30,
         )
 
-        assert isinstance(final_adjustment, (int, float))
-        assert final_adjustment < 1.0  # Should decrease
+        assert isinstance(final_budget, (int, float))
+        assert final_budget < current_budget  # Should decrease
         assert isinstance(reason, str)
         assert isinstance(decision_path, list)
         assert isinstance(post_modifications, list)

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from src.budget.monthly_tracker import MonthlyBudgetTracker
-from src.budget.state_manager import MonthlyBudgetState
+from src.adset.allocator.budget.monthly_tracker import MonthlyBudgetTracker
+from src.adset.allocator.budget.state_manager import MonthlyBudgetState
 
 
 class TestMonthlyBudgetTracker:

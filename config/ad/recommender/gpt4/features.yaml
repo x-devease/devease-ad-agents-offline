@@ -1,0 +1,215 @@
+# Feature definitions and mapping rules
+# This file defines the 29 features used in the model and their mapping rules
+
+# Extractor configuration
+extractor_type: "gpt4_feature_extractor"
+extractor_version: "1.0"
+description: "Feature definitions and mapping rules for GPT-4 Vision API feature extraction"
+version: "1.0"
+
+# List of all 29 features
+features:
+  - name: depth_layers_flat
+    description: "Depth layers is flat"
+    source_section: composition
+    source_field: depth_layers
+    mapping_type: value_match
+    match_value: "flat"
+    
+  - name: eye_tracking_path_linear
+    description: "Eye tracking path is linear"
+    source_section: composition
+    source_field: eye_tracking_path
+    mapping_type: value_match
+    match_value: "linear"
+    
+  - name: visual_complexity_minimal
+    description: "Visual complexity is minimal"
+    source_section: composition
+    source_field: visual_complexity
+    mapping_type: value_match
+    match_value: "minimal"
+    
+  - name: activity_level_static
+    description: "Activity level is static"
+    source_section: scene_context
+    source_field: activity_level
+    mapping_type: value_match
+    match_value: "static"
+    
+  - name: appliance_presence_no
+    description: "Appliance presence is no"
+    source_section: content_elements
+    source_field: appliance_presence
+    mapping_type: value_match
+    match_value: "no"
+    
+  - name: lifestyle_appeal_neutral
+    description: "Lifestyle appeal is neutral"
+    source_section: content_elements
+    source_field: lifestyle_appeal
+    mapping_type: value_match
+    match_value: "neutral"
+    
+  - name: rule_of_thirds_no
+    description: "Rule of thirds is no"
+    source_section: composition
+    source_field: rule_of_thirds
+    mapping_type: value_match_any
+    match_values: ["no", "none"]
+    
+  - name: person_activity_observing
+    description: "Person activity is observing"
+    source_section: content_elements
+    source_field: person_activity
+    mapping_type: value_match
+    match_value: "observing"
+    
+  - name: object_diversity_single_type
+    description: "Object diversity is single type"
+    source_section: content_elements
+    source_field: object_diversity
+    mapping_type: value_match
+    match_value: "single-type"
+    alternatives: ["single_type"]
+    
+  - name: target_audience_General
+    description: "Target audience is General"
+    source_section: overall_assessment
+    source_field: target_audience
+    mapping_type: value_match
+    match_value: "general"
+    
+  - name: color_harmony_complementary
+    description: "Color harmony is complementary"
+    source_section: visual_elements
+    source_field: color_harmony
+    mapping_type: value_match
+    match_value: "complementary"
+    
+  - name: usage_scenario_display
+    description: "Usage scenario is display"
+    source_section: content_elements
+    source_field: usage_scenario
+    mapping_type: value_match
+    match_value: "display"
+    
+  - name: CPC_transformed
+    description: "CPC transformed (business metric, requires separate input)"
+    source_section: special
+    source_field: cpc_value
+    mapping_type: direct_value
+    special_handling: true
+    
+  - name: framing_Wide_shot
+    description: "Framing is wide shot"
+    source_section: composition
+    source_field: framing
+    mapping_type: value_match_any
+    match_values: ["wide-shot", "wide_shot"]
+    
+  - name: text_elements_SGS
+    description: "Text elements contain SGS"
+    source_section: content_elements
+    source_field: text_elements
+    mapping_type: text_contains
+    match_text: "sgs"
+    
+  - name: focal_point_count_single
+    description: "Focal point count is single"
+    source_section: composition
+    source_field: focal_point_count
+    mapping_type: value_match
+    match_value: "single"
+    
+  - name: background_content_type_solid_color
+    description: "Background content type is solid color"
+    source_section: composition
+    source_field: background_content_type
+    mapping_type: value_match_any
+    match_values: ["solid-color", "solid_color", "solid color"]
+    
+  - name: text_elements_Brand_Name
+    description: "Text elements contain brand name"
+    source_section: content_elements
+    source_field: text_elements
+    mapping_type: text_contains_all
+    match_texts: ["brand", "name"]
+    
+  - name: rule_of_thirds_yes
+    description: "Rule of thirds is yes"
+    source_section: composition
+    source_field: rule_of_thirds
+    mapping_type: value_match_any
+    match_values: ["yes", "true"]
+    
+  - name: symmetry_type_horizontal
+    description: "Symmetry type is horizontal"
+    source_section: composition
+    source_field: symmetry_type
+    mapping_type: value_match
+    match_value: "horizontal"
+    
+  - name: product_presentation_Display
+    description: "Product presentation is Display"
+    source_section: content_elements
+    source_field: product_presentation
+    mapping_type: value_match
+    match_value: "display"
+    
+  - name: brand_consistency_Moderate
+    description: "Brand consistency is Moderate"
+    source_section: technical_quality
+    source_field: brand_consistency
+    mapping_type: value_match
+    match_value: "moderate"
+    
+  - name: specific_location_other
+    description: "Specific location is other"
+    source_section: content_elements
+    source_field: specific_location
+    mapping_type: value_match
+    match_value: "other"
+    
+  - name: architectural_elements_presence_no
+    description: "Architectural elements presence is no"
+    source_section: content_elements
+    source_field: architectural_elements_presence
+    mapping_type: value_match
+    match_value: "no"
+    
+  - name: scene_type_studio
+    description: "Scene type is studio"
+    source_section: content_elements
+    source_field: scene_type
+    mapping_type: value_match
+    match_value: "studio"
+    
+  - name: target_audience_Family
+    description: "Target audience is Family"
+    source_section: overall_assessment
+    source_field: target_audience
+    mapping_type: value_match
+    match_value: "family"
+    
+  - name: background_type_White
+    description: "Background type is White"
+    source_section: composition
+    source_field: background_type
+    mapping_type: value_match
+    match_value: "white"
+    
+  - name: text_elements_Product_Display
+    description: "Text elements contain Product Display"
+    source_section: content_elements
+    source_field: text_elements
+    mapping_type: text_contains_all
+    match_texts: ["product", "display"]
+    
+  - name: person_age_group_child
+    description: "Person age group is child"
+    source_section: content_elements
+    source_field: person_age_group
+    mapping_type: value_match
+    match_value: "child"
+

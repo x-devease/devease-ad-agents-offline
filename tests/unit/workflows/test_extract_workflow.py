@@ -10,8 +10,8 @@ from unittest.mock import Mock, patch, MagicMock, call
 import pandas as pd
 import pytest
 
-from src.workflows.extract_workflow import ExtractWorkflow
-from src.workflows.base import WorkflowResult
+from src.adset.features.workflows.extract_workflow import ExtractWorkflow
+from src.adset.features.workflows.base import WorkflowResult
 
 
 @pytest.fixture
@@ -96,7 +96,7 @@ class TestExtractWorkflowInit:
         """Test initialization with default parameters."""
         workflow = ExtractWorkflow()
 
-        assert workflow.config_path == "config/default/rules.yaml"
+        assert workflow.config_path == "config/adset/allocator/rules.yaml"
         assert workflow.preprocess is True
         assert workflow.normalize is True
         assert workflow.bucket is True
@@ -189,7 +189,7 @@ class TestExtractWorkflowLoadData:
 class TestExtractWorkflowAggregateToAdset:
     """Test ExtractWorkflow._aggregate_to_adset method."""
 
-    @patch("src.cli.commands.extract._aggregate_ad_to_adset")
+    @patch("src.adset.cli.commands.extract._aggregate_ad_to_adset")
     def test_aggregate_to_adset_success(self, mock_aggregate_fn):
         """Test successful aggregation to adset level."""
         mock_aggregate_fn.return_value = pd.DataFrame(

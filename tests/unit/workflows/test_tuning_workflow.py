@@ -8,9 +8,9 @@ Focuses on Bayesian optimization, constraint handling, and result reporting.
 from unittest.mock import Mock, patch, MagicMock
 import pytest
 
-from src.workflows.tuning_workflow import TuningWorkflow
-from src.workflows.base import WorkflowResult
-from src.optimizer.tuning import TuningResult
+from src.adset.allocator.workflows.tuning_workflow import TuningWorkflow
+from src.adset.features.workflows.base import WorkflowResult
+from src.adset.allocator.optimizer.tuning import TuningResult
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ class TestTuningWorkflowInit:
         """Test initialization with default parameters."""
         workflow = TuningWorkflow()
 
-        assert workflow.config_path == "config/default/rules.yaml"
+        assert workflow.config_path == "config/adset/allocator/rules.yaml"
         assert workflow.n_calls == 50
         assert workflow.n_initial_points == 10
         assert workflow.update_config is True

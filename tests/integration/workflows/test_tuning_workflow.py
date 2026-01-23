@@ -13,8 +13,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.workflows.tuning_workflow import TuningWorkflow
-from src.workflows.base import WorkflowResult
+from src.adset.allocator.workflows.tuning_workflow import TuningWorkflow
+from src.adset.features.workflows.base import WorkflowResult
 
 
 @pytest.fixture

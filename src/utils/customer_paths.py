@@ -307,7 +307,7 @@ def get_all_customers(config_path: Optional[str] = None) -> List[str]:
     """
     Get all customer names from config directory.
 
-    With new config structure (config/{customer}/{platform}/rules.yaml),
+    With new config structure (config/adset/allocator/{customer}/{platform}/rules.yaml),
     scans the config directory to discover all customers.
 
     For backward compatibility, if config_path points to an existing file

@@ -1,6 +1,6 @@
 """Unit tests for pattern discovery data models."""
 
-from src.adset.lib.discovery_models import DiscoveredRule, ValidationResult
+from src.adset.allocator.lib.discovery_models import DiscoveredRule, ValidationResult
 
 
 class TestDiscoveredRule:

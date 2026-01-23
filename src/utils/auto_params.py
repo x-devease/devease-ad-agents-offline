@@ -102,7 +102,7 @@ class AutoParams:
         print(f"Auto-calculating parameters for {customer}/{platform}...")
 
         # Load data
-        from src.features.feature_store import FeatureStore
+        from src.adset.features.feature_store import FeatureStore
 
         fs = FeatureStore(customer=customer, platform=platform)
 
@@ -491,7 +491,7 @@ class AutoParams:
             params: Parameter dictionary
             adset_count: Number of adsets analyzed
         """
-        config_path = Config.CONFIG_DIR / customer / platform / "params.yaml"
+        config_path = Config.CONFIG_DIR / "adset" / "generator" / customer / platform / "params.yaml"
 
         # Load existing params to preserve structure
         existing_params = {}

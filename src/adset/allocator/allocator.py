@@ -6,12 +6,12 @@ based on all 21 features.
 """
 
 from typing import List
-from src.adset.lib.safety_rules import (
+from src.adset.allocator.lib.safety_rules import (
     SafetyRules,
 )
-from src.adset.lib.decision_rules import DecisionRules
-from src.adset.lib.models import BudgetAllocationMetrics, BudgetAdjustmentParams
-from src.adset.utils.helpers import apply_adaptive_target_adj
+from src.adset.allocator.lib.decision_rules import DecisionRules
+from src.adset.allocator.lib.models import BudgetAllocationMetrics, BudgetAdjustmentParams
+from src.adset.allocator.utils.helpers import apply_adaptive_target_adj
 
 
 class Allocator:  # pylint: disable=too-few-public-methods

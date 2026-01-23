@@ -5,10 +5,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.adset.core.allocator import Allocator
-from src.adset.lib.safety_rules import SafetyRules
-from src.adset.lib.decision_rules import DecisionRules
-from src.adset.lib.models import BudgetAllocationMetrics
+from src.adset.allocator.allocator import Allocator
+from src.adset.allocator.lib.safety_rules import SafetyRules
+from src.adset.allocator.lib.decision_rules import DecisionRules
+from src.adset.allocator.lib.models import BudgetAllocationMetrics
 
 
 class TestAllocator(TestCase):
@@ -286,7 +286,7 @@ class TestAllocator(TestCase):
             "adaptive_target_adjustment_factor": 0.3,
         }.get(key, default)
 
-        with patch("src.adset.core.allocator.apply_adaptive_target_adj") as mock_adj:
+        with patch("src.adset.allocator.allocator.apply_adaptive_target_adj") as mock_adj:
             mock_adj.return_value = (110.0, ["adaptive_target_adjusted"])
 
             new_budget, decision_path = self.allocator._apply_adaptive_target(

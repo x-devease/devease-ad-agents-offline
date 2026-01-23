@@ -12,12 +12,23 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.cli.commands.extract import _aggregate_ad_to_adset
-from src.features import Aggregator, Extractor, Joiner, Loader
-from tests.conftest import (
-    create_sample_account_data,
-    create_sample_campaign_data,
-)
+from src.adset.cli.commands.extract import _aggregate_ad_to_adset
+from src.adset.features import Aggregator, Extractor, Joiner, Loader
+# Helper functions defined in this file
+def create_sample_account_data():
+    """Create sample account data."""
+    return pd.DataFrame({
+        "account_id": ["123"],
+        "account_name": ["Test Account"],
+    })
+
+def create_sample_campaign_data():
+    """Create sample campaign data."""
+    return pd.DataFrame({
+        "campaign_id": ["456"],
+        "campaign_name": ["Test Campaign"],
+        "account_id": ["123"],
+    })
 from tests.integration.utils.subprocess import run_script, run_script_and_verify_output
 
 # Add project root to path

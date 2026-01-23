@@ -3,7 +3,7 @@ Unit tests for helpers.py module.
 Tests helper functions for rule-based allocation.
 """
 
-from src.adset.utils.helpers import (
+from src.adset.allocator.utils.helpers import (
     DEFAULT_ADAPTIVE_TARGET_OPTIONS,
     DEFAULT_ADJUSTMENT_FACTOR,
     apply_adaptive_target_adj,

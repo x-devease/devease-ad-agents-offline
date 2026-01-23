@@ -5,8 +5,8 @@ import pytest
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from src.integrations.shopify.loader import ShopifyDataLoader
-from src.integrations.shopify.features import ShopifyFeatureExtractor
+from src.adset.features.integrations.shopify.loader import ShopifyDataLoader
+from src.adset.features.integrations.shopify.features import ShopifyFeatureExtractor
 
 
 @pytest.fixture
@@ -237,7 +237,7 @@ class TestGetShopifyDataPath:
     def test_get_shopify_data_path(self):
         """Test getting path to Shopify CSV."""
         from src.config.path_manager import get_path_manager
-        from src.integrations.shopify.loader import get_shopify_data_path
+        from src.adset.features.integrations.shopify.loader import get_shopify_data_path
 
         path = get_shopify_data_path("moprobo", "meta")
         expected = get_path_manager("moprobo", "meta").raw_data_dir() / "shopify.csv"

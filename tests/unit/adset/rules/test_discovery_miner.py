@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.adset.lib.discovery_miner import DecisionTreeMiner
+from src.adset.allocator.lib.discovery_miner import DecisionTreeMiner
 
 
 @pytest.fixture

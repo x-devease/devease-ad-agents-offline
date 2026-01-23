@@ -5,10 +5,10 @@ Tests the integration of SafetyRules and DecisionRules.
 """
 
 from unittest.mock import Mock
-from src.adset.core.allocator import Allocator
-from src.adset.lib.safety_rules import SafetyRules
-from src.adset.lib.decision_rules import DecisionRules
-from src.adset.utils.parser import Parser
+from src.adset.allocator.allocator import Allocator
+from src.adset.allocator.lib.safety_rules import SafetyRules
+from src.adset.allocator.lib.decision_rules import DecisionRules
+from src.adset.allocator.utils.parser import Parser
 
 
 class TestAllocator:
@@ -158,7 +158,7 @@ class TestAllocator:
     def test_alloc_keep_frozen_under(self):
         """Test that frozen adsets stay frozen if still underperforming"""
         config = Parser(
-            config_path="config/default/rules.yaml",
+            config_path="config/adset/allocator/rules.yaml",
             customer_name="moprobo",
             platform="meta",
         )
@@ -186,7 +186,7 @@ class TestAllocator:
     def test_alloc_low_utilization_gate(self):
         """Test low budget utilization gate"""
         config = Parser(
-            config_path="config/default/rules.yaml",
+            config_path="config/adset/allocator/rules.yaml",
             customer_name="moprobo",
             platform="meta",
         )
@@ -210,7 +210,7 @@ class TestAllocator:
     def test_alloc_high_util_boost(self):
         """Test high budget utilization boost"""
         config = Parser(
-            config_path="config/default/rules.yaml",
+            config_path="config/adset/allocator/rules.yaml",
             customer_name="moprobo",
             platform="meta",
         )
@@ -234,7 +234,7 @@ class TestAllocator:
     def test_alloc_marginal_roas_adj(self):
         """Test marginal ROAS adjustment in allocator"""
         config = Parser(
-            config_path="config/default/rules.yaml",
+            config_path="config/adset/allocator/rules.yaml",
             customer_name="moprobo",
             platform="meta",
         )

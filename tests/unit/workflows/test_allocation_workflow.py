@@ -11,8 +11,8 @@ from unittest.mock import Mock, patch, MagicMock, call
 import pandas as pd
 import pytest
 
-from src.workflows.allocation_workflow import AllocationWorkflow
-from src.workflows.base import WorkflowResult
+from src.adset.allocator.workflows.allocation_workflow import AllocationWorkflow
+from src.adset.features.workflows.base import WorkflowResult
 
 
 @pytest.fixture

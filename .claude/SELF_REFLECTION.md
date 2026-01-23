@@ -1,7 +1,7 @@
 # Claude Self-Reflection Framework
 
 ## Purpose
-Ensure any changes made align with the core goals and constraints of both the budget allocator and audience configuration generator.
+Ensure any changes made align with the core goals and constraints of the **budget allocator**, **audience configuration generator**, **ad recommender** (creative scorer), and **ad generator** (creative image generation).
 
 ---
 
@@ -13,7 +13,7 @@ Ensure any changes made align with the core goals and constraints of both the bu
 - Output actions as YAML with confidence + evidence
 - Require high confidence before param updates
 - Run all CI workflows before committing
-- Use `customer_paths.py` for path access
+- Use `customer_paths.py` for path access (allocator/adset); use `recommender` utils and `generator` `Paths` for ad modules
 - Evaluate on real data only
 - **Validate recommendations beat or match historical performance**
 - Generate audience configuration strategies (regions, ages, creative formats, audience types)
@@ -25,6 +25,11 @@ Ensure any changes made align with the core goals and constraints of both the bu
 - Use conservative estimates for opportunity values
 - Respect platform-specific targeting capabilities
 - Use `# pylint: disable` or `# type: ignore` ONLY when absolutely necessary
+- **Use statistical patterns (lift analysis) for creative recommendations**
+- **Hard-code pattern thresholds (top_pct=0.25, bottom_pct=0.25) to avoid data leakage**
+- **Apply conservative impact estimates (50% of lift) for creative recommendations**
+- **Require minimum thresholds: lift >= 1.5, prevalence >= 10% for patterns**
+- **Use chi-square tests for statistical significance in creative patterns**
 
 ### DON'T
 - Hard-code paths or parameters
@@ -48,6 +53,15 @@ Ensure any changes made align with the core goals and constraints of both the bu
 - **Claim improvements without historical baseline comparison**
 - **Use `# pylint: disable` instead of fixing the issue**
 - **Ignore pylint warnings without proper justification**
+- **Use ML models for creative pattern detection (statistics only)**
+- **Tune creative pattern parameters on test/eval data (data leakage)**
+- **Claim causation from correlation in creative recommendations**
+- **Overpromise on creative impact estimates (use 50% conservative factor)**
+- **Skip statistical significance testing for creative patterns**
+- **Recommend creative patterns with low prevalence (< 10%)**
+- **Use creative patterns with lift < 1.5x**
+- **Ignore feature recommendations from creative scorer in generator**
+- **Skip feature validation after image generation**
 
 ---
 
@@ -59,8 +73,16 @@ Ensure any changes made align with the core goals and constraints of both the bu
 | Raw Data | `datasets/{customer}/{platform}/raw/` | `datasets/moprobo/meta/raw/` |
 | Features | `datasets/{customer}/{platform}/features/` | `datasets/moprobo/meta/features/` |
 | Results | `results/{customer}/{platform}/` | `results/moprobo/meta/` |
+| GPT-4 Configs (ad recommender) | `config/ad/recommender/gpt4/` | `config/ad/recommender/gpt4/features.yaml` |
+| Creative Features | `src/ad/recommender/features/` | `src/ad/recommender/features/extract.py` |
+| Creative Recommendations | `src/ad/recommender/recommendations/` | `src/ad/recommender/recommendations/rule_engine.py` |
+| Recommender Output | `config/ad/recommender/recommendations/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-23/recommendations.json` |
+| Generator Config | `config/ad/generator/{customer}/{platform}/` | `config/ad/generator/moprobo/taboola/generation_config.yaml` |
+| Generator Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
+| Generator Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
+| Generator Output | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../moprobo/taboola/2026-01-23/nano-banana-pro/` |
 
-**Rule**: All data access must use `src/utils/customer_paths.py` helper functions. Never hard-code paths.
+**Rule**: Allocator/adset generator use `src/utils/customer_paths.py`. Ad recommender uses `src/ad/recommender/utils/paths.py` and `config_manager.py`. Ad generator uses `src/ad/generator/core/paths.py`. Never hard-code paths.
 
 ---
 
@@ -402,7 +424,7 @@ Each rule returns:
 | Assuming platform is "meta" | Breaks multi-platform support | Support all platforms |
 | Updating params without confidence checks | Could update on noise/outliers | Add thresholds |
 | Using synthetic data for claims | Not realistic or reliable | Use real data only |
-| Breaking path abstraction | Fragile, customer-specific | Use `customer_paths.py` |
+| Breaking path abstraction | Fragile, customer-specific | Use `customer_paths.py` (allocator/adset) or ad path helpers |
 | Sharing params across customers | Breaks config isolation | Keep separate configs |
 | Claiming "optimal" solutions | Goal is beating history, not perfection | Focus on practical improvement |
 | Over-engineering for perfection | Adds complexity without benefit | Keep it simple |
@@ -440,6 +462,14 @@ Before making any code change, Claude must verify:
 - [ ] Does this use conservative, rules-based logic? (generator)
 - [ ] Does this validate against headroom limits? (generator)
 - [ ] Does this suggest testing over committing? (generator)
+- [ ] **Does this support statistical pattern detection (not ML)?** (creative recommender)
+- [ ] **Does this maintain hard-coded thresholds (no data leakage)?** (creative recommender)
+- [ ] **Does this use conservative impact estimates (50% factor)?** (creative recommender)
+- [ ] **Does this require statistical significance (chi-square)?** (creative recommender)
+- [ ] **Does this filter by lift >= 1.5 and prevalence >= 10%?** (creative recommender)
+- [ ] **Does this load recommendations from creative scorer?** (creative generator)
+- [ ] **Does this convert features to optimized prompts?** (creative generator)
+- [ ] **Does this validate generated features?** (creative generator)
 
 ### Anti-Goal Check
 - [ ] Does NOT claim to deliver "perfect" allocation?
@@ -459,6 +489,15 @@ Before making any code change, Claude must verify:
 - [ ] Does NOT ignore platform constraints? (generator)
 - [ ] Does NOT over-claim opportunity values? (generator)
 - [ ] Does NOT skip headroom validation? (generator)
+- [ ] **Does NOT use ML models for creative pattern detection?** (creative recommender)
+- [ ] **Does NOT tune creative pattern parameters on test data?** (creative recommender)
+- [ ] **Does NOT claim causation from correlation?** (creative recommender)
+- [ ] **Does NOT overpromise creative impact (uses 50% factor)?** (creative recommender)
+- [ ] **Does NOT skip statistical significance testing?** (creative recommender)
+- [ ] **Does NOT recommend low-prevalence patterns (< 10%)?** (creative recommender)
+- [ ] **Does NOT recommend low-lift patterns (< 1.5x)?** (creative recommender)
+- [ ] **Does NOT ignore feature recommendations from creative scorer?** (creative generator)
+- [ ] **Does NOT skip feature validation after generation?** (creative generator)
 
 ### Change Scope
 - [ ] Is this the minimum change needed?
@@ -477,8 +516,8 @@ Before making any code change, Claude must verify:
 - [ ] Does this respect platform API limits? (generator)
 
 ### Code Pattern Check
-- [ ] Uses `customer_paths.py` for data access?
-- [ ] Uses `ConfigManager` for config loading?
+- [ ] Uses `customer_paths.py` (allocator/adset) or ad path helpers (`recommender` utils, `generator` `Paths`) as appropriate?
+- [ ] Uses `ConfigManager` (allocator/adset) or `config_manager`/config paths (ad modules) for config loading?
 - [ ] No hard-coded customer/platform names?
 - [ ] No hard-coded file paths?
 - [ ] No `# pylint: disable` or `# type: ignore` suppressions?
@@ -714,7 +753,7 @@ Before making any code change, Claude must verify:
 
 ### 🚩 Code Quality Violations
 30. Over-engineering for theoretical vs practical improvement
-31. Hard-coding file paths (use `customer_paths.py`)
+31. Hard-coding file paths (use `customer_paths.py` for allocator/adset; `recommender` utils / `generator` `Paths` for ad modules)
 32. Hard-coding customer/platform names
 33. Skipping CI workflow checks
 34. Breaking unified YAML output format
@@ -765,6 +804,38 @@ Before making any code change, Claude must verify:
 | **Segmentation** | `src/adset/generator/segmentation/segmenter.py` | Segment analysis |
 | **Constraints** | `src/adset/generator/analyzers/advantage_constraints.py` | Competitive advantages |
 
+### Ad Recommender Core Files (`src/ad/recommender/`)
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Extract** | `src/ad/recommender/features/extract.py` | Feature extraction and ROAS integration |
+| **GPT-4 Extractor** | `src/ad/recommender/features/extractors/gpt4_feature_extractor.py` | GPT-4 Vision API extractor |
+| **Transformer** | `src/ad/recommender/features/transformers/gpt4_feature_transformer.py` | Transform GPT-4 responses to features |
+| **Interactions** | `src/ad/recommender/features/interactions.py` | Feature interactions |
+| **Lib** | `src/ad/recommender/features/lib/` | Loaders, mergers, parsers, synthetic data |
+| **Rule Engine** | `src/ad/recommender/recommendations/rule_engine.py` | Statistical pattern-based recommendation engine |
+| **Prompt Formatter** | `src/ad/recommender/recommendations/prompt_formatter.py` | Format recommendations as prompts |
+| **Evidence** | `src/ad/recommender/recommendations/evidence_builder.py` | Build evidence for recommendations |
+| **Formatters** | `src/ad/recommender/recommendations/formatters.py` | Output formatting |
+| **Config** | `src/ad/recommender/utils/config_manager.py` | Config loading (gpt4 features/prompts) |
+| **Paths** | `src/ad/recommender/utils/paths.py` | Data dir, features CSV resolution |
+| **Statistics** | `src/ad/recommender/utils/statistics.py` | Chi-square and statistical tests |
+| **Predictor** | `src/ad/recommender/predictor.py` | Prediction utilities |
+
+### Ad Generator Core Files (`src/ad/generator/`)
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Paths** | `src/ad/generator/core/paths.py` | Customer/platform/date path management |
+| **Scorer Loader** | `src/ad/generator/core/scorer_recommendations_loader.py` | Load creative scorer recommendations |
+| **Prompts** | `src/ad/generator/core/prompts/` | Converters, feature loader, recommendations loader, variants |
+| **Generation** | `src/ad/generator/core/generation/generator.py` | Image generation via FAL.ai |
+| **Prompt Converter** | `src/ad/generator/core/generation/prompt_converter.py` | Nano Banana prompt conversion |
+| **Orchestrator** | `src/ad/generator/orchestrator/prompt_builder.py` | Build prompts from features |
+| **Feature Mapper** | `src/ad/generator/orchestrator/feature_mapper.py` | Map features to prompt elements |
+| **Template Engine** | `src/ad/generator/orchestrator/template_engine.py` | Template-based generation |
+| **Pipeline** | `src/ad/generator/pipeline/pipeline.py` | End-to-end generation pipeline |
+| **Feature Validator** | `src/ad/generator/pipeline/feature_validator.py` | Validate generated features |
+| **Recommendation Loader** | `src/ad/generator/pipeline/recommendation_loader.py` | Load recommendations for pipeline |
+
 ### Shared Files
 | Component | File | Purpose |
 |-----------|------|---------|
@@ -775,6 +846,7 @@ Before making any code change, Claude must verify:
 | **Allocator Workflow** | `src/workflows/allocation_workflow.py` | Allocation workflow |
 | **Generator CLI** | `src/cli/commands/rules.py` | Rules pipeline |
 | **Generator CLI** | `src/cli/commands/auto_params.py` | Auto-calc parameters |
+| **Ad Recommender/Generator CLI** | `run.py` | extract-features, recommend, prompt, generate, run |
 
 ---
 
@@ -804,6 +876,24 @@ If the answer is "I don't know" or "maybe," then the recommendation should be fr
 - Use conservative estimates for opportunity values
 - Respect platform-specific targeting capabilities
 - **If uncertain, recommend small test vs full rollout**
+
+### Ad Recommender (Creative Scorer)
+**"NO AI. NO SPECULATION. JUST STATISTICS."**
+
+- Statistical pattern detection only (no ML)
+- Hard-coded thresholds (top/bottom 25%, lift ≥ 1.5, prevalence ≥ 10%)
+- Conservative impact estimates (50% of lift)
+- Chi-square significance required
+- Use `config_manager` and `paths` (recommender utils) for config/data
+
+### Ad Generator (Creative Image Generation)
+**"Feature-driven prompts, validated output."**
+
+- Load recommendations from creative scorer; convert to prompts
+- Use `Paths` (generator `core/paths.py`) for all config/output paths
+- Validate generated images match requested features
+- FAL.ai (Nano Banana) for image generation
+- Customer/platform/date isolation
 
 ---
 
@@ -853,3 +943,289 @@ daily_budget = (monthly_cap - total_spent) / remaining_days * 0.95
 - Front-loading spend early in month
 - Over-spending due to under-spend prediction
 - Running out of budget before month end
+
+---
+
+## Creative Recommender Architecture (`src/ad/recommender/`)
+
+**Purpose:** Statistical pattern-based creative optimization - analyzes image features to generate ROAS improvement recommendations
+
+### Core Components
+
+**Features** (`features/`):
+- `extract.py`: Feature extraction and ROAS integration
+- `extractors/gpt4_feature_extractor.py`: GPT-4 Vision API extractor
+- `transformers/gpt4_feature_transformer.py`: Transform GPT-4 responses to features
+- `interactions.py`: Feature interactions
+- `lib/`: Loaders, mergers, parsers, synthetic data
+
+**Recommendations** (`recommendations/`):
+- `rule_engine.py`: Statistical pattern-based recommendation engine
+- `prompt_formatter.py`: Format recommendations as prompts for creative generation
+- `formatters.py`, `enhanced_output.py`, `output_structure.py`: Output formatting
+- `evidence_builder.py`: Build evidence for recommendations
+
+**Utils** (`utils/`):
+- `config_manager.py`: Config loading for `config/ad/recommender/gpt4/` (features, prompts)
+- `paths.py`: Data dir, features CSV resolution (`CREATIVE_SCORER_DATA_DIR`, `CREATIVE_SCORER_FEATURES_CSV`)
+- `statistics.py`: Chi-square and statistical tests
+- `api_keys.py`, `config_loader.py`, `constants.py`, `platform_normalizer.py`, `model_persistence.py`: Support utilities
+
+### Philosophy: "NO AI. NO SPECULATION. JUST STATISTICS."
+
+- No ML models - only statistical pattern detection
+- Transparent lift calculations and prevalence percentages
+- Conservative impact estimates (50% factor)
+- Fact-based recommendations from actual data
+
+### Pattern Detection Rules
+
+- **Top/Bottom Split**: Hard-coded 25% top, 25% bottom (no tuning to avoid leakage)
+- **Lift Threshold**: Minimum 1.5x lift required
+- **Prevalence Threshold**: Minimum 10% prevalence in top performers
+- **Statistical Significance**: Chi-square test required (p-value < 0.05)
+- **Sample Size**: Minimum 10% of top/bottom performers must have the feature
+
+### Recommendation Generation
+
+- Compare creative features against discovered patterns
+- Identify gaps (missing high-performing features)
+- Calculate potential impact (conservative 50% of lift)
+- Generate DOs: "Add feature X" recommendations
+- Generate DON'Ts: "Avoid feature X" recommendations (anti-patterns)
+- Sort by potential impact (highest first)
+
+### Output Format
+
+- Markdown file with DOs and DON'Ts
+- Each recommendation includes:
+  - Feature name and value
+  - Current vs recommended value
+  - Confidence level (high/medium/low)
+  - Potential impact (ROAS improvement)
+  - Evidence (pattern statistics)
+- Grouped by opportunity size
+
+### Data Leakage Prevention
+
+- **Hard-code pattern thresholds**: No tuning on test data
+- **All data for pattern discovery**: No train/test split needed
+- **Conservative estimates**: 50% factor prevents overpromising
+- **Statistical significance**: Chi-square tests prevent false patterns
+
+### Feature Extraction Pipeline
+
+1. Extract features using GPT-4 Vision API
+2. Load ad performance data (ROAS)
+3. Merge features with ROAS data
+4. Identify top 25% and bottom 25% performers
+5. Calculate lift for each feature value
+6. Filter patterns (lift >= 1.5, prevalence >= 10%, significant)
+7. Generate recommendations
+
+### Configuration
+
+- **GPT-4 Config**: `config/ad/recommender/gpt4/features.yaml` (feature definitions)
+- **GPT-4 Prompts**: `config/ad/recommender/gpt4/prompts.yaml` (prompt templates)
+- **Output**: `config/ad/recommender/recommendations/{customer}/{platform}/{date}/recommendations.json` (or `config/recommendations/{customer}/{platform}/` per `run.py recommend --output-dir`)
+
+### File Location Rules (Ad Recommender)
+
+| Type | Location | Example |
+|------|----------|---------|
+| Configs | `config/ad/recommender/gpt4/` | `config/ad/recommender/gpt4/features.yaml` |
+| Creative Features | `src/ad/recommender/features/` | `src/ad/recommender/features/extract.py` |
+| Recommendations | `src/ad/recommender/recommendations/` | `src/ad/recommender/recommendations/rule_engine.py` |
+| Output | `config/ad/recommender/recommendations/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-23/recommendations.json` |
+
+**Rule**: Use `src/ad/recommender/utils/config_manager.py` for config; `src/ad/recommender/utils/paths.py` for data/features. Never hard-code paths.
+
+### Code Patterns to Follow
+
+#### Pattern Detection
+```python
+# ✅ CORRECT
+# Hard-code thresholds to avoid data leakage
+top_pct = 0.25      # Top 25% performers
+bottom_pct = 0.25   # Bottom 25% performers
+lift_threshold = 1.5
+prevalence_threshold = 0.10
+
+# Calculate lift
+lift = high_pct / low_pct if low_pct > 0 else float("inf")
+
+# Require statistical significance
+chi2_result = chi_square_test(contingency)
+if lift >= lift_threshold and high_pct >= prevalence_threshold and chi2_result["is_significant"]:
+    # Pattern is valid
+    pass
+
+# ❌ WRONG
+# Tuning thresholds on test data (data leakage)
+for top_pct in [0.1, 0.2, 0.25, 0.3]:
+    score = evaluate_on_test_data(top_pct)  # ❌ LEAKAGE!
+```
+
+#### Impact Calculation
+```python
+# ✅ CORRECT
+# Conservative 50% factor
+potential_impact = current_roas * (lift - 1) * 0.5
+
+# ❌ WRONG
+# Overpromising (no conservative factor)
+potential_impact = current_roas * (lift - 1)  # Too optimistic
+```
+
+### Common Mistakes to Avoid (Creative Recommender)
+
+| Mistake | Why It's Wrong | Correct Approach |
+|---------|---------------|------------------|
+| Tuning top_pct on test data | Data leakage, lookahead bias | Hard-code 0.25 (25%) |
+| No conservative factor | Overpromising impact | Use 50% factor: `impact = roas * (lift - 1) * 0.5` |
+| Using ML models | Black-box, speculation | Use statistical patterns only |
+| Skipping significance tests | False patterns from noise | Require chi-square p-value < 0.05 |
+| Low prevalence patterns | Not representative | Require >= 10% prevalence |
+| Low lift patterns | Weak signal | Require >= 1.5x lift |
+| Hard-coding paths | Breaks multi-customer support | Use path helpers |
+| Sharing configs | Breaks isolation | Separate per customer/platform |
+| Claiming causation | Correlation ≠ causation | Use conservative estimates |
+| No minimum sample size | Unreliable patterns | Require 10% of top/bottom performers |
+
+### Pre-Change Reflection Checklist (Creative Recommender)
+
+Before making any code change to creative recommender, Claude must verify:
+
+#### Goal Alignment
+- [ ] Does this support statistical pattern detection (not ML)?
+- [ ] Does this maintain hard-coded thresholds (no data leakage)?
+- [ ] Does this use conservative impact estimates (50% factor)?
+- [ ] Does this require statistical significance (chi-square)?
+- [ ] Does this filter by lift >= 1.5 and prevalence >= 10%?
+- [ ] Does this output actionable DOs and DON'Ts?
+- [ ] Does this use GPT-4 Vision API correctly?
+- [ ] Does this merge features with ROAS data properly?
+- [ ] Does this use `config_manager` and `paths` (recommender utils) for config/data?
+
+#### Anti-Goal Check
+- [ ] Does NOT use ML models for pattern detection?
+- [ ] Does NOT tune parameters on test data?
+- [ ] Does NOT claim causation from correlation?
+- [ ] Does NOT overpromise impact (uses 50% factor)?
+- [ ] Does NOT skip statistical significance testing?
+- [ ] Does NOT recommend low-prevalence patterns (< 10%)?
+- [ ] Does NOT recommend low-lift patterns (< 1.5x)?
+- [ ] Does NOT hard-code paths or parameters?
+- [ ] Does NOT bypass `config_manager` / `paths` for config or data?
+
+### Key Principles (Creative Recommender)
+
+1. **Statistics Over ML**: Use statistical patterns, not ML models
+2. **Transparency**: Show exact lift values, prevalence percentages
+3. **Conservative**: 50% factor on impact estimates
+4. **Significance**: Require statistical tests (chi-square)
+5. **No Leakage**: Hard-code thresholds, no tuning on test data
+6. **Actionable**: Clear DOs and DON'Ts with evidence
+7. **Fact-Based**: Recommendations from actual data, not speculation
+
+---
+
+## Creative Generator Architecture (`src/ad/generator/`)
+
+**Purpose:** Image generation system that converts feature recommendations into optimized prompts and generates images via FAL.ai
+
+### Core Components
+
+**Core** (`core/`):
+- `paths.py`: Customer/platform/date path management (`config/ad/generator/`, `config/ad/recommender/recommendations/`)
+- `scorer_recommendations_loader.py`: Load creative scorer recommendations
+- `prompts/`: Feature-to-prompt conversion
+  - `converter.py`, `converter_simple.py`, `converter_advanced.py`, `converter_enhanced.py`: Prompt converters
+  - `feature_loader.py`, `recommendations_loader.py`: Load feature/recommendation data
+  - `variants.py`: Feature variants and combinations
+  - `feature_descriptions.py`, `feature_value_descriptions.py`, `feature_validation.py`, `output_formatter.py`: Support
+- `generation/`: Image generation via FAL.ai
+  - `generator.py`: Main image generator
+  - `prompt_converter.py`: Nano Banana prompt conversion
+  - `watermark.py`, `text_overlay.py`: Watermark and overlay
+  - `constants.py`, `markets.py`: Generation config
+
+**Orchestrator** (`orchestrator/`):
+- `prompt_builder.py`: Build prompts from features
+- `feature_mapper.py`, `feature_registry.py`: Map features to prompt elements
+- `template_engine.py`: Template-based generation
+- `scene_config.py`, `defaults.py`: Scene and default config
+
+**Pipeline** (`pipeline/`):
+- `pipeline.py`: End-to-end generation pipeline
+- `recommendation_loader.py`: Load recommendations for pipeline
+- `product_context.py`, `prompt_templates.py`: Product context and templates
+- `feature_reproduction.py`: Feature reproduction logic
+- `feature_validator.py`: Validate generated features
+
+**Constants / Utils**: `constants/`, `utils/` (e.g. `optional_imports.py`)
+
+### Workflow
+
+1. **Load Recommendations**: Load feature recommendations from creative scorer
+2. **Convert to Prompts**: Convert feature recommendations to image generation prompts
+3. **Generate Images**: Generate images using FAL.ai (Nano Banana models)
+4. **Validate Features**: Validate that generated images match requested features
+
+### Configuration
+
+- **Config**: `config/ad/generator/{customer}/{platform}/generation_config.yaml`
+- **Templates**: `config/ad/generator/templates/{customer}/{platform}/`
+- **Prompts**: `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` (e.g. `structured`, `nano`, `variants`)
+- **Generated**: `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` (e.g. `nano-banana-pro`)
+- **Recommendations** (input): `config/ad/recommender/recommendations/{customer}/{platform}/{date}/recommendations.json`
+
+### File Location Rules (Ad Generator)
+
+| Type | Location | Example |
+|------|----------|---------|
+| Config | `config/ad/generator/{customer}/{platform}/` | `config/ad/generator/moprobo/taboola/generation_config.yaml` |
+| Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
+| Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
+| Generated | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../nano-banana-pro/` |
+| Recommendations | `config/ad/recommender/recommendations/{customer}/{platform}/{date}/` | `.../recommendations.json` |
+
+**Rule**: Use `src/ad/generator/core/paths.py` (`Paths`) for all config/output paths. Never hard-code paths.
+
+### Key Principles
+
+1. **Feature-Driven**: Generate images based on feature recommendations from creative scorer
+2. **Prompt Optimization**: Convert features to optimized prompts for Nano Banana models
+3. **Validation**: Validate that generated images match requested features
+4. **Customer/Platform Isolation**: Separate configs per customer/platform
+5. **Template-Based**: Use templates for consistent generation
+6. **FAL.ai Integration**: Use FAL.ai for image generation (Nano Banana models)
+
+### Common Mistakes to Avoid (Creative Generator)
+
+| Mistake | Why It's Wrong | Correct Approach |
+|---------|---------------|------------------|
+| Hard-coding paths | Breaks multi-customer support | Use path helpers |
+| Ignoring feature recommendations | Not using data-driven approach | Load from creative scorer |
+| Skipping validation | Generated images may not match features | Validate features after generation |
+| Sharing configs | Breaks isolation | Separate per customer/platform |
+| Not using templates | Inconsistent generation | Use template engine |
+
+### Pre-Change Reflection Checklist (Creative Generator)
+
+Before making any code change to creative generator, Claude must verify:
+
+#### Goal Alignment
+- [ ] Does this load recommendations from creative scorer (`config/ad/recommender/recommendations/...`)?
+- [ ] Does this convert features to optimized prompts?
+- [ ] Does this use FAL.ai for image generation?
+- [ ] Does this validate generated features?
+- [ ] Does this use `Paths` (`core/paths.py`) for customer/platform/date paths?
+- [ ] Does this use templates for consistency?
+
+#### Anti-Goal Check
+- [ ] Does NOT hard-code paths or parameters?
+- [ ] Does NOT share configs across customers/platforms?
+- [ ] Does NOT skip feature validation?
+- [ ] Does NOT ignore recommendations from creative scorer?
+- [ ] Does NOT bypass `Paths` for config or output paths?

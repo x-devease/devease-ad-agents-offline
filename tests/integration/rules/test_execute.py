@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 
 from src.adset import Allocator, DecisionRules, SafetyRules
-from src.adset.utils.parser import Parser
+from src.adset.allocator.utils.parser import Parser
 
 
 def run_script(script_path, args):
@@ -172,7 +172,7 @@ class TestExecute:
                 "--budget",
                 "5000",
                 "--config",
-                "config/default/rules.yaml",
+                "config/adset/allocator/rules.yaml",
             ],
         )
 

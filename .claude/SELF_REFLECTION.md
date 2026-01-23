@@ -1,7 +1,7 @@
 # Claude Self-Reflection Framework
 
 ## Purpose
-Ensure any changes made by Claude align with the core goals and constraints of the budget allocation system.
+Ensure any changes made align with the core goals and constraints of both the budget allocator and audience configuration generator.
 
 ---
 
@@ -15,6 +15,15 @@ Ensure any changes made by Claude align with the core goals and constraints of t
 - Run all CI workflows before committing
 - Use `customer_paths.py` for path access
 - Evaluate on real data only
+- **Validate recommendations beat or match historical performance**
+- Generate audience configuration strategies (regions, ages, creative formats, audience types)
+- Use rules-based, transparent logic (KISS principle)
+- Calculate headroom before recommending scale-up or new audiences
+- Output recommendations with confidence + evidence
+- Segment by geography, audience type, creative format
+- Maintain priority scoring (CRITICAL > HIGH > MEDIUM > LOW)
+- Use conservative estimates for opportunity values
+- Respect platform-specific targeting capabilities
 - Use `# pylint: disable` or `# type: ignore` ONLY when absolutely necessary
 
 ### DON'T
@@ -28,6 +37,17 @@ Ensure any changes made by Claude align with the core goals and constraints of t
 - Create PR-specific documentation (no TODO.md, VALIDATION.md per PR)
 - Use `# pylint: disable` or `# type: ignore` to suppress warnings when fixing is possible
 - Leave temporary scripts in working directory when pushing
+- Implement black-box ML for strategy generation
+- Add budget allocation controls in generator (that's in allocator module)
+- Add audience configuration controls in allocator (that's in generator module)
+- Recommend configurations without performance validation
+- Over-engineer for theoretical perfection
+- Ignore platform targeting constraints (Meta vs Google vs TikTok)
+- Ignore saturation warnings
+- Make aggressive recommendations that risk production
+- **Claim improvements without historical baseline comparison**
+- **Use `# pylint: disable` instead of fixing the issue**
+- **Ignore pylint warnings without proper justification**
 
 ---
 
@@ -80,40 +100,35 @@ update_params(new_params)  # No checks
 
 ## Repo Goals
 
-### 1. Primary Goal
-**The goal of this repo is NOT to deliver the perfect budget allocation solution.**
+### 1. Primary Goals
 
-### 2. Problem Statement
-**Given a predefined monthly budget, allocate it among a list of pregenerated adsets.**
+**Budget Allocator (`src/adset/allocator/`)**
+- The goal is NOT to deliver the perfect budget allocation solution
+- Given a predefined monthly budget, allocate it among a list of pregenerated adsets
+- Scope: Daily budget allocation at adset level
+- Outputs: Daily budget allocation per adset
 
-- **Scope**: Daily budget allocation at adset level
-- **Inputs**:
-  - Monthly budget cap (predefined)
-  - Pregenerated adsets (existing campaigns)
-  - Adset performance features (ROAS, CTR, spend, impressions, etc.)
-  - Optional: Shopify data (revenue, conversion data)
-  - Optional: Lookalike audience data
-- **Outputs**: Daily budget allocation per adset
-- **Requirements**:
-  - **Initialization**: Set initial budgets when new adsets are created
-  - **Daily Updates**: Adjust budgets daily based on performance
-  - **Constraints**: Stay within monthly budget cap
+**Audience Configuration Generator (`src/adset/generator/`)**
+- Generate strategies for creating adset audience configurations (regions, ages, creative formats and other audience types) given each platform's targeting settings
+- Recommend audience configurations across multiple dimensions (geography, age ranges, audience types, creative formats)
+- Outputs: Audience configuration recommendations with confidence and evidence
 
-### 3. Actual Objective
+### 2. Actual Objective (CRITICAL for Both)
 **Analyze customer data for each platform and deliver a solution that can beat history (or at least match).**
 
 - Focus on practical improvement over theoretical perfection
 - Compare performance against historical baseline
+- **Every recommendation must answer: "Will this perform better than what we've seen?"**
 - Deliver working solutions, not optimal ones
 
-### 4. Auto-Parameter Selection
+### 3. Auto-Parameter Selection
 **Each platform and customer's parameters are auto-decided by the algorithm.**
 
 - The system automatically determines optimal parameters per customer/platform
 - No manual parameter tuning required
 - Data-driven decision making
 
-### 5. Config Separation
+### 4. Config Separation
 **Each platform and customer's parameters are separate through config.**
 
 - Structure: `config/{customer}/{platform}/rules.yaml`
@@ -121,21 +136,21 @@ update_params(new_params)  # No checks
 - Platform-specific isolation
 - No cross-contamination between customers/platforms
 
-### 6. Code Quality Checks
+### 5. Code Quality Checks
 **All CI workflows must pass before committing changes.**
 
 - Run all CI checks (lint, test, etc.) before committing
 - Fix all failures
 - Maintain code quality standards
 
-### 7. Daily Data Updates
+### 6. Daily Data Updates
 **Algorithm and parameters must update when new daily data arrives.**
 
 - System should adapt to changing data patterns
 - Auto-reoptimize parameters on daily data updates
 - No manual intervention required
 
-### 8. Reliable Parameter Updates
+### 7. Reliable Parameter Updates
 **When adding new daily data, update params only if high confidence and enough data support.**
 
 - Require statistical significance before param changes
@@ -143,21 +158,21 @@ update_params(new_params)  # No checks
 - Conservative: keep old params if uncertainty is high
 - Protect against noise in daily data
 
-### 9. Configurable Objectives
+### 8. Configurable Objectives
 **Optimization objectives (ROAS, CTR, CVR, CPA, etc.) are configurable through config.**
 
 - Objectives defined per customer/platform in config
 - Support single or multi-objective optimization
 - Easy to add/change objectives without code changes
 
-### 10. Campaign-Level Configurability
+### 9. Campaign-Level Configurability
 **Each campaign is configurable through config.**
 
 - Campaign-specific overrides and settings
 - Granular control at campaign level
 - Supports heterogeneous campaign strategies
 
-### 11. Reliability Over Aggression
+### 10. Reliability Over Aggression
 **Value reliability in optimization since this is real money and no A/B tests now.**
 
 - Conservative approach preferred over aggressive optimization
@@ -165,15 +180,15 @@ update_params(new_params)  # No checks
 - Protect customer budget over testing hypotheses
 - If it breaks production, it's not worth it
 
-### 12. Daily Parameter Re-optimization
+### 11. Daily Parameter Re-optimization
 **Rerun parameter optimizations when data is updated daily.**
 
 - Automated pipeline for daily re-tuning
 - Parameters adapt to new data patterns
 - No stale parameters from old data
-- Apply reliability constraints (see #8)
+- Apply reliability constraints (see #7)
 
-### 13. Realistic Evaluation
+### 12. Realistic Evaluation
 **Evaluation must be realistic and reliable when deciding params.**
 
 - Use real customer data, not synthetic
@@ -184,20 +199,20 @@ update_params(new_params)  # No checks
 - Statistical significance testing
 - Multiple scenarios, not single-seed results
 
-### 14. Unified Action Output Format
+### 13. Unified Action Output Format
 **Output real actions with details, confidence scores, and evidences in unified YAML format.**
 
 - Structure: `.yaml` file with:
-  - Action: What to do (scale up/down, freeze, etc.)
-  - Details: Action specifics (amount, target, etc.)
-  - Confidence score: Numeric confidence (0-1)
+  - Action: What to do (scale up/down, freeze, launch_new, etc.)
+  - Details: Action specifics (amount, target, config, etc.)
+  - Confidence score: Numeric confidence (0-1) or HIGH/MEDIUM/LOW
   - Evidence: Supporting data/reasoning
 - Standardized format for all customers/platforms
 - Machine-readable + human-readable
 
 ---
 
-## Allocator Architecture
+## Budget Allocator Architecture
 
 ### Core Components (`src/adset/allocator/`)
 **Engine** (`engine.py`): Main allocator interface
@@ -234,11 +249,9 @@ update_params(new_params)  # No checks
 - Health scoring
 - Relative performance
 
----
+### Decision Rules Framework
 
-## Decision Rules Framework
-
-### Priority Order (Highest to Lowest)
+#### Priority Order (Highest to Lowest)
 1. **Safety checks** - Freeze underperforming adsets immediately
 2. **Excellent performers** - Aggressive increases for top performers
 3. **High performers** - Moderate increases for strong performers
@@ -246,7 +259,7 @@ update_params(new_params)  # No checks
 5. **Declining performers** - Decreases for poor performance
 6. **Low performers** - Aggressive decreases or freeze
 
-### Rule Output Format
+#### Rule Output Format
 Each rule returns:
 ```python
 (
@@ -255,7 +268,7 @@ Each rule returns:
 )
 ```
 
-### Key Decision Factors
+#### Key Decision Factors
 - **roas_7d**: Meta's 7-day rolling ROAS (primary signal)
 - **roas_trend**: Trend in ROAS over time
 - **health_score**: Overall adset health (0-1)
@@ -264,6 +277,120 @@ Each rule returns:
 - **impressions**, **clicks**: Volume metrics
 - **days_active**: Age of adset
 - **shopify_roas**: Actual revenue ROAS (supplemental validation)
+
+---
+
+## Audience Configuration Generator Architecture
+
+### Core Components (`src/adset/generator/`)
+**Core** (`core/recommender.py`): Base recommender classes
+- ConfigurableRecommender, ROASRecommender, MetricRecommender
+- RecommendationStrategy patterns
+- Create recommenders with custom configurations
+
+**Detection** (`detection/mistake_detector.py`): Detect issues in configs
+- Identifies suboptimal audience configurations
+- Detects human mistakes in setup
+- Flags wasting, too_broad, missing_lal, oversaturated
+
+**Analyzers** (`analyzers/`):
+- `opportunity_sizer.py`: Calculate opportunity size (frequency, ROAS, budget)
+- `shopify_analyzer.py`: Shopify revenue analysis
+- `advantage_constraints.py`: Competitive advantages and constraints
+
+**Generation** (`generation/`):
+- `audience_recommender.py`: Generate audience-level recommendations with historical calibration
+- `audience_aggregator.py`: Aggregate audience-level recommendations
+- `creative_compatibility.py`: Creative x audience compatibility
+
+**Segmentation** (`segmentation/segmenter.py`): Segment by geo, audience, creative
+
+### Performance Validation Requirement (CRITICAL)
+
+**All recommendations must be validated against historical performance data.**
+
+- **New audience configurations**: Must show similar segments performed well historically
+- **Scale-up recommendations**: Must prove current performance beats baseline
+- **Mistake detection**: Must show current config underperforms vs historical averages
+- **Calibrate predictions**: Cap at historical 95th percentile (mean + 2*std)
+- **No look-ahead bias**: Use only data available at decision time
+
+### Recommendation Types
+
+| Type | Priority | Description | Action | Performance Validation Required |
+|------|----------|-------------|--------|-------------------------------- |
+| **launch_new** | HIGH | High-potential untested audience configuration | Create new adset with suggested config | Similar segments beat historical baseline by >20% |
+| **scale_up** | HIGH | Underfunded winning configuration | Increase budget (up to headroom limit) | Current ROAS > historical baseline × 1.5 |
+| **wasting** | CRITICAL | Low ROAS + high spend | PAUSE immediately | ROAS < historical segment average × 0.5 |
+| **too_broad** | MEDIUM | Age range too wide for optimization | Test narrower segments | Narrower segments historically outperform |
+| **missing_lal** | MEDIUM | No LALs + low ROAS | Create LAL 1% from best customers | LALs historically 2-3x ROAS vs interest |
+| **oversaturated** | MEDIUM | Frequency > 4.0 + low ROAS | Reduce budget to target freq 2.5 | Frequency-ROAS curve shows diminishing returns |
+| **optimize_or_pause** | HIGH | Underperforming with low confidence | Review or pause | Underperforms historical baseline significantly |
+
+### Headroom Validation
+
+**All scale-up or new audience recommendations must be validated against headroom limits.**
+
+- Safe headroom: budget up to frequency 2.5 (optimal)
+- Max headroom: budget up to frequency 4.0 (diminishing returns)
+- Never recommend launching new audiences without market capacity
+- Prevent recommending over-saturated audience configurations
+
+### Platform-Aware Design
+
+**Each platform has different targeting capabilities - recommendations must respect these.**
+
+- **Meta Ads**: Age ranges, LAL percentages, interest targeting, geo targeting
+- **Google Ads**: Demographics, in-market audiences, affinity audiences
+- **TikTok Ads**: Age ranges, interests, behaviors
+- Never recommend targeting options not available on the platform
+
+### Configuration Dimensions (with Historical Validation)
+
+#### 1. Geography
+- **Input**: `adset_targeting_countries` (e.g., "['US']", "['US', 'CA']")
+- **Output**: Recommended countries/regions to test
+- **Validation**:
+  - Analyze historical ROAS by country
+  - Recommend high-performing regions for expansion
+  - Flag underperforming regions to pause
+  - **Rule**: Only recommend countries where historical ROAS > baseline
+
+#### 2. Age Targeting
+- **Input**: `adset_targeting_age_min`, `adset_targeting_age_max`
+- **Output**: Recommended age ranges to test
+- **Validation**:
+  - Age range > 30 years → too_broad (test narrower segments)
+  - Use 20-year ranges for testing (e.g., 18-38, 25-45)
+  - A/B test multiple ranges before committing
+  - **Rule**: Only recommend age ranges with historical precedent
+
+#### 3. Audience Type
+- **Input**: `adset_targeting_custom_audiences_count`, age_range
+- **Output**: Lookalike vs Interest vs Broad
+- **Validation**:
+  - Historical ROAS by audience type
+  - LALs typically 2-3x vs interest targeting
+  - Broad requires high historical ROAS to justify
+  - **Rule**: Recommend LAL if historical LAL ROAS > current Interest ROAS × 1.5
+
+#### 4. Creative Format
+- **Input**: `video_30_sec_watched_actions`, `video_p100_watched_actions`
+- **Output**: Video vs Image vs UGC
+- **Validation**:
+  - Segment by creative format to find winners
+  - Historical ROAS by format
+  - **Rule**: Recommend format with highest historical ROAS for segment
+
+### Rules-Based (KISS Principle)
+
+**This is a rules-based system, not an ML model.**
+
+- No training data required
+- No model overfitting concerns
+- No hyperparameter tuning
+- Fully interpretable logic
+- Changes are immediate (no retraining needed)
 
 ---
 
@@ -285,6 +412,12 @@ Each rule returns:
 | Ignoring monthly budget caps | Can overspend budget | Track cumulative spend |
 | Aggressive scaling factors | Risks real money | Use conservative (0.95) multiplier |
 | Not freezing low performers | Wastes budget on poor performers | Safety first |
+| Recommending configurations without historical validation | No proof it will beat baseline | Validate against similar segments |
+| Adding ML models for strategy | Black-box, not interpretable | Use rules-based approach |
+| Adding budget allocation in generator | Wrong module (that's allocator) | Keep modules separated |
+| Adding audience config in allocator | Wrong module (that's generator) | Keep modules separated |
+| Ignoring platform targeting constraints | Recommends unavailable options | Platform-aware design |
+| Recommending without headroom check | Risks over-saturation | Calculate headroom first |
 
 ---
 
@@ -299,7 +432,14 @@ Before making any code change, Claude must verify:
 - [ ] Does this support daily data updates?
 - [ ] Does this output actions in unified YAML format with confidence+evidence?
 - [ ] Does this require high confidence before param updates?
-- [ ] Does this respect monthly budget caps?
+- [ ] Does this respect monthly budget caps? (allocator)
+- [ ] **Does this validate against historical performance?** (generator)
+- [ ] **Does this prove recommendations will beat or match history?** (generator)
+- [ ] Does this respect platform-specific targeting capabilities? (generator)
+- [ ] Does this include segmentation analysis? (generator)
+- [ ] Does this use conservative, rules-based logic? (generator)
+- [ ] Does this validate against headroom limits? (generator)
+- [ ] Does this suggest testing over committing? (generator)
 
 ### Anti-Goal Check
 - [ ] Does NOT claim to deliver "perfect" allocation?
@@ -311,6 +451,14 @@ Before making any code change, Claude must verify:
 - [ ] Does NOT update params on low-confidence/noisy data?
 - [ ] Does NOT use synthetic data for evaluation claims?
 - [ ] Does NOT ignore monthly budget constraints?
+- [ ] Does NOT introduce black-box ML for strategy? (generator)
+- [ ] Does NOT add budget allocation features in generator? (generator)
+- [ ] Does NOT add audience configuration in allocator? (allocator)
+- [ ] **Does NOT recommend without historical validation?** (generator)
+- [ ] **Does NOT ignore historical baseline comparison?** (generator)
+- [ ] Does NOT ignore platform constraints? (generator)
+- [ ] Does NOT over-claim opportunity values? (generator)
+- [ ] Does NOT skip headroom validation? (generator)
 
 ### Change Scope
 - [ ] Is this the minimum change needed?
@@ -324,6 +472,9 @@ Before making any code change, Claude must verify:
 - [ ] What happens if this goes wrong?
 - [ ] Is there a rollback path?
 - [ ] Evaluation uses real data with proper testing?
+- [ ] **Does this recommendation beat historical performance?** (generator)
+- [ ] Are estimates conservative or aggressive? (generator)
+- [ ] Does this respect platform API limits? (generator)
 
 ### Code Pattern Check
 - [ ] Uses `customer_paths.py` for data access?
@@ -434,6 +585,88 @@ Before making any code change, Claude must verify:
 - ❌ Breaks trust with customer
 - **Decision**: DECLINE. Must track cumulative spend and respect caps.
 
+### Example 13: ML-Based Strategy Generation (Generator)
+**Proposed change**: "Use reinforcement learning to learn optimal audience configs"
+
+**Reflection**:
+- ❌ Violates rules-based, transparent approach
+- ❌ Black-box, not interpretable
+- ❌ Requires extensive training
+- **Decision**: DECLINE. Use simple rules with historical analysis.
+
+### Example 14: Recommendation Without Historical Validation (Generator)
+**Proposed change**: "Recommend launching US + 25-45 + Lookalike audience"
+
+**Reflection**:
+- ❌ No historical performance data for this combination
+- ❌ No proof it will beat baseline
+- **Decision**: DECLINE. Must show similar segments performed well.
+
+### Example 15: Historical Baseline Comparison (Generator)
+**Proposed change**: "Add historical average ROAS by segment to evidence"
+
+**Reflection**:
+- ✅ Enables performance validation
+- ✅ Shows if recommendation beats history
+- **Decision**: PROCEED. Essential for goal.
+
+### Example 16: Calibrating Predictions to History (Generator)
+**Proposed change**: "Cap predictions at historical 95th percentile"
+
+**Reflection**:
+- ✅ Prevents unrealistic claims
+- ✅ Aligns with "beat history, not perfection" goal
+- **Decision**: PROCEED. Already in code.
+
+### Example 17: Segment-Based Recommendations with History (Generator)
+**Proposed change**: "Analyze geo × audience × creative segments, recommend top performers"
+
+**Reflection**:
+- ✅ Uses historical data to find winners
+- ✅ Recommendations based on actual performance
+- **Decision**: PROCEED. Core to the repo's purpose.
+
+### Example 18: Ignoring Platform Constraints (Generator)
+**Proposed change**: "Recommend LAL 1% for all platforms"
+
+**Reflection**:
+- ❌ Not all platforms support LAL
+- ❌ Google uses in-market/affinity, not LAL
+- **Decision**: DECLINE. Make platform-aware.
+
+### Example 19: Headroom for New Audiences (Generator)
+**Proposed change**: "Check market headroom before recommending new audience launch"
+
+**Reflection**:
+- ✅ Prevents over-saturation
+- ✅ Validates market capacity
+- **Decision**: PROCEED. Essential for reliability.
+
+### Example 20: Performance Threshold for New Audiences (Generator)
+**Proposed change**: "Only recommend new audience if similar segments beat baseline by 20%"
+
+**Reflection**:
+- ✅ Ensures recommendations beat history
+- ✅ Conservative threshold
+- **Decision**: PROCEED. Aligns with performance goal.
+
+### Example 21: Budget Allocation Feature in Generator (Generator)
+**Proposed change**: "Add automatic budget redistribution across audiences"
+
+**Reflection**:
+- ❌ Outside scope (that's in allocator module)
+- ❌ Not about configuration strategy
+- **Decision**: DECLINE. That's for allocator module.
+
+### Example 22: Single Configuration vs Testing (Generator)
+**Proposed change**: "Recommend specific age range vs A/B test multiple ranges"
+
+**Reflection**:
+- ❌ Single range assumes knowledge
+- ✅ Testing is more conservative
+- ✅ Testing validates against actual performance
+- **Decision**: DECLINE single recommendation. Use A/B test approach.
+
 ---
 
 ## Red Flags (Stop and Reconsider)
@@ -452,33 +685,55 @@ Before making any code change, Claude must verify:
 9. Ignoring statistical significance in evaluation
 10. Skipping realistic backtesting evaluation
 
-### 🚩 Monthly Budget Violations
+### 🚩 Monthly Budget Violations (Allocator)
 11. Ignoring monthly budget cap
 12. Not tracking cumulative spend
 13. Allowing overspend on high performers
 14. Front-loading spend early in month
 15. Missing state persistence across daily runs
 
-### 🚩 Code Quality Violations
-16. Over-engineering for theoretical vs practical improvement
-17. Hard-coding file paths (use `customer_paths.py`)
-18. Hard-coding customer/platform names
-19. Skipping CI workflow checks
-20. Breaking unified YAML output format
-21. Creating PR-specific documentation (TODO.md, VALIDATION.md, etc.)
-22. Using `# pylint: disable` or `# type: ignore` to suppress warnings
-23. Adding back `--fail-under` threshold to pylint (allows CI to pass with low scores)
-24. Automatically updating README without preserving existing style/formatting
-25. Pushing structural changes without running tests first (moved files, reorganized code, etc.)
-26. Leaving temporary scripts in working directory when pushing (cleanup scripts, test files, etc.)
+### 🚩 Performance Violations (Generator - CRITICAL)
+16. **Recommending configurations without historical validation**
+17. **Ignoring historical baseline comparison**
+18. **Claiming improvements without segment evidence**
+19. **Scaling underperforming audiences (ROAS < baseline)**
+20. **Launching new audiences without proving similar segments work**
 
 ### 🚩 Design Violations
-27. Ignore historical baseline comparison
-28. Break daily re-optimization pipeline
-29. Output actions without confidence scores
-30. Output actions without supporting evidence
-31. Use non-YAML format for actions
-32. Breaking allocator/generator separation (generator is for audience config, not budget allocation)
+21. Adding ML models for configuration strategy (generator)
+22. Adding budget allocation features in generator (wrong module)
+23. Adding audience configuration in allocator (wrong module)
+24. Ignoring platform-specific targeting capabilities (generator)
+25. Recommending unavailable targeting options (generator)
+26. Breaking module separation (allocator vs generator)
+
+### 🚩 Headroom Violations (Generator)
+27. Recommending new audiences without headroom check
+28. Ignoring saturation warnings
+29. Aggressive opportunity estimates (2x+, 3x+)
+
+### 🚩 Code Quality Violations
+30. Over-engineering for theoretical vs practical improvement
+31. Hard-coding file paths (use `customer_paths.py`)
+32. Hard-coding customer/platform names
+33. Skipping CI workflow checks
+34. Breaking unified YAML output format
+35. Creating PR-specific documentation (TODO.md, VALIDATION.md, etc.)
+36. Using `# pylint: disable` or `# type: ignore` to suppress warnings
+37. Adding back `--fail-under` threshold to pylint (allows CI to pass with low scores)
+38. Automatically updating README without preserving existing style/formatting
+39. Pushing structural changes without running tests first (moved files, reorganized code, etc.)
+40. Leaving temporary scripts in working directory when pushing (cleanup scripts, test files, etc.)
+41. Missing confidence scores (generator)
+42. Missing evidence dictionaries (generator)
+43. Over-claiming without segment data (generator)
+
+### 🚩 Design Violations (Both)
+44. Ignore historical baseline comparison
+45. Break daily re-optimization pipeline
+46. Output actions without confidence scores
+47. Output actions without supporting evidence
+48. Use non-YAML format for actions
 
 ---
 
@@ -494,8 +749,21 @@ Before making any code change, Claude must verify:
 | **Models** | `src/adset/lib/models.py` | Data models |
 | **Helpers** | `src/adset/lib/decision_rules_helpers.py` | Rule helper functions |
 | **Tuning** | `src/optimizer/lib/bayesian_tuner.py` | Bayesian optimization |
-| **Tracking** | `src/budget/state_manager.py` | Monthly state persistence |
+| **State** | `src/budget/state_manager.py` | Monthly state persistence |
 | **Tracking** | `src/budget/monthly_tracker.py` | Budget tracking logic |
+
+### Generator Core Files
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Core** | `src/adset/generator/core/recommender.py` | Base recommender class |
+| **Detection** | `src/adset/generator/detection/mistake_detector.py` | Detect issues in configs |
+| **Sizing** | `src/adset/generator/analyzers/opportunity_sizer.py` | Calculate opportunity size |
+| **Shopify** | `src/adset/generator/analyzers/shopify_analyzer.py` | Shopify revenue analysis |
+| **Generation** | `src/adset/generator/generation/audience_recommender.py` | Generate recommendations |
+| **Aggregator** | `src/adset/generator/generation/audience_aggregator.py` | Aggregate recommendations |
+| **Compatibility** | `src/adset/generator/generation/creative_compatibility.py` | Creative x audience |
+| **Segmentation** | `src/adset/generator/segmentation/segmenter.py` | Segment analysis |
+| **Constraints** | `src/adset/generator/analyzers/advantage_constraints.py` | Competitive advantages |
 
 ### Shared Files
 | Component | File | Purpose |
@@ -504,12 +772,15 @@ Before making any code change, Claude must verify:
 | **Paths** | `src/utils/customer_paths.py` | Path abstraction |
 | **Logging** | `src/utils/logger_config.py` | Logging setup |
 | **Shopify** | `src/integrations/shopify/` | Shopify ROAS validation |
-| **Workflow** | `src/workflows/allocation_workflow.py` | Allocation workflow |
+| **Allocator Workflow** | `src/workflows/allocation_workflow.py` | Allocation workflow |
+| **Generator CLI** | `src/cli/commands/rules.py` | Rules pipeline |
+| **Generator CLI** | `src/cli/commands/auto_params.py` | Auto-calc parameters |
 
 ---
 
 ## Core Principle Summary
 
+### Budget Allocator
 **"Allocate budget to maximize ROAS, not to achieve perfection"**
 
 - Beat or match historical performance
@@ -519,9 +790,24 @@ Before making any code change, Claude must verify:
 - Freeze low performers before scaling winners
 - If uncertain, maintain current budget
 
+### Audience Configuration Generator
+**"Every recommendation must answer: Will this perform better than what we've seen historically?"**
+
+If the answer is "I don't know" or "maybe," then the recommendation should be framed as a test, not a commitment.
+
+- Validate all recommendations against historical performance
+- Use rules-based, transparent logic (KISS principle)
+- Calculate headroom before recommending scale-up or new audiences
+- Output recommendations with confidence + evidence
+- Segment by geography, audience type, creative format
+- Maintain priority scoring (CRITICAL > HIGH > MEDIUM > LOW)
+- Use conservative estimates for opportunity values
+- Respect platform-specific targeting capabilities
+- **If uncertain, recommend small test vs full rollout**
+
 ---
 
-## Monthly Budget Tracking
+## Monthly Budget Tracking (Allocator)
 
 ### State File Location
 `results/{customer}/{platform}/monthly_state_YYYY-MM.json`

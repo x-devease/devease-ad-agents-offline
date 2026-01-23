@@ -1,0 +1,142 @@
+[MASTER]
+# Use multiple processes to speed up Pylint
+jobs=0
+
+[MESSAGES CONTROL]
+# Enable unused import checking and import order checking
+enable=unused-import,missing-final-newline,trailing-newlines,wrong-import-order
+# Import order: wrong-import-order (C0411) checks that imports follow PEP8 order
+# (standard library, third-party, local). For strict alphabetical sorting within
+# sections, run isort separately: isort --check-only . (see .isort.cfg)
+
+# Disable too-many-lines check (C0302) - large modules are acceptable
+# Disable protected-access (W0212) for test files - it's common to test private methods
+disable=too-many-lines,protected-access
+
+# EOF newline rules: Ensure files end with exactly one newline
+# C0304: missing-final-newline - warns if file doesn't end with a newline
+# C0305: trailing-newlines - warns if there are multiple trailing blank lines
+# Together, these ensure files end with exactly one newline character
+
+[FORMAT]
+# Maximum number of characters on a single line
+max-line-length=80
+
+# Expected format of line ending
+expected-line-ending-format=LF
+
+# Regexp for a line that is allowed to be longer than the limit
+ignore-long-lines=^\s*(# )?<?https?://\S+>?$
+
+# Number of spaces of indent required inside a hanging or continued line
+indent-after-paren=4
+
+# String used as indentation unit
+indent-string='    '
+
+[BASIC]
+# Good variable names which should always be accepted
+# Standard exceptions per Google Python Style Guide:
+# - i,j,k: counters/iterators
+# - e: exception identifier in try/except
+# - _: intentionally unused variables
+# - f: file handle in with statements
+# - df: pandas DataFrame (common convention in data science codebases)
+good-names=i,j,k,e,_,f,df
+
+# Bad variable names which should always be refused
+bad-names=foo,bar,baz,toto,tutu,tata
+
+# Include a hint for the correct naming format with invalid-name
+include-naming-hint=yes
+
+# Ignore protected-access warnings for test files
+# It's common practice in unit tests to test protected methods
+ignore-patterns=^tests/
+
+# Regular expression matching correct function names
+function-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# Regular expression matching correct variable names
+variable-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# Regular expression matching correct constant names
+const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
+
+# Regular expression matching correct attribute names
+attr-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# Regular expression matching correct argument names
+argument-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# Regular expression matching correct class attribute names
+class-attribute-rgx=([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$
+
+# Regular expression matching correct class names
+class-rgx=[A-Z][a-zA-Z0-9]*$
+
+# Regular expression matching correct module names
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+
+# Regular expression matching correct method names
+method-rgx=[a-z_][a-z0-9_]{2,30}$
+
+[TYPECHECK]
+# Tells whether missing members accessed in mixin class should be ignored
+ignore-mixin-members=yes
+
+# List of module names for which member attributes should not be checked
+ignored-modules=
+
+# List of classes names for which member attributes should not be checked
+ignored-classes=optparse.Values,thread._local,_thread._local
+
+# List of decorators that produce context managers
+contextmanager-decorators=contextlib.contextmanager
+
+[DESIGN]
+# Maximum number of public methods for a class
+# Increased limit to accommodate test classes which naturally have many test methods
+max-public-methods=50
+
+# Maximum number of arguments for function / method
+# Strict engineering standard: 8 args max
+# >6 args should use dataclass/config object instead
+# ML/data science functions may need up to 8, but beyond that requires refactoring
+max-args=8
+
+# Maximum number of local variables for function / method body
+# Strict engineering standard: 20 locals max
+# >20 indicates function is too complex and should be split into smaller functions
+# Complex data processing should be broken into pipeline steps
+max-locals=20
+
+# Maximum number of return / yield for function / method body
+# Strict engineering standard: 6 returns max
+# >6 indicates control flow complexity is too high
+# Multiple returns often indicate need for state machine or strategy pattern
+max-returns=6
+
+# Maximum number of branch for function / method body
+# Strict engineering standard: 15 branches max
+# >15 indicates cyclomatic complexity is too high
+# Complex conditionals should use strategy pattern, dict dispatch, or rule tables
+max-branches=15
+
+# Maximum number of statements in function / method body
+# Strict engineering standard: 50 statements max
+# >50 indicates function is too long and should be split
+# Pipeline logic should be orchestrated via step functions, not single large function
+max-statements=50
+
+# Maximum number of attributes for a class
+# Strict engineering standard: 12 attributes max
+# >12 often indicates class is not a single cohesive concept
+# ML/Feature classes may have more state, but should still aim for <12
+max-attributes=12
+
+# Maximum number of positional arguments for function / method
+# Strict engineering standard: 6 positional args max
+# >5 positional args makes API error-prone and hard to use correctly
+# Additional parameters should be keyword-only to prevent mistakes
+max-positional-arguments=6

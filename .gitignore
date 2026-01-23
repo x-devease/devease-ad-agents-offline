@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+# Allow notebooks in analysis folder
+!analysis/*.ipynb
+
+# Raw data files in notebooks (keep notebooks, ignore data)
+notebooks/*/meta/raw/
+notebooks/*/*/raw/
+
+# Data & Models
+data/
+datasets/
+models/
+results/
+*.pkl
+*.h5
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.pb
+*.csv
+
+# Results (output files)
+results/
+*.png
+evaluation_results.csv
+evaluation_plots.png
+budget_allocations.csv
+ad_budget_allocations.csv
+
+# Logs & Outputs
+logs/
+*.log
+outputs/
+runs/
+tensorboard/
+wandb/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# CatBoost output
+catboost_info/
+analysis/catboost_info/
+
+# Coverage
+.coverage
+.coverage.*
+# But track the baseline file for CI
+!.coverage.baseline
+htmlcov/
+.tox/
+.pytest_cache/
+

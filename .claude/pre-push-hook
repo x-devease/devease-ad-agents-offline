@@ -1,0 +1,204 @@
+#!/bin/bash
+# Pre-push hook: Self-reflection validation
+# Ensures changes align with repo goals before pushing to remote
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}🤖 Pre-Push Self-Reflection${NC}"
+echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+# Check 1: Has the user read SELF_REFLECTION.md?
+echo -e "\n${YELLOW}📋 Quick Check:${NC}"
+echo -e "  Have you read .claude/SELF_REFLECTION.md?"
+echo -e "  Does your change align with repo goals?"
+echo -e "  ${BLUE}Repo Goal: Beat/match history, NOT deliver perfect solution${NC}"
+
+# Check 2: Get commits being pushed
+echo -e "\n${YELLOW}📦 Commits Being Pushed:${NC}"
+read local_ref local_sha remote_ref remote_sha
+
+# Get list of commits to be pushed
+if [ "$remote_sha" != "0000000000000000000000000000000000000000" ]; then
+    # Updating existing branch
+    COMMITS=$(git rev-list ${remote_sha}..${local_sha})
+else
+    # New branch
+    COMMITS=$(git rev-list ${local_sha})
+fi
+
+COMMIT_COUNT=$(echo "$COMMITS" | wc -l | tr -d ' ')
+echo -e "  Pushing ${COMMIT_COUNT} commit(s)"
+
+# Check 3: Analyze commit messages
+echo -e "\n${YELLOW}🔍 Analyzing Commit Messages:${NC}"
+VIOLATIONS=0
+
+for commit in $COMMITS; do
+    MESSAGE=$(git log -1 --format=%s $commit)
+
+    # Check for warning signs
+    if echo "$MESSAGE" | grep -qi "optimize\|perfect\|optimal"; then
+        echo -e "${RED}  ⚠️  $commit${NC}"
+        echo -e "     ${RED}Message: $MESSAGE${NC}"
+        echo -e "     ${YELLOW}⚠️  Claiming 'optimal/perfect'? Goal is beating history, not perfection.${NC}"
+        VIOLATIONS=$((VIOLATIONS + 1))
+    fi
+
+    if echo "$MESSAGE" | grep -qi "wip\|todo\|fixme"; then
+        echo -e "${YELLOW}  ⚠️  $commit${NC}"
+        echo -e "     ${YELLOW}Message: $MESSAGE${NC}"
+        echo -e "     ${YELLOW}⚠️  Work-in-progress commit detected${NC}"
+    fi
+done
+
+if [ $VIOLATIONS -eq 0 ]; then
+    echo -e "  ${GREEN}✓ No concerning commit messages${NC}"
+fi
+
+# Check 4: Python files in push
+echo -e "\n${YELLOW}🐍 Checking Python Files:${NC}"
+PY_FILES=$(git diff --name-only $remote_sha $local_sha | grep '\.py$' || true)
+
+if [ -n "$PY_FILES" ]; then
+    PY_COUNT=$(echo "$PY_FILES" | wc -l | tr -d ' ')
+    echo -e "  $PY_COUNT Python file(s) changed"
+
+    # Check for common violations
+    BAD_PATTERNS=$(git diff $remote_sha $local_sha | grep -E '^\+.*Path\(["\x27](datasets/|config/)' || true)
+
+    if [ -n "$BAD_PATTERNS" ]; then
+        echo -e "${RED}  ✗ Found hard-coded paths${NC}"
+        echo -e "     Use customer_paths.py instead"
+        VIOLATIONS=$((VIOLATIONS + 1))
+    fi
+
+    # Check for references to old module structure (src.tools)
+    OLD_STRUCTURE=$(git diff $remote_sha $local_sha | grep -E '^\+.*src\.tools' || true)
+    if [ -n "$OLD_STRUCTURE" ]; then
+        echo -e "${RED}  ✗ Found references to old 'src.tools' structure${NC}"
+        echo -e "     Update to 'src.cli.commands' instead"
+        echo -e "     ${YELLOW}Found:${NC}"
+        echo "$OLD_STRUCTURE" | head -3 | sed 's/^/       /'
+        VIOLATIONS=$((VIOLATIONS + 1))
+    fi
+
+    # Check for pylint/type:ignore suppressions
+    SUPPRESSIONS=$(git diff $remote_sha $local_sha | grep -E '^\+.*# (pylint: disable|type: ignore)' || true)
+    if [ -n "$SUPPRESSIONS" ]; then
+        echo -e "${RED}  ✗ Found warning suppressions (pylint disable, type: ignore)${NC}"
+        echo -e "     Fix the actual issue instead of suppressing warnings"
+        echo -e "     ${YELLOW}Found:${NC}"
+        echo "$SUPPRESSIONS" | head -3 | sed 's/^/       /'
+        VIOLATIONS=$((VIOLATIONS + 1))
+    fi
+else
+    echo -e "  ${GREEN}✓ No Python files changed${NC}"
+fi
+
+# Check 5: Run CI checks
+echo -e "\n${YELLOW}🔁 Running CI Checks:${NC}"
+
+CI_FAILED=0
+
+# Check if Makefile exists
+if [ ! -f "Makefile" ]; then
+    echo -e "${YELLOW}  ⚠️  No Makefile found, skipping CI checks${NC}"
+else
+    # Run format check and auto-fix if possible
+    echo -e "  ${BLUE}Checking format...${NC}"
+    if make format-check > /dev/null 2>&1; then
+        echo -e "    ${GREEN}✓ Format check passed${NC}"
+    else
+        echo -e "    ${YELLOW}⚠️  Format issues found, auto-fixing...${NC}"
+        if make format > /dev/null 2>&1; then
+            echo -e "    ${GREEN}✓ Format auto-fixed${NC}"
+            # Stage the formatted files
+            git add -u
+            echo -e "    ${YELLOW}⚠️  Formatted files staged. Please commit again.${NC}"
+            CI_FAILED=1
+        else
+            echo -e "    ${RED}✗ Format fix failed${NC}"
+            CI_FAILED=1
+        fi
+    fi
+
+    # Run lint
+    echo -e "  ${BLUE}Running lint...${NC}"
+    if make lint > /dev/null 2>&1; then
+        echo -e "    ${GREEN}✓ Lint passed${NC}"
+    else
+        echo -e "    ${RED}✗ Lint failed${NC}"
+        make lint
+        CI_FAILED=1
+    fi
+
+    # Run type-check
+    echo -e "  ${BLUE}Running type-check...${NC}"
+    if make type-check > /dev/null 2>&1; then
+        echo -e "    ${GREEN}✓ Type-check passed${NC}"
+    else
+        echo -e "    ${YELLOW}⚠️  Type-check failed (non-blocking)${NC}"
+        # Don't fail on type-check, just warn
+    fi
+
+    # Run tests
+    echo -e "  ${BLUE}Running tests...${NC}"
+    if make test > /dev/null 2>&1; then
+        echo -e "    ${GREEN}✓ Tests passed${NC}"
+    else
+        echo -e "    ${RED}✗ Tests failed${NC}"
+        make test
+        CI_FAILED=1
+    fi
+
+    # Run coverage check
+    echo -e "  ${BLUE}Running coverage check...${NC}"
+    if make coverage-check > /dev/null 2>&1; then
+        echo -e "    ${GREEN}✓ Coverage check passed${NC}"
+    else
+        echo -e "    ${RED}✗ Coverage check failed${NC}"
+        make coverage-check
+        CI_FAILED=1
+    fi
+
+    # If CI failed, block push
+    if [ $CI_FAILED -eq 1 ]; then
+        echo -e "\n${RED}✗ CI checks failed${NC}"
+        echo -e "${YELLOW}Fix the issues above or use ${BLUE}git push --no-verify${NC}"
+        exit 1
+    fi
+fi
+
+# Check 6: Self-reflection checklist
+echo -e "\n${YELLOW}🤔 Self-Reflection Checklist:${NC}"
+echo -e "  ${BLUE}Read .claude/SELF_REFLECTION.md${NC}"
+echo -e "  [ ] Change beats/matches historical performance?"
+echo -e "  [ ] Uses config/{customer}/{platform}.yaml?"
+echo -e "  [ ] Uses customer_paths.py (no hard-coded paths)?"
+echo -e "  [ ] Outputs actions as YAML with confidence+evidence?"
+echo -e "  [ ] High confidence before param updates?"
+echo -e "  [ ] All CI workflows pass?"
+echo -e "  [ ] Safe for production (real money)?"
+echo -e "  [ ] No synthetic data evaluation claims?"
+
+# Final decision
+echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+if [ $VIOLATIONS -gt 0 ]; then
+    echo -e "${RED}⚠️  Found $VIOLATIONS warning(s)${NC}"
+    echo -e "\n${YELLOW}Review .claude/SELF_REFLECTION.md${NC}"
+    echo -e "${YELLOW}To push anyway, use: ${BLUE}git push --no-verify${NC}"
+    exit 1
+else
+    echo -e "${GREEN}✓ Self-reflection checks passed${NC}"
+    echo -e "${GREEN}✓ Ready to push${NC}"
+    echo -e "\n${BLUE}🚀 Proceeding with push...${NC}\n"
+    exit 0
+fi

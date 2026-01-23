@@ -1,0 +1,16 @@
+# Default system configuration
+# This file contains the base configuration that applies to all environments
+
+# System settings
+environment: production
+test_mode: false
+verbose: false
+
+# Path configuration
+paths:
+  base_dir: "."  # Can be overridden via BASE_DIR environment variable
+  data_dir: datasets
+  results_dir: results
+  logs_dir: logs
+  cache_dir: cache
+  config_dir: config

@@ -1,0 +1,83 @@
+customer: moprobo
+platform: meta
+data_sources:
+  features:
+    base_path: datasets/moprobo/meta/features
+    files:
+      ad_features: ad_features.csv
+      adset_features: adset_features.csv
+  raw:
+    base_path: datasets/moprobo/meta/raw
+    files:
+      lookalike: lookalike.csv
+      shopify: shopify.csv
+age_targeting:
+  broad_age_range: 30
+  narrow_age_range: 5
+  age_min_bound: 18
+  age_max_bound: 65
+  test_segment_size: 20
+  test_segment_mid_offset: 10
+  narrow_range_expansion: 5
+  broad_classification_threshold: 45
+lookalike:
+  roas_threshold: 1.5
+geographic:
+  max_countries: 5
+  max_countries_display: 10
+  recommended_countries_to_test: 3
+frequency:
+  high_frequency_threshold: 3.0
+  optimal_frequency: 1.241522
+  medium_frequency: 1.400501
+  low_frequency: 1.0786728
+roas:
+  low_roas_threshold: 2.0
+  high_roas_low_spend_threshold: 19.85687167030679
+  high_roas_threshold: 10.0
+  medium_roas_threshold: 19.85687167030679
+  video_preferred_roas_threshold: 19.85687167030679
+  warm_audience_roas_threshold: 38.25990046335505
+spend:
+  min_spend_for_scale: 10.0
+  high_spend_threshold: 170.3275
+  medium_spend_threshold: 52.349999999999994
+  low_spend_threshold: 15.1
+  min_spend_for_video_format_check: 9.556000000000001
+gender:
+  total_genders_count: 2
+  min_custom_audiences_count: 0
+engagement:
+  low_ctr_threshold: 0.014705882352941175
+  image_preferred_ctr_threshold: 0.039540413221452464
+  high_cpc_threshold: 3.1401666666666666
+  low_conversion_rate_threshold: 0.01
+  low_video_engagement_threshold: 0.1
+  min_impressions_for_ctr: 100
+  min_impressions_for_video: 100
+  min_clicks_for_conversion: 10
+  min_clicks_for_format_check: 10
+reach:
+  low_reach_threshold: 187.25
+cpm:
+  high_cpm_threshold: 61.13247863247862
+opportunity_size:
+  high_frequency_threshold: 1.126761
+  medium_frequency_threshold: 1.241522
+  low_frequency_threshold: 1.400501
+  high_roas_threshold: 38.25990046335505
+  medium_roas_threshold: 19.85687167030679
+  high_spend_threshold: 170.3275
+  medium_spend_threshold: 52.349999999999994
+segment_health:
+  critical_ratio_threshold: 0.3
+  high_ratio_threshold: 0.3
+  medium_ratio_threshold: 0.5
+shopify:
+  min_buyer_age_threshold: 35
+  top_buyer_states_count: 5
+  buyer_state_concentration_threshold: 0.29
+_metadata:
+  auto_calculated: true
+  calculated_at: '2026-01-22T17:30:17.877104'
+  adsets_analyzed: 15937

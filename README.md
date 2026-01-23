@@ -1,6 +1,6 @@
-# Meta Ads Autopilot - Offline Adset Allocator
+# Meta Ads Autopilot - Offline Adset Management System
 
-Rules-based budget allocation system for Meta Ads adsets using Bayesian-optimized parameters. Analyzes 21 features across ad, adset, campaign, and account levels. The workflow is Extract Features → Tune Parameters → Allocate Budget → Review Results.
+Comprehensive adset management system for Meta Ads combining budget allocation and audience configuration strategies. Uses rules-based approaches with Bayesian-optimized parameters to analyze 21+ features across ad, adset, campaign, and account levels.
 
 ## Prerequisites
 ```bash
@@ -17,6 +17,7 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Budget Allocation Commands
 ```bash
 # Extract features
 python3 run.py extract --customer moprobo
@@ -29,7 +30,19 @@ python3 run.py tune --customer moprobo --iterations 100
 
 # Discover patterns from data (decision trees)
 python3 run.py discover --customer moprobo
+```
 
+### Audience Configuration Commands
+```bash
+# Auto-calculate rule parameters from customer data
+python3 run.py auto-params --customer moprobo --platform meta
+
+# Run rules-based audience configuration pipeline
+python3 run.py rules --customer moprobo --platform meta
+```
+
+### General
+```bash
 # Get help
 python3 run.py --help
 python3 run.py {command} --help
@@ -43,18 +56,34 @@ python3 run.py {command} --help
 ├── src/
 │   ├── cli/                     # Command implementations
 │   │   └── commands/
-│   │       ├── extract.py       # Extract CLI
-│   │       ├── execute.py       # Allocation CLI
-│   │       └── tune.py          # Tuning CLI
+│   │       ├── extract.py       # Extract features CLI
+│   │       ├── execute.py       # Budget allocation CLI
+│   │       ├── tune.py          # Parameter tuning CLI
+│   │       ├── auto_params.py    # Auto-calculate parameters CLI
+│   │       └── rules.py         # Audience configuration CLI
 │   ├── config/                  # Configuration management
 │   │   ├── path_manager.py      # Platform-aware path resolution
 │   │   ├── manager.py           # Configuration loading & validation
 │   │   └── schemas.py           # Configuration schema definitions
-│   ├── adset/                   # Adset budget allocation logic
-│   │   ├── allocator/           # Core allocation engine
+│   ├── adset/                   # Adset management modules
+│   │   ├── allocator/           # Budget allocation engine
 │   │   │   ├── engine.py        # Main allocator interface
 │   │   │   └── rules.py         # Decision rules (safety, performance)
-│   │   └── lib/                 # Allocation utilities
+│   │   ├── generator/           # Audience configuration engine
+│   │   │   ├── core/            # Core recommender classes
+│   │   │   ├── analyzers/       # Performance analysis
+│   │   │   │   ├── advantage_constraints.py
+│   │   │   │   ├── opportunity_sizer.py
+│   │   │   │   └── shopify_analyzer.py
+│   │   │   ├── detection/       # Mistake detection
+│   │   │   │   └── mistake_detector.py
+│   │   │   ├── generation/      # Recommendation generation
+│   │   │   │   ├── audience_aggregator.py
+│   │   │   │   ├── audience_recommender.py
+│   │   │   │   └── creative_compatibility.py
+│   │   │   └── segmentation/    # Audience segmentation
+│   │   │       └── segmenter.py
+│   │   └── lib/                 # Shared utilities
 │   │       ├── models.py        # Data models (metrics, params)
 │   │       ├── decision_rules.py    # Decision logic implementation
 │   │       ├── safety_rules.py      # Safety checks (freeze, caps)
@@ -62,7 +91,9 @@ python3 run.py {command} --help
 │   ├── features/                # Feature extraction pipeline
 │   │   ├── core/                # Core extraction logic
 │   │   ├── lib/                 # Feature utilities (aggregator, joiner, loader, preprocessor)
-│   │   └── utils/               # File discovery, constants, metadata, CSV combiner
+│   │   ├── utils/               # File discovery, constants, metadata, CSV combiner
+│   │   ├── feature_store.py     # Adset data loading & preprocessing
+│   │   └── feature_selector.py  # Feature selection
 │   ├── integrations/            # Third-party integrations
 │   │   └── shopify/             # Shopify order data integration
 │   │       ├── loader.py        # Shopify CSV loader
@@ -73,7 +104,10 @@ python3 run.py {command} --help
 │   ├── utils/                   # Utility functions
 │   │   ├── customer_paths.py    # Path resolution for customer data (uses PathManager)
 │   │   ├── logging_config.py    # Logging configuration
-│   │   └── script_helpers.py    # Script utility functions (CLI argument helpers)
+│   │   ├── script_helpers.py    # Script utility functions (CLI argument helpers)
+│   │   ├── auto_params.py       # Auto-calculate rule parameters
+│   │   ├── target_transformer.py # Target variable transformations
+│   │   └── time_series_cv.py    # Time-based cross-validation
 │   └── workflows/               # Workflow orchestration
 │       ├── base.py              # Base workflow class
 │       ├── extract_workflow.py  # Feature extraction workflow
@@ -83,17 +117,22 @@ python3 run.py {command} --help
 │   ├── default.yaml             # Default configuration values
 │   └── {customer}/{platform}/   # Customer and platform-specific configs
 │       └── rules.yaml           # Allocator configuration (thresholds, weights)
+│       └── params.yaml          # Generator parameters
+│       └── adsets.yaml          # Adset configurations
+│       └── recommendations.yaml # Recommendation settings
 ├── datasets/                    # Input data (ad, adset, campaign insights)
 │   └── {customer}/{platform}/   # Customer and platform-specific data
 │       ├── raw/                 # Raw API responses
 │       └── features/            # Extracted features (one file per date)
-├── results/                     # Allocation results organized by customer and platform
+├── results/                     # Results organized by customer and platform
 │   └── {customer}/{platform}/   # Customer and platform-specific results
-│       └── rules/               # Rules-based allocation results
+│       ├── rules/               # Rules-based allocation results
+│       └── recommendations/      # Audience recommendations
 └── tests/                       # Unit & integration tests
     ├── unit/                    # Unit tests
-    │   ├── adset/               # Allocator tests
-    │   │   ├── allocator/       # Core allocator tests
+    │   ├── adset/               # Adset module tests
+    │   │   ├── allocator/       # Budget allocator tests
+    │   │   ├── generator/        # Audience generator tests
     │   │   └── lib/             # Decision rules tests
     │   ├── features/            # Feature extraction tests
     │   ├── optimizer/           # Tuning tests
@@ -101,12 +140,14 @@ python3 run.py {command} --help
     │       └── shopify/         # Shopify integration tests
     └── integration/             # Integration tests
         ├── features/            # Feature extraction end-to-end tests
-        └── adset/               # Allocator end-to-end tests
+        └── adset/               # Adset end-to-end tests
 ```
 
 ## Architecture
 
 ### Adset Allocator (`src/adset/allocator/`)
+
+**Purpose:** Budget allocation - distributes budget across adsets based on performance
 
 **Core Components:**
 - **Engine** (`engine.py`): Main allocator interface that orchestrates budget allocation
@@ -114,9 +155,28 @@ python3 run.py {command} --help
 
 **Supporting Library** (`src/adset/lib/`):
 - **models.py**: Data models for budget allocation (metrics, parameters)
-- **decision_rules.py`: Comprehensive rule-based decision logic (42+ rules)
-- **safety_rules.py`: Safety checks (freeze on low ROAS, budget caps)
-- **decision_rules_helpers.py`: Helper functions for gradient adjustment, trend scaling, health scoring
+- **decision_rules.py**: Comprehensive rule-based decision logic (42+ rules)
+- **safety_rules.py**: Safety checks (freeze on low ROAS, budget caps)
+- **decision_rules_helpers.py**: Helper functions for gradient adjustment, trend scaling, health scoring
+
+### Adset Generator (`src/adset/generator/`)
+
+**Purpose:** Audience configuration - generates audience strategies and configurations
+
+**Core Components:**
+- **Core** (`core/`): Base recommender classes
+- **Analyzers** (`analyzers/`):
+  - `advantage_constraints.py`: Calculate competitive advantages
+  - `opportunity_sizer.py`: Calculate opportunity size (frequency, ROAS, budget)
+  - `shopify_analyzer.py`: Shopify revenue analysis
+- **Detection** (`detection/`):
+  - `mistake_detector.py`: Detect human mistakes in audience setup
+- **Generation** (`generation/`):
+  - `audience_aggregator.py`: Aggregate audience-level recommendations
+  - `audience_recommender.py`: Generate audience-level recommendations
+  - `creative_compatibility.py`: Creative x audience compatibility
+- **Segmentation** (`segmentation/`):
+  - `segmenter.py`: Segment by geo, audience, creative
 
 ### Configuration System
 
@@ -215,11 +275,17 @@ make format  # Format code with black
 
 ## Development
 
-**Adding new rules:**
+**Adding new allocation rules:**
 1. Add rule method to `src/adset/lib/decision_rules.py`
 2. Add configuration to `config/default/rules.yaml`
 3. Add test to `tests/unit/adset/lib/test_decision_rules.py`
 4. Run Bayesian tuning to optimize parameters
+
+**Adding new audience generators:**
+1. Add generator to `src/adset/generation/`
+2. Add configuration to `config/{customer}/{platform}/params.yaml`
+3. Add test to `tests/unit/adset/generator/`
+4. Validate with historical data
 
 **Adding new integrations:**
 1. Create loader in `src/integrations/{platform}/loader.py`

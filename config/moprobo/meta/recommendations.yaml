@@ -1,0 +1,486 @@
+timestamp: '2026-01-23T07:02:14.182211'
+pipeline_type: rules-based
+total_recommendations: 12
+total_adsets_affected: 203
+total_budget_affected: $18999.75
+
+age_range_too_wide:
+  type: age_range_too_wide
+  confidence: MEDIUM
+  suggested_action: 'Test narrower age ranges: 18-38, 31-51 (current: 18-65, threshold:
+    >30 years is too wide, ROAS 7.47 < 19.86)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Broad
+  opportunity_size: high
+
+  evidence:
+    age_min: 18
+    age_max: 65
+    age_range: 47
+    current_value: 47
+    threshold_value: 30
+    roas: 7.469556672587777
+    roas_threshold: 19.85687167030679
+    threshold_used: age_range > 30 AND ROAS < 19.85687167030679
+    comparison: 47 > 30 (exceeds by 17 years), ROAS 7.47 < 19.86 (below medium)
+    calculation: age_range = 65 - 18 = 47
+    test_ranges:
+    - 18-38
+    - 31-51
+    - 45-65
+    note: 'Conservative approach: test before committing to specific range. Broad
+      targeting with good ROAS is left alone.'
+  affected_adsets_count: 37
+  affected_adsets_budget: $3687.24
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Broad: 12
+    18-65/US/Image/unknown/Advantage: 4
+    18-65/US/Image/0/Advantage: 1
+    18-65/US/Image/unknown/Lookalike: 7
+    18-65/US/Image/Female/Advantage: 2
+    18-65/IE/Image/unknown/Broad: 2
+    18-65/IE/Image/Female/Advantage: 1
+    18-65/HK/Image/0/Advantage: 2
+    18-65/US/Image/unknown/Exclusion: 6
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Broad: $1731.92
+    18-65/US/Image/unknown/Advantage: $681.65
+    18-65/US/Image/0/Advantage: $21.42
+    18-65/US/Image/unknown/Lookalike: $227.64
+    18-65/US/Image/Female/Advantage: $574.01
+    18-65/IE/Image/unknown/Broad: $275.63
+    18-65/IE/Image/Female/Advantage: $80.58
+    18-65/HK/Image/0/Advantage: $20.98
+    18-65/US/Image/unknown/Exclusion: $73.41
+
+age_targeting_mismatch_buyers:
+  type: age_targeting_mismatch_buyers
+  confidence: HIGH
+  suggested_action: 'Raise age_min to 35+ to match actual buyer demographics (current:
+    18, buyers: 35+)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Broad
+  opportunity_size: high
+
+  evidence:
+    age_min: 18
+    buyer_age_threshold: 35
+    current_value: 18
+    threshold_value: 35
+    threshold_used: age_min < 35
+    comparison: age_min 18 < 35 (targeting too young)
+    shopify_orders_analyzed: 8784
+    note: Shopify data shows buyers are 35+ years old. Targeting younger ages wastes
+      budget on non-converters.
+  affected_adsets_count: 40
+  affected_adsets_budget: $3928.23
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Broad: 13
+    18-65/US/Image/unknown/Advantage: 5
+    18-65/US/Image/0/Advantage: 1
+    18-65/US/Image/Female/Advantage: 3
+    18-65/US/Image/unknown/Lookalike: 7
+    18-65/IE/Image/unknown/Broad: 2
+    18-65/IE/Image/Female/Advantage: 1
+    18-65/HK/Image/0/Advantage: 2
+    18-65/US/Image/unknown/Exclusion: 6
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Broad: $1763.21
+    18-65/US/Image/unknown/Advantage: $806.06
+    18-65/US/Image/0/Advantage: $21.42
+    18-65/US/Image/Female/Advantage: $659.30
+    18-65/US/Image/unknown/Lookalike: $227.64
+    18-65/IE/Image/unknown/Broad: $275.63
+    18-65/IE/Image/Female/Advantage: $80.58
+    18-65/HK/Image/0/Advantage: $20.98
+    18-65/US/Image/unknown/Exclusion: $73.41
+
+geo_targeting_mismatch_buyers:
+  type: geo_targeting_mismatch_buyers
+  confidence: HIGH
+  suggested_action: 'Test separate campaigns for top states: TX, GA, FL, CA, NY (current:
+    National, buyer concentration: 31.9%)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Broad
+  opportunity_size: high
+
+  evidence:
+    current_targeting:
+    - US
+    top_buyer_states:
+    - TX
+    - GA
+    - FL
+    - CA
+    - NY
+    buyer_concentration: 0.31864754098360654
+    current_value: National
+    threshold_value: Top 5 states
+    threshold_used: buyer_concentration >= 0.29
+    comparison: 31.9% of buyers from 5 states (geo-focused)
+    shopify_orders_analyzed: 8784
+    note: Shopify data shows 31.9% of orders from 5 states. Test geo-focused campaigns
+      for these high-performing states.
+  affected_adsets_count: 35
+  affected_adsets_budget: $3551.04
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Broad: 13
+    18-65/US/Image/unknown/Advantage: 5
+    18-65/US/Image/0/Advantage: 1
+    18-65/US/Image/Female/Advantage: 3
+    18-65/US/Image/unknown/Lookalike: 7
+    18-65/US/Image/unknown/Exclusion: 6
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Broad: $1763.21
+    18-65/US/Image/unknown/Advantage: $806.06
+    18-65/US/Image/0/Advantage: $21.42
+    18-65/US/Image/Female/Advantage: $659.30
+    18-65/US/Image/unknown/Lookalike: $227.64
+    18-65/US/Image/unknown/Exclusion: $73.41
+
+high_cpc:
+  type: high_cpc
+  confidence: MEDIUM
+  suggested_action: 'Optimize targeting to reach more relevant audience or test lower-cost
+    ad formats (current CPC: $3.48, threshold: >$3.14)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Broad
+  opportunity_size: high
+
+  evidence:
+    cpc: 3.4766666666666666
+    clicks: 9
+    spend: 31.29
+    current_value: 3.4766666666666666
+    threshold_value: 3.1401666666666666
+    threshold_used: CPC > 3.1401666666666666
+    comparison: $3.48 > $3.14 (exceeds by $0.34)
+    calculation: CPC = $31.29 / 9.0 clicks = $3.48
+    note: High CPC indicates expensive clicks. Optimize targeting to reach more relevant
+      audience or test lower-cost ad formats.
+  affected_adsets_count: 17
+  affected_adsets_budget: $1888.99
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Broad: 7
+    18-65/US/Image/unknown/Advantage: 4
+    18-65/US/Image/Female/Advantage: 2
+    18-65/US/Image/unknown/Lookalike: 2
+    18-65/HK/Image/0/Advantage: 1
+    18-65/US/Image/unknown/Exclusion: 1
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Broad: $669.99
+    18-65/US/Image/unknown/Advantage: $762.37
+    18-65/US/Image/Female/Advantage: $350.19
+    18-65/US/Image/unknown/Lookalike: $84.56
+    18-65/HK/Image/0/Advantage: $10.50
+    18-65/US/Image/unknown/Exclusion: $11.38
+
+high_cpm:
+  type: high_cpm
+  confidence: MEDIUM
+  suggested_action: 'Refine targeting or test different ad placements (current CPM:
+    $73.11, threshold: >$61.13)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Broad
+  opportunity_size: high
+
+  evidence:
+    cpm: 73.10747663551402
+    impressions: 428
+    spend: 31.29
+    current_value: 73.10747663551402
+    threshold_value: 61.13247863247862
+    threshold_used: CPM > 61.13247863247862
+    comparison: $73.11 > $61.13 (exceeds by $11.97)
+    calculation: CPM = ($31.29 / 428.0) * 1000 = $73.11
+    note: High CPM indicates expensive impressions. Refine targeting to reach more
+      relevant audience or test different ad placements.
+  affected_adsets_count: 20
+  affected_adsets_budget: $2044.59
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Broad: 8
+    18-65/US/Image/unknown/Advantage: 4
+    18-65/US/Image/Female/Advantage: 2
+    18-65/US/Image/unknown/Lookalike: 4
+    18-65/US/Image/unknown/Exclusion: 2
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Broad: $748.01
+    18-65/US/Image/unknown/Advantage: $762.37
+    18-65/US/Image/Female/Advantage: $350.19
+    18-65/US/Image/unknown/Lookalike: $157.39
+    18-65/US/Image/unknown/Exclusion: $26.63
+
+missing_video_format:
+  type: missing_video_format
+  confidence: MEDIUM
+  suggested_action: 'Test video creative for this audience (current: Image format,
+    ROAS 63.16 >= 19.85687167030679, warm audience: True)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Broad
+  opportunity_size: high
+
+  evidence:
+    current_format: Image
+    roas: 63.16299137104506
+    is_warm_audience: true
+    current_roas: 63.16299137104506
+    roas_threshold: 19.85687167030679
+    threshold_used: ROAS >= 19.85687167030679, no video metrics
+    comparison: 'ROAS 63.16 >= 19.85687167030679 (meets threshold), format: Image
+      (no video metrics detected)'
+    note: Video typically performs better for warm audiences (lookalike/retargeting).
+      Test video creative to potentially improve performance.
+  affected_adsets_count: 1
+  affected_adsets_budget: $31.29
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Broad: 1
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Broad: $31.29
+
+missing_lal:
+  type: missing_lal
+  confidence: MEDIUM
+  suggested_action: 'Create LAL 1% from best customers (current: 0 LAL audiences,
+    ROAS 0.00 < threshold 1.5)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Broad
+  opportunity_size: high
+
+  evidence:
+    custom_audiences_count: 0
+    roas: 0.0
+    current_value: 0
+    threshold_value: 0
+    roas_threshold: 1.5
+    threshold_used: custom_audiences_count == 0, ROAS < 1.5
+    comparison: 'LAL count: 0 == 0 (no lookalikes), ROAS: 0.00 < 1.5 (below LAL threshold)'
+    note: Lookalike audiences typically outperform interest targeting by 2-3x. Start
+      with 1% LAL from best customers.
+  affected_adsets_count: 25
+  affected_adsets_budget: $2266.84
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Broad: 10
+    18-65/US/Image/unknown/Advantage: 4
+    18-65/US/Image/0/Advantage: 1
+    18-65/US/Image/Female/Advantage: 1
+    18-65/IE/Image/unknown/Broad: 2
+    18-65/IE/Image/Female/Advantage: 1
+    18-65/HK/Image/0/Advantage: 2
+    18-65/US/Image/unknown/Exclusion: 4
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Broad: $870.14
+    18-65/US/Image/unknown/Advantage: $681.65
+    18-65/US/Image/0/Advantage: $21.42
+    18-65/US/Image/Female/Advantage: $264.90
+    18-65/IE/Image/unknown/Broad: $275.63
+    18-65/IE/Image/Female/Advantage: $80.58
+    18-65/HK/Image/0/Advantage: $20.98
+    18-65/US/Image/unknown/Exclusion: $51.54
+
+low_ctr:
+  type: low_ctr
+  confidence: MEDIUM
+  suggested_action: 'Test new creative or refine audience targeting (current CTR:
+    1.42%, threshold: <1.47%)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Advantage
+  opportunity_size: high
+
+  evidence:
+    ctr: 0.014218009478672985
+    clicks: 3
+    impressions: 211
+    current_value: 0.014218009478672985
+    threshold_value: 0.014705882352941175
+    threshold_used: CTR < 0.014705882352941175
+    comparison: 1.42% < 1.47% (below by 0.05%)
+    calculation: CTR = 3.0 / 211.0 = 0.0142
+    note: Low CTR suggests creative may not resonate with audience. Test new creative
+      variations or refine audience targeting.
+  affected_adsets_count: 6
+  affected_adsets_budget: $128.25
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Advantage: 2
+    18-65/US/Image/unknown/Lookalike: 1
+    18-65/HK/Image/0/Advantage: 2
+    18-65/US/Image/unknown/Exclusion: 1
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Advantage: $61.58
+    18-65/US/Image/unknown/Lookalike: $34.31
+    18-65/HK/Image/0/Advantage: $20.98
+    18-65/US/Image/unknown/Exclusion: $11.38
+
+low_reach:
+  type: low_reach
+  confidence: MEDIUM
+  suggested_action: 'Consider broadening targeting or testing lookalike audiences
+    (current: 89 people, threshold: <187.25 is too small)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Advantage
+  opportunity_size: high
+
+  evidence:
+    reach: 89
+    current_value: 89
+    threshold_value: 187.25
+    threshold_used: reach < 187.25
+    comparison: 89 < 187.25 (below by 98.25 people)
+    note: Very small reach limits scale potential. Consider broadening targeting or
+      testing lookalike audiences to expand reach.
+  affected_adsets_count: 13
+  affected_adsets_budget: $356.21
+
+  segment_distribution_count:
+    18-65/US/Image/unknown/Advantage: 1
+    18-65/US/Image/unknown/Broad: 3
+    18-65/US/Image/unknown/Lookalike: 5
+    18-65/US/Image/unknown/Exclusion: 4
+
+  segment_distribution_budget:
+    18-65/US/Image/unknown/Advantage: $17.89
+    18-65/US/Image/unknown/Broad: $155.80
+    18-65/US/Image/unknown/Lookalike: $134.05
+    18-65/US/Image/unknown/Exclusion: $48.47
+
+narrow_gender_targeting:
+  type: narrow_gender_targeting
+  confidence: LOW
+  suggested_action: 'Test expanding to both genders if product is gender-neutral (current:
+    targeting 1 gender(s): 2)'
+  age_range: 18-65
+  geography: US
+  creative_format: Image
+  gender_targeting: Female
+  audience_source: Advantage
+  opportunity_size: medium
+
+  evidence:
+    targeted_genders:
+    - 2
+    current_value: 1
+    threshold_value: 2
+    threshold_used: single gender targeting
+    comparison: Targeting 1 gender(s) (both genders = 2, current = 1)
+    note: Single gender targeting may limit reach unnecessarily. Test both genders
+      to expand reach and scale, unless gender-specific targeting is intentional.
+  affected_adsets_count: 4
+  affected_adsets_budget: $739.88
+
+  segment_distribution_count:
+    18-65/US/Image/Female/Advantage: 3
+    18-65/IE/Image/Female/Advantage: 1
+
+  segment_distribution_budget:
+    18-65/US/Image/Female/Advantage: $659.30
+    18-65/IE/Image/Female/Advantage: $80.58
+
+geographic_targeting_too_broad:
+  type: geographic_targeting_too_broad
+  confidence: MEDIUM
+  suggested_action: 'Test top 3 countries separately (current: 7 countries, threshold:
+    >5 is too broad)'
+  age_range: 18-65
+  geography: IE
+  creative_format: Image
+  gender_targeting: unknown
+  audience_source: Broad
+  opportunity_size: low
+
+  evidence:
+    country_count: 7
+    countries:
+    - IE
+    - NL
+    - SE
+    - DK
+    - BE
+    - AT
+    - DE
+    current_value: 7
+    threshold_value: 5
+    threshold_used: country_count > 5
+    comparison: 7 > 5 (exceeds by 2 countries)
+    note: Test top 3 countries separately to identify best performers before consolidating.
+  affected_adsets_count: 3
+  affected_adsets_budget: $356.21
+
+  segment_distribution_count:
+    18-65/IE/Image/unknown/Broad: 2
+    18-65/IE/Image/Female/Advantage: 1
+
+  segment_distribution_budget:
+    18-65/IE/Image/unknown/Broad: $275.63
+    18-65/IE/Image/Female/Advantage: $80.58
+
+audience_saturation:
+  type: audience_saturation
+  confidence: HIGH
+  suggested_action: 'Reduce budget or expand audience to lower frequency (current:
+    5.0, threshold: >3.0 indicates saturation)'
+  age_range: 18-65
+  geography: HK
+  creative_format: Image
+  gender_targeting: '0'
+  audience_source: Advantage
+  opportunity_size: saturated
+
+  evidence:
+    frequency: 5.025323
+    current_value: 5.025323
+    threshold_value: 3.0
+    threshold_used: frequency > 3.0
+    comparison: 5.0 > 3.0 (exceeds by 2.0)
+    saturation_risk: high
+    note: High frequency indicates ad fatigue. Reduce budget or expand audience to
+      lower frequency and improve efficiency.
+  affected_adsets_count: 2
+  affected_adsets_budget: $20.98
+
+  segment_distribution_count:
+    18-65/HK/Image/0/Advantage: 2
+
+  segment_distribution_budget:
+    18-65/HK/Image/0/Advantage: $20.98

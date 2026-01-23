@@ -1,13 +1,15 @@
 # Claude Self-Reflection Framework
 
 ## Purpose
-Ensure any changes made by Claude align with the core goals and constraints of this repo.
+Ensure any changes made by Claude align with the core goals and constraints of this comprehensive adset management system.
 
 ---
 
 ## Quick Reference (Claude Cheat Sheet)
 
 ### DO
+- **Allocator**: Use rules-based budget allocation with Bayesian optimization
+- **Generator**: Generate audience configurations that beat/match historical performance
 - Use `config/{customer}/{platform}.yaml` for params
 - Use `datasets/{customer}/{platform}/` for data
 - Output actions as YAML with confidence + evidence
@@ -15,6 +17,7 @@ Ensure any changes made by Claude align with the core goals and constraints of t
 - Run all CI workflows before committing
 - Use `customer_paths.py` for path access
 - Evaluate on real data only
+- Use `# pylint: disable` or `# type: ignore` ONLY when absolutely necessary
 
 ### DON'T
 - Hard-code paths or parameters
@@ -25,8 +28,38 @@ Ensure any changes made by Claude align with the core goals and constraints of t
 - Assume platform is "meta" only
 - Break path abstraction
 - Create PR-specific documentation (no TODO.md, VALIDATION.md per PR)
-- Use `# pylint: disable` or `# type: ignore` to suppress warnings
+- Use `# pylint: disable` or `# type: ignore` to suppress warnings when fixing is possible
 - Leave temporary scripts in working directory when pushing
+
+---
+
+## System Architecture
+
+This repository combines TWO distinct adset management capabilities:
+
+### 1. Adset Allocator (`src/adset/allocator/`)
+**Purpose:** Budget allocation - distributes budget across adsets based on performance
+
+**Primary Goal:** Allocate budgets to maximize ROAS while maintaining stability
+
+**Key Features:**
+- 42+ decision rules for budget adjustments
+- Bayesian optimization of 60+ parameters
+- Monthly budget tracking with rollover
+- Shopify ROAS integration for validation
+- Safety rules (freeze low performers, cap budget)
+
+### 2. Adset Generator (`src/adset/generator/`)
+**Purpose:** Audience configuration - generates audience strategies and configurations
+
+**Primary Goal:** Generate audience configurations (regions, ages, audience types) that beat or match historical performance
+
+**Key Features:**
+- Audience configuration strategies (geo, age, creative format)
+- Mistake detection (identify suboptimal configs)
+- Opportunity sizing (headroom calculation)
+- Creative x audience compatibility analysis
+- Historical performance validation
 
 ---
 
@@ -34,7 +67,7 @@ Ensure any changes made by Claude align with the core goals and constraints of t
 
 | Type | Location | Example |
 |------|----------|---------|
-| Configs | `config/{customer}/{platform}.yaml` | `config/moprobo/meta.yaml` |
+| Configs | `config/{customer}/{platform}/` | `config/moprobo/meta/` |
 | Raw Data | `datasets/{customer}/{platform}/raw/` | `datasets/moprobo/meta/raw/` |
 | Features | `datasets/{customer}/{platform}/features/` | `datasets/moprobo/meta/features/` |
 | Results | `results/{customer}/{platform}/` | `results/moprobo/meta/` |
@@ -43,174 +76,91 @@ Ensure any changes made by Claude align with the core goals and constraints of t
 
 ---
 
-## Code Patterns to Follow
+## Repo Goals
 
-### Path Access
-```python
-# ✅ CORRECT
-from src.utils.customer_paths import get_raw_data_dir
-raw_dir = get_raw_data_dir(customer="moprobo", platform="meta")
+### Allocator Goals
+1. **Primary**: Allocate budgets across adsets to maximize ROAS
+2. **Actual Objective**: Beat or match historical performance, not achieve perfection
+3. **Method**: Rules-based system with Bayesian-optimized parameters
+4. **Validation**: Time-series cross-validation to prevent overfitting
+5. **Safety**: Freeze low performers, cap budgets, track monthly spend
 
-# ❌ WRONG
-raw_dir = Path("datasets/moprobo/meta/raw")
-```
-
-### Config Loading
-```python
-# ✅ CORRECT
-from src.config.manager import ConfigManager
-config = ConfigManager.load(customer="moprobo", platform="meta")
-
-# ❌ WRONG
-config = yaml.safe_load("config/moprobo/meta.yaml")
-```
-
-### Param Updates
-```python
-# ✅ CORRECT
-if confidence > threshold and has_sufficient_data:
-    update_params(new_params)
-
-# ❌ WRONG
-update_params(new_params)  # No checks
-```
+### Generator Goals
+1. **Primary**: Generate strategies for creating adset audience configurations (regions, ages, creative formats, audience types)
+2. **Actual Objective**: Deliver audience configurations that beat or match historical performance
+3. **Method**: Rules-based, transparent logic with historical validation
+4. **Validation**: All recommendations must validate against historical baseline
+5. **Evidence**: Every recommendation includes confidence + historical evidence
 
 ---
 
-## Repo Goals
+## Performance Validation Rules
 
-### 1. Primary Goal
-**The goal of this repo is NOT to deliver the perfect budget allocation solution.**
+### Allocator Validation
+```python
+# ✅ CORRECT
+# Use time-series cross-validation
+if recommending_budget_adjustment:
+    historical_performance = get_historical_baseline(adset)
+    simulated_performance = simulate_with_params(
+        params,
+        time_series_cv=True  # Prevent look-ahead bias
+    )
 
-### 2. Problem Statement
-**Given a predefined monthly budget, allocate it among a list of pregenerated adsets.**
+    if simulated_performance > historical_performance:
+        recommend(params, evidence={
+            'historical_roas': historical_performance,
+            'simulated_roas': simulated_performance,
+            'expected_improvement': (simulated_performance / historical_performance) - 1
+        })
+```
 
-- **Scope**: Daily budget allocation at adset level
-- **Inputs**:
-  - Monthly budget cap (predefined)
-  - Pregenerated adsets (existing campaigns)
-  - Adset performance features (ROAS, CTR, spend, impressions, etc.)
-  - Optional: Shopify data (revenue, conversion data)
-  - Optional: Lookalike audience data
-- **Outputs**: Daily budget allocation per adset
-- **Requirements**:
-  - **Initialization**: Set initial budgets when new adsets are created
-  - **Daily Updates**: Adjust budgets daily based on performance
-  - **Constraints**: Stay within monthly budget cap
+### Generator Validation
+```python
+# ✅ CORRECT
+# Validate against historical segment performance
+if recommending_new_config:
+    # Find similar historical segments
+    historical_roas = get_similar_segments_performance(
+        geography=geo,
+        audience_type=audience_type,
+        creative_format=creative
+    )
 
-### 3. Actual Objective
-**Analyze customer data for each platform and deliver a solution that can beat history (or at least match).**
-
-- Focus on practical improvement over theoretical perfection
-- Compare performance against historical baseline
-- Deliver working solutions, not optimal ones
-
-### 4. Auto-Parameter Selection
-**Each platform and customer's parameters are auto-decided by the algorithm.**
-
-- The system automatically determines optimal parameters per customer/platform
-- No manual parameter tuning required
-- Data-driven decision making
-
-### 5. Config Separation
-**Each platform and customer's parameters are separate through config.**
-
-- Structure: `config/{customer}/{platform}.yaml`
-- Example: `config/moprobo/meta.yaml`, `config/ecoflow/google.yaml`
-- Platform-specific isolation
-- No cross-contamination between customers/platforms
-
-### 6. Code Quality Checks
-**All CI workflows must pass before committing changes.**
-
-- Run all CI checks (lint, test, etc.) before committing
-- Fix all failures
-- Maintain code quality standards
-
-### 7. Daily Data Updates
-**Algorithm and parameters must update when new daily data arrives.**
-
-- System should adapt to changing data patterns
-- Auto-reoptimize parameters on daily data updates
-- No manual intervention required
-
-### 8. Reliable Parameter Updates
-**When adding new daily data, update params only if high confidence and enough data support.**
-
-- Require statistical significance before param changes
-- Minimum data thresholds for updates
-- Conservative: keep old params if uncertainty is high
-- Protect against noise in daily data
-
-### 9. Configurable Objectives
-**Optimization objectives (ROAS, CTR, CVR, CPA, etc.) are configurable through config.**
-
-- Objectives defined per customer/platform in config
-- Support single or multi-objective optimization
-- Easy to add/change objectives without code changes
-
-### 10. Campaign-Level Configurability
-**Each campaign is configurable through config.**
-
-- Campaign-specific overrides and settings
-- Granular control at campaign level
-- Supports heterogeneous campaign strategies
-
-### 11. Reliability Over Aggression
-**Value reliability in optimization since this is real money and no A/B tests now.**
-
-- Conservative approach preferred over aggressive optimization
-- No experimental features in production
-- Protect customer budget over testing hypotheses
-- If it breaks production, it's not worth it
-
-### 12. Daily Parameter Re-optimization
-**Rerun parameter optimizations when data is updated daily.**
-
-- Automated pipeline for daily re-tuning
-- Parameters adapt to new data patterns
-- No stale parameters from old data
-- Apply reliability constraints (see #8)
-
-### 13. Realistic Evaluation
-**Evaluation must be realistic and reliable when deciding params.**
-
-- Use real customer data, not synthetic
-- Proper backtesting (no look-ahead bias)
-  - Train on past data, test on future data
-  - Never use future information to make past decisions
-  - Time-series cross-validation with temporal splits
-- Statistical significance testing
-- Multiple scenarios, not single-seed results
-
-### 14. Unified Action Output Format
-**Output real actions with details, confidence scores, and evidences in unified YAML format.**
-
-- Structure: `.yaml` file with:
-  - Action: What to do (scale up/down, freeze, etc.)
-  - Details: Action specifics (amount, target, etc.)
-  - Confidence score: Numeric confidence (0-1)
-  - Evidence: Supporting data/reasoning
-- Standardized format for all customers/platforms
-- Machine-readable + human-readable
+    if historical_roas > baseline_roas * 1.2:
+        recommend(config, evidence={
+            'historical_roas_similar_segments': historical_roas,
+            'baseline_roas': baseline_roas,
+            'expected_to_beat_history': True
+        })
+    else:
+        do_not_recommend(config, reason="No historical evidence this will beat baseline")
+```
 
 ---
 
 ## Common Mistakes to Avoid
 
-| Mistake | Why It's Wrong | Correct Approach |
-|---------|---------------|------------------|
-| Hard-coding customer names | Breaks multi-customer support | Use `--customer` parameter |
-| Assuming platform is "meta" | Breaks multi-platform support | Support all platforms |
-| Updating params without confidence checks | Could update on noise/outliers | Add thresholds |
-| Using synthetic data for claims | Not realistic or reliable | Use real data only |
-| Breaking path abstraction | Fragile, customer-specific | Use `customer_paths.py` |
-| Sharing params across customers | Breaks config isolation | Keep separate configs |
-| Claiming "optimal" solutions | Goal is beating history, not perfection | Focus on practical improvement |
-| Over-engineering for perfection | Adds complexity without benefit | Keep it simple |
-| Skipping CI checks | Lowers code quality | All workflows must pass |
-| Outputting without confidence/evidence | Not actionable or auditable | Unified YAML format |
-| Using `# pylint: disable` or `# type: ignore` | Suppresses warnings, hides real issues | Fix the actual problem |
+### 🚩 Allocator Violations
+1. **Ignoring monthly budget caps** - Track cumulative spend
+2. **Aggressive scaling** - Use conservative factors (0.95 multiplier)
+3. **Not freezing low performers** - Safety first
+4. **Look-ahead bias in tuning** - Use time-series CV
+5. **Overfitting parameters** - Validate on holdout periods
+
+### 🚩 Generator Violations
+1. **Recommending without historical validation** - Must prove it beats history
+2. **Ignoring platform constraints** - Meta vs Google vs TikTok targeting differences
+3. **Missing headroom checks** - Don't oversaturate
+4. **Aggressive opportunity estimates** - Use conservative 95th percentile
+5. **Single recommendations vs testing** - Recommend A/B tests
+
+### 🚩 Shared Violations (Both)
+6. **Hard-coding paths** - Use path abstraction
+7. **Ignoring CI workflows** - All tests must pass
+8. **Suppressing warnings unnecessarily** - Fix root cause
+9. **Synthetic data for evaluation** - Use real customer data
+10. **Breaking backward compatibility** - Preserve existing behavior
 
 ---
 
@@ -219,170 +169,173 @@ update_params(new_params)  # No checks
 Before making any code change, Claude must verify:
 
 ### Goal Alignment
-- [ ] Does this change support beating/matching historical performance?
-- [ ] Does this preserve per-customer/per-platform config separation?
-- [ ] Does this maintain auto-parameter selection capability?
-- [ ] Does this support daily data updates?
-- [ ] Does this output actions in unified YAML format with confidence+evidence?
-- [ ] Does this require high confidence before param updates?
+- [ ] Does this support allocator OR generator goals?
+- [ ] **Does this validate against historical performance?**
+- [ ] **Does this prove recommendations will beat or match history?**
+- [ ] Does this use conservative, rules-based logic?
+- [ ] Does this respect platform constraints?
+- [ ] Does this include confidence + evidence?
 
-### Anti-Goal Check
-- [ ] Does NOT claim to deliver "perfect" allocation?
-- [ ] Does NOT hard-code parameters across customers/platforms?
-- [ ] Does NOT break config isolation?
-- [ ] Does NOT over-engineer for theoretical optimality?
-- [ ] Does NOT ignore real-money consequences?
-- [ ] Does NOT require A/B testing to validate?
-- [ ] Does NOT update params on low-confidence/noisy data?
-- [ ] Does NOT use synthetic data for evaluation claims?
+### Code Quality
+- [ ] All tests pass?
+- [ ] No unnecessary `# pylint: disable`?
+- [ ] No unnecessary `# type: ignore`?
+- [ ] CI workflows pass?
+- [ ] Coverage maintained or improved?
+- [ ] Path abstraction preserved?
 
-### Change Scope
-- [ ] Is this the minimum change needed?
-- [ ] Preserves existing behavior where appropriate
-- [ ] Maintains backward compatibility
-- [ ] All CI workflows pass
-
-### Reliability Check
-- [ ] Is this safe for production with real money?
-- [ ] Does this preserve customer budget?
-- [ ] What happens if this goes wrong?
+### Safety
+- [ ] Is this safe for production budgets?
+- [ ] What happens if this recommendation is wrong?
+- [ ] Are estimates conservative or aggressive?
 - [ ] Is there a rollback path?
-- [ ] Evaluation uses real data with proper testing?
-
-### Code Pattern Check
-- [ ] Uses `customer_paths.py` for data access?
-- [ ] Uses `ConfigManager` for config loading?
-- [ ] No hard-coded customer/platform names?
-- [ ] No hard-coded file paths?
-- [ ] No `# pylint: disable` or `# type: ignore` suppressions?
+- [ ] Does this respect platform API limits?
 
 ---
 
-## Decision Path Examples
+## Key File Locations
 
-### Example 1: Adding Hard-Coded Parameters
-**Proposed change**: "Add global threshold X for all customers"
+### Allocator Files
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Engine** | `src/adset/allocator/engine.py` | Main allocator interface |
+| **Rules** | `src/adset/lib/decision_rules.py` | 42+ decision rules |
+| **Safety** | `src/adset/lib/safety_rules.py` | Freeze/cap logic |
+| **Models** | `src/adset/lib/models.py` | Data models |
+| **Tuning** | `src/optimizer/lib/bayesian_tuner.py` | Bayesian optimization |
 
-**Reflection**:
-- ❌ Violates auto-parameter selection
-- ❌ Breaks per-customer config separation
-- **Decision**: DECLINE. Use config-based approach instead.
+### Generator Files
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Core** | `src/adset/generator/core/recommender.py` | Base recommender |
+| **Detection** | `src/adset/generator/detection/mistake_detector.py` | Mistake detection |
+| **Sizing** | `src/adset/generator/analyzers/opportunity_sizer.py` | Headroom calculation |
+| **Generation** | `src/adset/generator/generation/audience_recommender.py` | Generate recommendations |
+| **Segmentation** | `src/adset/generator/segmentation/segmenter.py` | Segment analysis |
 
-### Example 2: Over-Engineering for Perfection
-**Proposed change**: "Implement complex optimization for theoretical maximum ROAS"
+### Shared Files
+| Component | File | Purpose |
+|-----------|------|---------|
+| **Config** | `src/config/manager.py` | Config loading |
+| **Paths** | `src/utils/customer_paths.py` | Path abstraction |
+| **Logging** | `src/utils/logger_config.py` | Logging setup |
+| **Shopify** | `src/integrations/shopify/` | Shopify integration |
 
-**Reflection**:
-- ❌ Goal is beating history, not perfection
-- ❌ Adds complexity without clear benefit
-- **Decision**: DECLINE. Focus on practical improvements.
+---
 
-### Example 3: Cross-Customer Parameter Sharing
-**Proposed change**: "Share learned parameters across customers"
+## Core Principle Summary
 
-**Reflection**:
-- ❌ Breaks config isolation
-- ❌ Violates per-customer separation principle
-- **Decision**: DECLINE. Keep customers separate.
+### Allocator
+**"Allocate budget to maximize ROAS, not to achieve perfection"**
+- Beat or match historical performance
+- Use conservative safety factors
+- Validate with time-series cross-validation
 
-### Example 4: Data-Driven Auto-Tuning
-**Proposed change**: "Automatically determine optimal thresholds from customer data"
-
-**Reflection**:
-- ✅ Supports auto-parameter selection
-- ✅ Maintains per-customer separation
-- **Decision**: PROCEED. Aligns with core goals.
-
-### Example 5: Aggressive New Algorithm
-**Proposed change**: "Add aggressive optimization that could 2x ROAS but risks 50% loss"
-
-**Reflection**:
-- ❌ Real money at stake, no A/B testing
-- ❌ Violates reliability principle
-- **Decision**: DECLINE. Not worth the risk.
-
-### Example 6: Changing Output Format
-**Proposed change**: "Output actions in JSON instead of YAML"
-
-**Reflection**:
-- ❌ Breaks unified YAML format requirement
-- ❌ Requires updating all consumers
-- **Decision**: DECLINE unless compelling reason. Stick to YAML.
-
-### Example 7: Adding New Objective
-**Proposed change**: "Add CPA as optimization objective"
-
-**Reflection**:
-- ✅ Objectives should be configurable
-- ✅ Add to config, not hard-code
-- **Decision**: PROCEED. Make it config-driven.
-
-### Example 8: Updating Params on Noisy Data
-**Proposed change**: "Immediately update params when new daily data arrives"
-
-**Reflection**:
-- ❌ Must check confidence and data support
-- ❌ Could update on noise/outliers
-- **Decision**: DECLINE pure auto-update. Add confidence threshold.
-
-### Example 9: Synthetic Data Evaluation
-**Proposed change**: "Prove this works with synthetic data simulation"
-
-**Reflection**:
-- ❌ Not realistic or reliable
-- ❌ Must use real customer data
-- **Decision**: DECLINE. Use real data for validation.
-
-### Example 10: Hard-Coding Platform
-**Proposed change**: "Set platform='meta' in this function"
-
-**Reflection**:
-- ❌ Assumes single platform
-- ❌ Breaks multi-platform support
-- **Decision**: DECLINE. Pass platform as parameter.
-
-### Example 11: Suppressing Lint Warnings
-**Proposed change**: "Add `# pylint: disable=no-member` to make tests pass"
-
-**Reflection**:
-- ❌ Suppresses warnings instead of fixing issues
-- ❌ Hides real problems (removed attributes don't exist)
-- ❌ Creates technical debt
-- **Decision**: DECLINE. Fix the actual code or remove unused tests.
+### Generator
+**"Every recommendation must answer: Will this perform better than what we've seen historically?"**
+- If answer is "I don't know" → frame as test, not commitment
+- Validate all recommendations against historical baseline
+- Use conservative estimates (95th percentile cap)
 
 ---
 
 ## Red Flags (Stop and Reconsider)
 
-### 🚩 Config Violations
-1. Hard-coding parameters that should be auto-determined
-2. Sharing configuration between customers/platforms
-3. Breaking config directory structure (`config/{customer}/{platform}.yaml`)
-4. Hard-coding objectives (ROAS, CTR, etc.) in code
-
-### 🚩 Reliability Violations
-5. Claiming "optimal" or "perfect" solutions
-6. Implementing aggressive experiments with real money
-7. Updating params without confidence/data support checks
-8. Using synthetic data for evaluation claims
-9. Ignoring statistical significance in evaluation
-10. Skipping realistic/backtesting evaluation
-
-### 🚩 Code Quality Violations
-11. Over-engineering for theoretical vs practical improvement
-12. Hard-coding file paths (use `customer_paths.py`)
-13. Hard-coding customer/platform names
-14. Skipping CI workflow checks
-15. Breaking unified YAML output format
-16. Creating PR-specific documentation (TODO.md, VALIDATION.md, etc.)
-17. Using `# pylint: disable` or `# type: ignore` to suppress warnings
-18. Adding back `--fail-under` threshold to pylint (allows CI to pass with low scores)
-19. Automatically updating README without preserving existing style/formatting
-20. Pushing structural changes without running tests first (moved files, reorganized code, etc.)
-21. Leaving temporary scripts in working directory when pushing (cleanup scripts, test files, etc.)
+### 🚩 Performance Violations (CRITICAL)
+1. **Allocator**: Simulating without time-series CV (look-ahead bias)
+2. **Allocator**: Aggressive scaling without safety checks
+3. **Generator**: Recommending without historical validation
+4. **Generator**: Ignoring historical baseline comparison
+5. **Both**: Claiming improvements without evidence
 
 ### 🚩 Design Violations
-18. Ignore historical baseline comparison
-19. Break daily re-optimization pipeline
-20. Output actions without confidence scores
-21. Output actions without supporting evidence
-22. Use non-YAML format for actions
+6. **Allocator**: Adding black-box ML for allocation
+7. **Generator**: Adding black-box ML for configuration
+8. **Both**: Ignoring platform-specific capabilities
+9. **Both**: Hard-coding customer/platform logic
+10. **Both**: Breaking allocator/generator separation
+
+### 🚩 Code Quality Violations
+11. **Both**: Using `# pylint: disable` to suppress fixable warnings
+12. **Both**: Using `# type: ignore` to suppress fixable type errors
+13. **Both**: Hard-coding paths instead of using abstraction
+14. **Both**: Leaving temporary scripts in repo
+15. **Both**: Adding feature branches to CI triggers
+16. **Both**: Lowering coverage standards instead of improving
+17. **Both**: Modifying README structure/style (keep consistent)
+18. **Both**: Risking real money on unvalidated features
+
+---
+
+## Decision Path Examples
+
+### Example 1: ML-Based Allocation
+**Proposed**: "Use reinforcement learning for budget allocation"
+
+**Reflection**:
+- ❌ Black-box, not interpretable
+- ❌ Violates rules-based approach
+- **Decision**: DECLINE. Use Bayesian-tuned rules.
+
+### Example 2: ML-Based Configuration
+**Proposed**: "Use reinforcement learning to learn optimal audience configs"
+
+**Reflection**:
+- ❌ Violates rules-based, transparent approach
+- ❌ Black-box, not interpretable
+- **Decision**: DECLINE. Use simple rules with historical analysis.
+
+### Example 3: Recommendation Without Historical Validation
+**Proposed**: "Recommend launching US + 25-45 + Lookalike audience"
+
+**Reflection**:
+- ❌ No historical performance data for this combination
+- ❌ No proof it will beat baseline
+- **Decision**: DECLINE. Must show similar segments performed well.
+
+### Example 4: Hard-coded Platform
+**Proposed**: "Add meta-specific logic to allocator"
+
+**Reflection**:
+- ❌ Not all platforms are Meta
+- ❌ Should abstract platform differences
+- **Decision**: DECLINE. Make platform-agnostic.
+
+### Example 5: Pylint Disable
+**Proposed**: "Add `# pylint: disable=unused-argument`"
+
+**Reflection**:
+- ❌ Can fix by renaming variable or using `_`
+- ❌ Should fix underlying issue
+- **Decision**: DECLINE. Fix the code instead.
+
+---
+
+## Commit Message Guidelines
+
+### Allocator Features
+```
+feat: allocator - brief description
+
+Details of the budget allocation change.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+### Generator Features
+```
+feat: generator - brief description
+
+Details of the audience configuration change.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```
+
+### Shared Components
+```
+feat: shared - brief description
+
+Details of the change affecting both allocator and generator.
+
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+```

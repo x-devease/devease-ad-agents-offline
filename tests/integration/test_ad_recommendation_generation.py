@@ -135,7 +135,7 @@ def test_e2e_ad_recommendation_generation():
     try:
         num_variations = 3
         results = pipeline.run(
-            source_image_path="tests/fixtures/sample_product.jpg",
+            source_image_path="tests/data/sample_product.jpg",
             num_variations=num_variations,
             save_prompts=True,
         )
@@ -183,7 +183,7 @@ def test_e2e_ad_recommendation_generation():
             logger.info(f"  Output dir: {generator.output_dir}")
 
             # Get source image path
-            source_image = "tests/fixtures/sample_product.jpg"
+            source_image = "tests/data/sample_product.jpg"
             if not Path(source_image).exists():
                 logger.warning(f"Source image not found: {source_image}")
                 logger.warning("Skipping image generation")

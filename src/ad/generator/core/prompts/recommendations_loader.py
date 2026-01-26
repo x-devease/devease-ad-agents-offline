@@ -1,8 +1,17 @@
 """
-Recommendations.json Loader
+Recommendations.json Loader (Legacy Scorer Format)
 
-Loads and converts recommendations.json format from creative scorer
+Loads and converts recommendations.json format from creative scorer repository
 into the format expected by convert_features_to_prompts().
+
+Note:
+    This module is for the creative scorer offline repository JSON format.
+    For ad/recommender markdown format (primary), use the ad_recommender_adapter
+    which handles MD to visual formula conversion.
+
+Path formats:
+    - Scorer repo (JSON): devease-creative-scorer-offline/data/headroom_analysis/recommendations.json
+    - Ad/recommender (MD, primary): config/ad/recommender/{customer}/{platform}/{date}/recommendations.md
 """
 
 # flake8: noqa

@@ -68,7 +68,8 @@ class CreativeScorerLoader:
         Initialize loader.
 
         Args:
-            recommendations_path: Path to recommendations.json from creative scorer
+            recommendations_path: Path to recommendations.json from creative scorer repository
+                         (Note: ad/recommender outputs .md format, use ad_recommender_adapter for that)
             min_confidence: Minimum confidence level (high, medium, low)
             min_high_performer_pct: Minimum high performer percentage (0.0-1.0)
             min_priority_score: Minimum priority score
@@ -346,16 +347,21 @@ def load_scorer_recommendations(
     Convenience function to load creative scorer recommendations.
 
     Args:
-        recommendations_path: Path to recommendations.json
+        recommendations_path: Path to recommendations.json from creative scorer repository
         min_confidence: Minimum confidence level
         min_high_performer_pct: Minimum high performer percentage
 
     Returns:
         Aggregated recommendations dict
 
+    Note:
+        This function loads JSON format from the creative scorer repository.
+        For markdown format from ad/recommender, use load_recommendations_as_visual_formula()
+        from ad_recommender_adapter instead.
+
     Example:
         recs = load_scorer_recommendations(
-            "data/recommendations/moprobo/taboola/2026-01-21/recommendations.json"
+            "devease-creative-scorer-offline/data/recommendations/moprobo/taboola/2026-01-21/recommendations.json"
         )
         print(f"Loaded {recs['total_features']} features")
     """

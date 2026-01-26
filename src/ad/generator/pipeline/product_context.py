@@ -230,7 +230,7 @@ def load_product_context_from_json(
             result = _load_json_file(path)
         return result
     # Auto-discover JSON file
-    data_dir = Path(__file__).resolve().parents[3] / "data" / "product_context"
+    data_dir = Path(__file__).resolve().parents[3] / "datasets" / "product_context"
     if not data_dir.exists():
         return None
     # Build search patterns
@@ -303,7 +303,7 @@ def load_product_context_from_file(
             return path.read_text(encoding="utf-8")
         return None
     # Auto-discover context file
-    data_dir = Path(__file__).resolve().parents[3] / "data" / "product_context"
+    data_dir = Path(__file__).resolve().parents[3] / "datasets" / "product_context"
     if not data_dir.exists():
         return None
     # Try specific patterns

@@ -336,9 +336,9 @@ class ConfigLoader:
                 },
             },
             "output": {
-                "formats": ["json", "html", "markdown"],
+                "formats": ["markdown", "json", "html"],
                 "files": {
-                    "recommendations": "recommendations.json",
+                    "recommendations": "recommendations.md",
                     "report": "report.html",
                     "metadata": "metadata.json",
                 },

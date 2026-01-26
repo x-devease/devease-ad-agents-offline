@@ -18,6 +18,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from src.ad.generator.core.paths import Paths
 from src.ad.generator.orchestrator.prompt_builder import PromptBuilder, PromptBuilderConfig
 from src.ad.generator.pipeline.feature_reproduction import FeatureReproductionTracker
 from src.ad.generator.pipeline.product_context import (
@@ -138,6 +139,12 @@ class CreativePipeline:
         """
         # Store config reference (1 attribute)
         self._config = config
+
+        # Initialize path manager with customer/platform/date
+        customer = config.product_name.lower().replace(" ", "_")
+        platform = "meta"  # Default platform, can be overridden in config
+        date = datetime.now().strftime("%Y-%m-%d")
+        self.paths = Paths(customer=customer, platform=platform, date=date)
 
         # Output setup (computed property, not stored as separate attribute)
         self._setup_output_directory()
@@ -295,14 +302,16 @@ class CreativePipeline:
         except FileNotFoundError:
             # If scorer format not found, try ad/recommender format from default location
             # Try MD first (primary format), then JSON as fallback
+            from datetime import datetime
             base_dir = Path("config/ad/recommender")
             # Try to infer customer/platform from product_name or use defaults
             customer = self._config.product_name.lower().replace(" ", "_")
             platform = "meta"
-            
-            md_path = base_dir / customer / platform / "recommendations.md"
-            json_path = base_dir / customer / platform / "recommendations.json"
-            
+            date = datetime.now().strftime("%Y-%m-%d")
+
+            md_path = base_dir / customer / platform / date / "recommendations.md"
+            json_path = base_dir / customer / platform / date / "recommendations.json"
+
             if md_path.exists():
                 logger.info(
                     "Scorer format not found, using ad/recommender MD: %s",
@@ -405,13 +414,13 @@ class CreativePipeline:
 
             # Track prompt
             if save_prompts:
-                # Save to config/ad/recommender/{customer}/{platform}/prompts.md
-                platform = "meta"
-                prompts_dir = Path("config/ad/recommender") / customer / platform
+                # Save to config/ad/generator/prompts/{customer}/{platform}/{date}/structured/prompts.md
+                prompt_type = "structured"  # Default prompt type
+                prompts_dir = self.paths.prompts_output(prompt_type)
                 prompts_dir.mkdir(parents=True, exist_ok=True)
                 prompt_file = prompts_dir / "prompts.md"
                 prompt_file.write_text(prompt, encoding="utf-8")
-                logger.debug("Saved prompt to %s", prompt_file)
+                logger.info("Saved prompt to %s", prompt_file)
 
             results.append(
                 {

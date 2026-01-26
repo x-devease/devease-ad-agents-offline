@@ -33,7 +33,7 @@ def get_data_dir(repo_root: Path | None = None) -> Path:
     """
     Data directory resolution.
 
-    - Defaults to <repo>/data
+    - Defaults to <repo>/datasets
     - Can be overridden by CREATIVE_SCORER_DATA_DIR
     """
     if repo_root is None:
@@ -41,7 +41,7 @@ def get_data_dir(repo_root: Path | None = None) -> Path:
     override = os.environ.get("CREATIVE_SCORER_DATA_DIR")
     if override:
         return Path(override).expanduser().resolve()
-    return (repo_root / "data").resolve()
+    return (repo_root / "datasets").resolve()
 
 
 def resolve_features_csv(
@@ -101,7 +101,7 @@ def resolve_features_csv(
         "Searched:\n"
         f"{searched}\n\n"
         "How to fix:\n"
-        "  - Put the CSV under <repo>/data/ (default), OR\n"
+        "  - Put the CSV under <repo>/datasets/ (default), OR\n"
         "  - Set CREATIVE_SCORER_DATA_DIR to point to your data folder, OR\n"
         "  - Set CREATIVE_SCORER_FEATURES_CSV to the full path of the CSV.\n"
         "\n"
@@ -134,7 +134,7 @@ def resolve_and_validate_input_csv(
     input_csv = Path(input_csv)
     if not input_csv.is_absolute():
         repo_root = find_repo_root()
-        if str(input_csv).startswith("data/"):
+        if str(input_csv).startswith("datasets/"):
             input_csv = repo_root / input_csv
         else:
             data_dir = get_data_dir(repo_root)

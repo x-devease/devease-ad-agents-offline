@@ -76,7 +76,7 @@ Ensure any changes made align with the core goals and constraints of the **budge
 | GPT-4 Configs (ad recommender) | `config/ad/recommender/gpt4/` | `config/ad/recommender/gpt4/features.yaml` |
 | Creative Features | `src/ad/recommender/features/` | `src/ad/recommender/features/extract.py` |
 | Creative Recommendations | `src/ad/recommender/recommendations/` | `src/ad/recommender/recommendations/rule_engine.py` |
-| Recommender Output | `config/ad/recommender/recommendations/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-23/recommendations.json` |
+| Recommender Output | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 | Generator Config | `config/ad/generator/{customer}/{platform}/` | `config/ad/generator/moprobo/taboola/generation_config.yaml` |
 | Generator Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
 | Generator Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
@@ -1050,7 +1050,7 @@ daily_budget = (monthly_cap - total_spent) / remaining_days * 0.95
 
 - **GPT-4 Config**: `config/ad/recommender/gpt4/features.yaml` (feature definitions)
 - **GPT-4 Prompts**: `config/ad/recommender/gpt4/prompts.yaml` (prompt templates)
-- **Output**: `config/ad/recommender/recommendations/{customer}/{platform}/{date}/recommendations.json` (or `config/recommendations/{customer}/{platform}/` per `run.py recommend --output-dir`)
+- **Output**: `config/ad/recommender/{customer}/{platform}/{date}/recommendations.md` (markdown format, DOs/DON'Ts)
 
 ### File Location Rules (Ad Recommender)
 
@@ -1059,7 +1059,7 @@ daily_budget = (monthly_cap - total_spent) / remaining_days * 0.95
 | Configs | `config/ad/recommender/gpt4/` | `config/ad/recommender/gpt4/features.yaml` |
 | Creative Features | `src/ad/recommender/features/` | `src/ad/recommender/features/extract.py` |
 | Recommendations | `src/ad/recommender/recommendations/` | `src/ad/recommender/recommendations/rule_engine.py` |
-| Output | `config/ad/recommender/recommendations/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-23/recommendations.json` |
+| Output | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 
 **Rule**: Use `src/ad/recommender/utils/config_manager.py` for config; `src/ad/recommender/utils/paths.py` for data/features. Never hard-code paths.
 
@@ -1201,7 +1201,7 @@ Before making any code change to creative recommender, Claude must verify:
 - **Templates**: `config/ad/generator/templates/{customer}/{platform}/`
 - **Prompts**: `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` (e.g. `structured`, `nano`, `variants`)
 - **Generated**: `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` (e.g. `nano-banana-pro`)
-- **Recommendations** (input): `config/ad/recommender/recommendations/{customer}/{platform}/{date}/recommendations.json`
+- **Recommendations** (input): `config/ad/recommender/{customer}/{platform}/{date}/recommendations.md`
 
 ### File Location Rules (Ad Generator)
 
@@ -1211,7 +1211,7 @@ Before making any code change to creative recommender, Claude must verify:
 | Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
 | Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
 | Generated | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../nano-banana-pro/` |
-| Recommendations | `config/ad/recommender/recommendations/{customer}/{platform}/{date}/` | `.../recommendations.json` |
+| Recommendations | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 
 **Rule**: Use `src/ad/generator/core/paths.py` (`Paths`) for all config/output paths. Never hard-code paths.
 

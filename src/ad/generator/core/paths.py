@@ -7,11 +7,10 @@ repo structure with customer/platform organization:
 config/
   ad/
     recommender/
-      recommendations/
-        {customer}/
-          {platform}/
-            {date}/
-              recommendations.json
+      {customer}/
+        {platform}/
+          {date}/
+            recommendations.md
       gpt4/
         features.yaml
         prompts.yaml
@@ -46,9 +45,9 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 # Default directories
-DEFAULT_DATA_DIR = Path("data")
+DEFAULT_DATA_DIR = Path("datasets")
 DEFAULT_CONFIG_DIR = Path("config")
-DEFAULT_OUTPUT_DIR = Path("output")
+DEFAULT_OUTPUT_DIR = Path("results")
 
 
 class Paths:
@@ -99,7 +98,7 @@ class Paths:
         date: Optional[str] = None,
     ) -> Path:
         """
-        Get path to recommendations.json from creative scorer.
+        Get path to recommendations.md from creative scorer.
 
         Args:
             customer: Override customer
@@ -107,11 +106,11 @@ class Paths:
             date: Override date
 
         Returns:
-            Path to recommendations.json
+            Path to recommendations.md
 
         Example:
             paths.recommendations()
-            # → config/ad/recommender/recommendations/moprobo/taboola/2026-01-21/recommendations.json
+            # → config/ad/recommender/moprobo/taboola/2026-01-26/recommendations.md
         """
         cust = customer.lower().replace("-", "_") if customer else self.customer
         plat = platform.lower().replace("-", "_") if platform else self.platform
@@ -121,11 +120,10 @@ class Paths:
             self.config_dir
             / "ad"
             / "recommender"
-            / "recommendations"
             / cust
             / plat
             / d
-            / "recommendations.json"
+            / "recommendations.md"
         )
 
     def recommendations_dir(
@@ -199,7 +197,6 @@ class Paths:
 
     def generated_output(
         self,
-        model: str,
         customer: Optional[str] = None,
         platform: Optional[str] = None,
         date: Optional[str] = None,
@@ -208,7 +205,6 @@ class Paths:
         Get path for generated images output directory.
 
         Args:
-            model: Model name (nano-banana-pro, flux, etc.)
             customer: Override customer
             platform: Override platform
             date: Override date
@@ -217,14 +213,14 @@ class Paths:
             Path to generated images directory
 
         Example:
-            paths.generated_output("nano-banana-pro")
-            # → config/ad/generator/generated/moprobo/taboola/2026-01-21/nano-banana-pro/
+            paths.generated_output()
+            # → results/ad/generator/generated/moprobo/taboola/2026-01-21/
         """
         cust = customer.lower().replace("-", "_") if customer else self.customer
         plat = platform.lower().replace("-", "_") if platform else self.platform
         d = date or self.date
 
-        return self.config_dir / "ad" / "generator" / "generated" / cust / plat / d / model
+        return self.output_dir / "ad" / "generator" / "generated" / cust / plat / d
 
     def config_file(self, config_name: str = "generation_config.yaml") -> Path:
         """
@@ -277,7 +273,7 @@ class Paths:
             self.prompts_output("structured"),
             self.prompts_output("nano"),
             self.prompts_output("variants"),
-            self.generated_output("nano-banana-pro"),
+            self.generated_output(),
             self.templates_dir(),
         ]
 

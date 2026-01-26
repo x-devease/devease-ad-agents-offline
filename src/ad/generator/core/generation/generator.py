@@ -33,6 +33,7 @@ from .constants import (
     POLLING_MAX_WAIT_SECONDS,
     REPO_ENV_FILE,
 )
+from ..paths import Paths
 from .prompt_converter import PromptConverter
 from .text_overlay import (
     TextElementConfig,
@@ -94,6 +95,10 @@ class ImageGenerator:
         output_dir: Optional[str] = None,
         use_gpt4o_conversion: bool = True,
         openai_api_key: Optional[str] = None,
+        # Path configuration for organized output
+        customer: Optional[str] = None,
+        platform: Optional[str] = None,
+        date: Optional[str] = None,
         # Generation control parameters (for attention map optimization)
         strength: float = 0.85,
         guidance_scale: float = 8.0,
@@ -112,10 +117,14 @@ class ImageGenerator:
                 Allowed values: "1K", "2K", "4K".
             enable_upscaling: Whether to enable upscaling
             enable_watermark: Whether to apply watermark
-            output_dir: Output directory (default: ./generated_images)
+            output_dir: Output directory (overrides path-based organization)
+                If not provided, uses customer/platform/date structure
             use_gpt4o_conversion: Whether to use GPT-4o to convert
                 structured instructions to natural language prompts
             openai_api_key: OpenAI API key (if None, uses env variable)
+            customer: Customer name for path organization (optional)
+            platform: Platform name for path organization (optional, default: "meta")
+            date: Date string for path organization (optional, default: today YYYY-MM-DD)
             strength: How much to preserve source image (0.0-1.0).
                 Higher = more preservation (logos, product details).
                 Default 0.85 for logo/product preservation.
@@ -123,6 +132,12 @@ class ImageGenerator:
                 Higher = more prompt adherence. Default 8.0.
             num_inference_steps: Quality vs speed tradeoff (10-50).
                 More steps = better quality but slower. Default 30.
+
+        Path Organization:
+            If customer/platform/date provided:
+                results/ad/generator/generated/{customer}/{platform}/{date}/
+            Otherwise:
+                ./generated_images
         """
         self.model = model.lower()
         self.aspect_ratio = aspect_ratio
@@ -166,11 +181,27 @@ class ImageGenerator:
         # Set up API endpoint for nano-banana-pro
         # Ref: fal-ai/nano-banana-pro/edit
         self.api_endpoint = "fal-ai/nano-banana-pro/edit"
-        # Set up output directory
+        # Set up output directory with organized path structure
         if output_dir:
+            # Use explicit output_dir if provided
             self.output_dir = Path(output_dir)
+        elif customer:
+            # Use organized path structure: results/ad/generator/generated/{customer}/{platform}/{date}/
+            platform = platform or "meta"
+            date_str = date or datetime.now().strftime("%Y-%m-%d")
+            paths = Paths(customer=customer, platform=platform, date=date_str)
+            self.output_dir = paths.generated_output()
+            logger.info(
+                "Using organized output path: %s",
+                self.output_dir
+            )
         else:
+            # Fallback to default location
             self.output_dir = Path("./generated_images")
+            logger.warning(
+                "No customer/platform provided, using default output path: %s",
+                self.output_dir
+            )
         self.output_dir.mkdir(parents=True, exist_ok=True)
         # Initialize GPT-4o prompt converter if enabled
         if self.use_gpt4o_conversion:

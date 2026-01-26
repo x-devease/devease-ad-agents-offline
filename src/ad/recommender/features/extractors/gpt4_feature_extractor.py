@@ -954,7 +954,7 @@ class GPT4FeatureExtractor:
     def extract_features_from_folder(
         self,
         images_folder: str = None,
-        output_dir: str = "data",
+        output_dir: str = "config/ad/recommender/features",
         batch_size: int = 5,
         rate_limit_delay: float = 3.0,
         performance_label: str = "unknown",

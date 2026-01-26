@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from src.ad.recommender.recommendations.rule_engine import RuleEngine
+from src.meta.ad.recommender.recommendations.rule_engine import RuleEngine
 
 
 def test_generate_recommendations_returns_dict() -> None:

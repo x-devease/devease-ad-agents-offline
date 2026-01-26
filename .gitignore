@@ -79,3 +79,6 @@ htmlcov/
 .tox/
 .pytest_cache/
 
+# Config - ad generator configuration
+config/ad/generator/
+

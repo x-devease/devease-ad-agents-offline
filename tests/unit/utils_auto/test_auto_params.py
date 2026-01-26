@@ -296,7 +296,7 @@ class TestAutoParams:
         copy["level1"]["level2"]["level3"] = "modified"
         assert original["level1"]["level2"]["level3"] == "value"
 
-    @patch("src.adset.allocator.features.feature_store.FeatureStore")
+    @patch("src.meta.adset.allocator.features.feature_store.FeatureStore")
     def test_calculate_from_data_insufficient_adsets(self, mock_fs):
         """Test calculation with insufficient data returns defaults."""
         # Mock feature store with few adsets
@@ -313,7 +313,7 @@ class TestAutoParams:
         assert "age_targeting" in result
         assert "gender" in result
 
-    @patch("src.adset.allocator.features.feature_store.FeatureStore")
+    @patch("src.meta.adset.allocator.features.feature_store.FeatureStore")
     @patch("src.utils.auto_params.AutoParams._save_params")
     def test_calculate_from_data_sufficient_adsets(self, mock_save, mock_fs):
         """Test calculation with sufficient data."""

@@ -74,15 +74,15 @@ Ensure any changes made align with the core goals and constraints of the **budge
 | Features | `datasets/{customer}/{platform}/features/` | `datasets/moprobo/meta/features/` |
 | Results | `results/{customer}/{platform}/` | `results/moprobo/meta/` |
 | GPT-4 Configs (ad recommender) | `config/ad/recommender/gpt4/` | `config/ad/recommender/gpt4/features.yaml` |
-| Creative Features | `src/ad/recommender/features/` | `src/ad/recommender/features/extract.py` |
-| Creative Recommendations | `src/ad/recommender/recommendations/` | `src/ad/recommender/recommendations/rule_engine.py` |
+| Creative Features | `src/meta/ad/recommender/features/` | `src/meta/ad/recommender/features/extract.py` |
+| Creative Recommendations | `src/meta/ad/recommender/recommendations/` | `src/meta/ad/recommender/recommendations/rule_engine.py` |
 | Recommender Output | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 | Generator Config | `config/ad/generator/{customer}/{platform}/` | `config/ad/generator/moprobo/taboola/generation_config.yaml` |
 | Generator Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
 | Generator Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
 | Generator Output | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../moprobo/taboola/2026-01-23/nano-banana-pro/` |
 
-**Rule**: Allocator/adset generator use `src/utils/customer_paths.py`. Ad recommender uses `src/ad/recommender/utils/paths.py` and `config_manager.py`. Ad generator uses `src/ad/generator/core/paths.py`. Never hard-code paths.
+**Rule**: Allocator/adset generator use `src/utils/customer_paths.py`. Ad recommender uses `src/meta/ad/recommender/utils/paths.py` and `config_manager.py`. Ad generator uses `src/meta/ad/generator/core/paths.py`. Never hard-code paths.
 
 ---
 
@@ -124,13 +124,13 @@ update_params(new_params)  # No checks
 
 ### 1. Primary Goals
 
-**Budget Allocator (`src/adset/allocator/`)**
+**Budget Allocator (`src/meta/adset/allocator/`)**
 - The goal is NOT to deliver the perfect budget allocation solution
 - Given a predefined monthly budget, allocate it among a list of pregenerated adsets
 - Scope: Daily budget allocation at adset level
 - Outputs: Daily budget allocation per adset
 
-**Audience Configuration Generator (`src/adset/generator/`)**
+**Audience Configuration Generator (`src/meta/adset/generator/`)**
 - Generate strategies for creating adset audience configurations (regions, ages, creative formats and other audience types) given each platform's targeting settings
 - Recommend audience configurations across multiple dimensions (geography, age ranges, audience types, creative formats)
 - Outputs: Audience configuration recommendations with confidence and evidence
@@ -246,17 +246,17 @@ Before pushing code, verify:
 
 ## Budget Allocator Architecture
 
-### Core Components (`src/adset/allocator/`)
+### Core Components (`src/meta/adset/allocator/`)
 **Engine** (`engine.py`): Main allocator interface
 - Orchestrates budget allocation across adsets
 - Applies decision rules in priority order
 - Returns final budgets with decision paths
 
 **Rules** (`rules.py`): Decision rule orchestration
-- Calls appropriate rules from `src/adset/lib/`
+- Calls appropriate rules from `src/meta/adset/lib/`
 - Returns budget adjustments with reasons
 
-### Supporting Library (`src/adset/lib/`)
+### Supporting Library (`src/meta/adset/lib/`)
 **models.py**: Data models for budget allocation
 - `BudgetAllocationMetrics`: Adset performance metrics
 - `BudgetAdjustmentParams`: Parameters for decision rules
@@ -314,7 +314,7 @@ Each rule returns:
 
 ## Audience Configuration Generator Architecture
 
-### Core Components (`src/adset/generator/`)
+### Core Components (`src/meta/adset/generator/`)
 **Core** (`core/recommender.py`): Base recommender classes
 - ConfigurableRecommender, ROASRecommender, MetricRecommender
 - RecommendationStrategy patterns
@@ -804,12 +804,12 @@ Before making any code change, Claude must verify:
 ### Allocator Core Files
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Engine** | `src/adset/allocator/engine.py` | Main allocator interface |
-| **Rules** | `src/adset/allocator/rules.py` | Rule orchestration |
-| **Decision Rules** | `src/adset/lib/decision_rules.py` | 42+ decision rules |
-| **Safety Rules** | `src/adset/lib/safety_rules.py` | Freeze/cap logic |
-| **Models** | `src/adset/lib/models.py` | Data models |
-| **Helpers** | `src/adset/lib/decision_rules_helpers.py` | Rule helper functions |
+| **Engine** | `src/meta/adset/allocator/engine.py` | Main allocator interface |
+| **Rules** | `src/meta/adset/allocator/rules.py` | Rule orchestration |
+| **Decision Rules** | `src/meta/adset/lib/decision_rules.py` | 42+ decision rules |
+| **Safety Rules** | `src/meta/adset/lib/safety_rules.py` | Freeze/cap logic |
+| **Models** | `src/meta/adset/lib/models.py` | Data models |
+| **Helpers** | `src/meta/adset/lib/decision_rules_helpers.py` | Rule helper functions |
 | **Tuning** | `src/optimizer/lib/bayesian_tuner.py` | Bayesian optimization |
 | **State** | `src/budget/state_manager.py` | Monthly state persistence |
 | **Tracking** | `src/budget/monthly_tracker.py` | Budget tracking logic |
@@ -817,47 +817,47 @@ Before making any code change, Claude must verify:
 ### Generator Core Files
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Core** | `src/adset/generator/core/recommender.py` | Base recommender class |
-| **Detection** | `src/adset/generator/detection/mistake_detector.py` | Detect issues in configs |
-| **Sizing** | `src/adset/generator/analyzers/opportunity_sizer.py` | Calculate opportunity size |
-| **Shopify** | `src/adset/generator/analyzers/shopify_analyzer.py` | Shopify revenue analysis |
-| **Generation** | `src/adset/generator/generation/audience_recommender.py` | Generate recommendations |
-| **Aggregator** | `src/adset/generator/generation/audience_aggregator.py` | Aggregate recommendations |
-| **Compatibility** | `src/adset/generator/generation/creative_compatibility.py` | Creative x audience |
-| **Segmentation** | `src/adset/generator/segmentation/segmenter.py` | Segment analysis |
-| **Constraints** | `src/adset/generator/analyzers/advantage_constraints.py` | Competitive advantages |
+| **Core** | `src/meta/adset/generator/core/recommender.py` | Base recommender class |
+| **Detection** | `src/meta/adset/generator/detection/mistake_detector.py` | Detect issues in configs |
+| **Sizing** | `src/meta/adset/generator/analyzers/opportunity_sizer.py` | Calculate opportunity size |
+| **Shopify** | `src/meta/adset/generator/analyzers/shopify_analyzer.py` | Shopify revenue analysis |
+| **Generation** | `src/meta/adset/generator/generation/audience_recommender.py` | Generate recommendations |
+| **Aggregator** | `src/meta/adset/generator/generation/audience_aggregator.py` | Aggregate recommendations |
+| **Compatibility** | `src/meta/adset/generator/generation/creative_compatibility.py` | Creative x audience |
+| **Segmentation** | `src/meta/adset/generator/segmentation/segmenter.py` | Segment analysis |
+| **Constraints** | `src/meta/adset/generator/analyzers/advantage_constraints.py` | Competitive advantages |
 
-### Ad Recommender Core Files (`src/ad/recommender/`)
+### Ad Recommender Core Files (`src/meta/ad/recommender/`)
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Extract** | `src/ad/recommender/features/extract.py` | Feature extraction and ROAS integration |
-| **GPT-4 Extractor** | `src/ad/recommender/features/extractors/gpt4_feature_extractor.py` | GPT-4 Vision API extractor |
-| **Transformer** | `src/ad/recommender/features/transformers/gpt4_feature_transformer.py` | Transform GPT-4 responses to features |
-| **Interactions** | `src/ad/recommender/features/interactions.py` | Feature interactions |
-| **Lib** | `src/ad/recommender/features/lib/` | Loaders, mergers, parsers, synthetic data |
-| **Rule Engine** | `src/ad/recommender/recommendations/rule_engine.py` | Statistical pattern-based recommendation engine |
-| **Prompt Formatter** | `src/ad/recommender/recommendations/prompt_formatter.py` | Format recommendations as prompts |
-| **Evidence** | `src/ad/recommender/recommendations/evidence_builder.py` | Build evidence for recommendations |
-| **Formatters** | `src/ad/recommender/recommendations/formatters.py` | Output formatting |
-| **Config** | `src/ad/recommender/utils/config_manager.py` | Config loading (gpt4 features/prompts) |
-| **Paths** | `src/ad/recommender/utils/paths.py` | Data dir, features CSV resolution |
-| **Statistics** | `src/ad/recommender/utils/statistics.py` | Chi-square and statistical tests |
-| **Predictor** | `src/ad/recommender/predictor.py` | Prediction utilities |
+| **Extract** | `src/meta/ad/recommender/features/extract.py` | Feature extraction and ROAS integration |
+| **GPT-4 Extractor** | `src/meta/ad/recommender/features/extractors/gpt4_feature_extractor.py` | GPT-4 Vision API extractor |
+| **Transformer** | `src/meta/ad/recommender/features/transformers/gpt4_feature_transformer.py` | Transform GPT-4 responses to features |
+| **Interactions** | `src/meta/ad/recommender/features/interactions.py` | Feature interactions |
+| **Lib** | `src/meta/ad/recommender/features/lib/` | Loaders, mergers, parsers, synthetic data |
+| **Rule Engine** | `src/meta/ad/recommender/recommendations/rule_engine.py` | Statistical pattern-based recommendation engine |
+| **Prompt Formatter** | `src/meta/ad/recommender/recommendations/prompt_formatter.py` | Format recommendations as prompts |
+| **Evidence** | `src/meta/ad/recommender/recommendations/evidence_builder.py` | Build evidence for recommendations |
+| **Formatters** | `src/meta/ad/recommender/recommendations/formatters.py` | Output formatting |
+| **Config** | `src/meta/ad/recommender/utils/config_manager.py` | Config loading (gpt4 features/prompts) |
+| **Paths** | `src/meta/ad/recommender/utils/paths.py` | Data dir, features CSV resolution |
+| **Statistics** | `src/meta/ad/recommender/utils/statistics.py` | Chi-square and statistical tests |
+| **Predictor** | `src/meta/ad/recommender/predictor.py` | Prediction utilities |
 
-### Ad Generator Core Files (`src/ad/generator/`)
+### Ad Generator Core Files (`src/meta/ad/generator/`)
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Paths** | `src/ad/generator/core/paths.py` | Customer/platform/date path management |
-| **Scorer Loader** | `src/ad/generator/core/scorer_recommendations_loader.py` | Load creative scorer recommendations |
-| **Prompts** | `src/ad/generator/core/prompts/` | Converters, feature loader, recommendations loader, variants |
-| **Generation** | `src/ad/generator/core/generation/generator.py` | Image generation via FAL.ai |
-| **Prompt Converter** | `src/ad/generator/core/generation/prompt_converter.py` | Nano Banana prompt conversion |
-| **Orchestrator** | `src/ad/generator/orchestrator/prompt_builder.py` | Build prompts from features |
-| **Feature Mapper** | `src/ad/generator/orchestrator/feature_mapper.py` | Map features to prompt elements |
-| **Template Engine** | `src/ad/generator/orchestrator/template_engine.py` | Template-based generation |
-| **Pipeline** | `src/ad/generator/pipeline/pipeline.py` | End-to-end generation pipeline |
-| **Feature Validator** | `src/ad/generator/pipeline/feature_validator.py` | Validate generated features |
-| **Recommendation Loader** | `src/ad/generator/pipeline/recommendation_loader.py` | Load recommendations for pipeline |
+| **Paths** | `src/meta/ad/generator/core/paths.py` | Customer/platform/date path management |
+| **Scorer Loader** | `src/meta/ad/generator/core/scorer_recommendations_loader.py` | Load creative scorer recommendations |
+| **Prompts** | `src/meta/ad/generator/core/prompts/` | Converters, feature loader, recommendations loader, variants |
+| **Generation** | `src/meta/ad/generator/core/generation/generator.py` | Image generation via FAL.ai |
+| **Prompt Converter** | `src/meta/ad/generator/core/generation/prompt_converter.py` | Nano Banana prompt conversion |
+| **Orchestrator** | `src/meta/ad/generator/orchestrator/prompt_builder.py` | Build prompts from features |
+| **Feature Mapper** | `src/meta/ad/generator/orchestrator/feature_mapper.py` | Map features to prompt elements |
+| **Template Engine** | `src/meta/ad/generator/orchestrator/template_engine.py` | Template-based generation |
+| **Pipeline** | `src/meta/ad/generator/pipeline/pipeline.py` | End-to-end generation pipeline |
+| **Feature Validator** | `src/meta/ad/generator/pipeline/feature_validator.py` | Validate generated features |
+| **Recommendation Loader** | `src/meta/ad/generator/pipeline/recommendation_loader.py` | Load recommendations for pipeline |
 
 ### Shared Files
 | Component | File | Purpose |
@@ -969,7 +969,7 @@ daily_budget = (monthly_cap - total_spent) / remaining_days * 0.95
 
 ---
 
-## Creative Recommender Architecture (`src/ad/recommender/`)
+## Creative Recommender Architecture (`src/meta/ad/recommender/`)
 
 **Purpose:** Statistical pattern-based creative optimization - analyzes image features to generate ROAS improvement recommendations
 
@@ -1057,11 +1057,11 @@ daily_budget = (monthly_cap - total_spent) / remaining_days * 0.95
 | Type | Location | Example |
 |------|----------|---------|
 | Configs | `config/ad/recommender/gpt4/` | `config/ad/recommender/gpt4/features.yaml` |
-| Creative Features | `src/ad/recommender/features/` | `src/ad/recommender/features/extract.py` |
-| Recommendations | `src/ad/recommender/recommendations/` | `src/ad/recommender/recommendations/rule_engine.py` |
+| Creative Features | `src/meta/ad/recommender/features/` | `src/meta/ad/recommender/features/extract.py` |
+| Recommendations | `src/meta/ad/recommender/recommendations/` | `src/meta/ad/recommender/recommendations/rule_engine.py` |
 | Output | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 
-**Rule**: Use `src/ad/recommender/utils/config_manager.py` for config; `src/ad/recommender/utils/paths.py` for data/features. Never hard-code paths.
+**Rule**: Use `src/meta/ad/recommender/utils/config_manager.py` for config; `src/meta/ad/recommender/utils/paths.py` for data/features. Never hard-code paths.
 
 ### Code Patterns to Follow
 
@@ -1153,7 +1153,7 @@ Before making any code change to creative recommender, Claude must verify:
 
 ---
 
-## Creative Generator Architecture (`src/ad/generator/`)
+## Creative Generator Architecture (`src/meta/ad/generator/`)
 
 **Purpose:** Image generation system that converts feature recommendations into optimized prompts and generates images via FAL.ai
 
@@ -1213,7 +1213,7 @@ Before making any code change to creative recommender, Claude must verify:
 | Generated | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../nano-banana-pro/` |
 | Recommendations | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 
-**Rule**: Use `src/ad/generator/core/paths.py` (`Paths`) for all config/output paths. Never hard-code paths.
+**Rule**: Use `src/meta/ad/generator/core/paths.py` (`Paths`) for all config/output paths. Never hard-code paths.
 
 ### Key Principles
 

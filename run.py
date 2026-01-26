@@ -363,7 +363,7 @@ constraints.
 
 def _cmd_extract(args):
     """Handle extract command using workflow."""
-    from src.adset.allocator.features.workflows import ExtractWorkflow
+    from src.meta.adset.allocator.features.workflows import ExtractWorkflow
 
     logger.info("=" * 70)
     logger.info("EXTRACT: Feature Extraction")
@@ -418,7 +418,7 @@ def _combine_customer_data(customer, platform, skip_validation=False):
     Returns:
         True if successful, False otherwise
     """
-    from src.adset.allocator.features.utils.csv_combiner import CSVCombiner
+    from src.meta.adset.allocator.features.utils.csv_combiner import CSVCombiner
     from pathlib import Path
 
     project_root = Path(__file__).parent
@@ -484,7 +484,7 @@ def _combine_customer_data(customer, platform, skip_validation=False):
 
 def _cmd_execute(args):
     """Handle execute command using workflow."""
-    from src.adset.allocator.workflows import AllocationWorkflow
+    from src.meta.adset.allocator.workflows import AllocationWorkflow
 
     logger.info("=" * 70)
     logger.info("EXECUTE: Budget Allocation (Rules-Based)")
@@ -514,8 +514,8 @@ def _cmd_execute(args):
 
 def _cmd_execute_test(args):
     """Handle execute test mode."""
-    from src.adset import DecisionRules, Allocator, SafetyRules
-    from src.adset.allocator.utils.parser import Parser
+    from src.meta.adset import DecisionRules, Allocator, SafetyRules
+    from src.meta.adset.allocator.utils.parser import Parser
 
     logger.info("=" * 70)
     logger.info("TEST: Rule-Based Budget Allocation")
@@ -583,7 +583,7 @@ def _cmd_execute_test(args):
 
 def _cmd_tune(args):
     """Handle tune command using workflow."""
-    from src.adset.allocator.workflows import TuningWorkflow
+    from src.meta.adset.allocator.workflows import TuningWorkflow
 
     logger.info("=" * 70)
     logger.info("TUNE: Parameter Tuning")
@@ -768,7 +768,7 @@ def _load_discovery_data(args):
 
 def _mine_discovery_rules(df_train, args):
     """Mine rules from training data."""
-    from src.adset.allocator.lib.discovery_miner import DecisionTreeMiner
+    from src.meta.adset.allocator.lib.discovery_miner import DecisionTreeMiner
 
     logger.info("")
     logger.info("Mining rules using decision trees...")
@@ -800,7 +800,7 @@ def _mine_discovery_rules(df_train, args):
 
 def _validate_discovery_rules(rules, df_train, df_test, args):
     """Validate discovered rules."""
-    from src.adset.allocator.lib.discovery_validator import RuleValidator
+    from src.meta.adset.allocator.lib.discovery_validator import RuleValidator
 
     if args.no_validation:
         return rules
@@ -860,7 +860,7 @@ def _display_discovery_results(rules):
 def _save_discovery_results(rules, args, validated_rules):
     """Save discovered rules to YAML file."""
     from pathlib import Path
-    from src.adset.allocator.lib.discovery_extractor import RuleExtractor
+    from src.meta.adset.allocator.lib.discovery_extractor import RuleExtractor
 
     output_path = Path(args.output) if args.output else Path(f"patterns/{args.customer}/discovered_rules.yaml")
 
@@ -945,8 +945,8 @@ def _cmd_rules(args):
     logger.info("=" * 70)
     
     try:
-        from src.adset.generator.detection import MistakeDetector
-        from src.adset.generator.generation import AudienceRecommender
+        from src.meta.adset.generator.detection import MistakeDetector
+        from src.meta.adset.generator.generation import AudienceRecommender
         
         logger.info("Running rules-based pipeline for %s/%s", args.customer, args.platform or "meta")
         
@@ -1024,7 +1024,7 @@ def _cmd_extract_features(args):
     logger.info("=" * 70)
     
     try:
-        from src.ad.recommender.features import extract_batch_features, add_roas_to_features
+        from src.meta.ad.recommender.features import extract_batch_features, add_roas_to_features
         
         if args.top_csv and args.bottom_csv:
             # Extract from top/bottom CSVs
@@ -1133,7 +1133,7 @@ def _cmd_recommend(args):
     logger.info("=" * 70)
     
     try:
-        from src.ad.recommender.recommendations import RuleEngine
+        from src.meta.ad.recommender.recommendations import RuleEngine
         import pandas as pd
         from pathlib import Path
         
@@ -1153,7 +1153,7 @@ def _cmd_recommend(args):
         output_dir = Path(args.output_dir) / args.customer / args.platform
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        from src.ad.recommender.recommendations.md_io import (
+        from src.meta.ad.recommender.recommendations.md_io import (
             export_recommendations_md,
         )
 
@@ -1243,7 +1243,7 @@ def _cmd_prompt(args):
         from pathlib import Path
 
         # Load recommendations (.json or .md from ad/recommender)
-        from src.ad.recommender.recommendations.md_io import (
+        from src.meta.ad.recommender.recommendations.md_io import (
             load_recommendations_file,
         )
 
@@ -1258,7 +1258,7 @@ def _cmd_prompt(args):
         recommendations = load_recommendations_file(recs_path)
 
         if args.mode == "structured":
-            from src.ad.recommender.recommendations.prompt_formatter import (
+            from src.meta.ad.recommender.recommendations.prompt_formatter import (
                 format_recs_as_prompts,
             )
 
@@ -1275,10 +1275,10 @@ def _cmd_prompt(args):
                 logger.error("--source-image is required for nano mode")
                 return 1
 
-            from src.ad.generator.core.generation.prompt_converter import (
+            from src.meta.ad.generator.core.generation.prompt_converter import (
                 PromptConverter,
             )
-            from src.ad.recommender.utils.api_keys import get_openai_api_key
+            from src.meta.ad.recommender.utils.api_keys import get_openai_api_key
 
             api_key = get_openai_api_key()
             converter = PromptConverter(api_key=api_key)
@@ -1358,7 +1358,7 @@ def _cmd_generate(args):
     logger.info("=" * 70)
     
     try:
-        from src.ad.generator.core.generation.generator import ImageGenerator
+        from src.meta.ad.generator.core.generation.generator import ImageGenerator
         from pathlib import Path
         
         generator = ImageGenerator(
@@ -1460,8 +1460,8 @@ def _cmd_run(args):
     logger.info("=" * 70)
     
     try:
-        from src.ad.generator.pipeline import CreativePipeline
-        from src.ad.generator.pipeline.pipeline import (
+        from src.meta.ad.generator.pipeline import CreativePipeline
+        from src.meta.ad.generator.pipeline.pipeline import (
             CreativePipelineConfig,
             RecommendationPaths,
         )

@@ -13,8 +13,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.adset.allocator.cli.commands.extract import _aggregate_ad_to_adset
-from src.adset.allocator.features import Aggregator, Extractor, Joiner, Loader
+from src.meta.adset.allocator.cli.commands.extract import _aggregate_ad_to_adset
+from src.meta.adset.allocator.features import Aggregator, Extractor, Joiner, Loader
 # Helper functions defined in this file
 def create_sample_account_data():
     """Create sample account data."""
@@ -372,7 +372,7 @@ class TestExtractScript:
         run_script_and_verify_output(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",
@@ -395,7 +395,7 @@ class TestExtractScript:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",
@@ -419,7 +419,7 @@ class TestExtractScript:
         result = subprocess.run(
             [
                 sys.executable,
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",
@@ -447,7 +447,7 @@ class TestExtractScript:
         result = subprocess.run(
             [
                 sys.executable,
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",
@@ -475,7 +475,7 @@ class TestExtractScript:
         result = subprocess.run(
             [
                 sys.executable,
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",
@@ -504,7 +504,7 @@ class TestExtractScript:
         result = subprocess.run(
             [
                 sys.executable,
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",
@@ -548,7 +548,7 @@ class TestExtractScript:
         result = subprocess.run(
             [
                 sys.executable,
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 "nonexistent_file.csv",
             ],
@@ -574,7 +574,7 @@ class TestExtractScript:
         result = subprocess.run(
             [
                 sys.executable,
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",
@@ -606,7 +606,7 @@ class TestExtractScript:
         result = subprocess.run(
             [
                 sys.executable,
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",
@@ -643,7 +643,7 @@ class TestExtractScript:
         result = subprocess.run(
             [
                 sys.executable,
-                "src/adset/allocator/cli/commands/extract.py",
+                "src/meta/adset/allocator/cli/commands/extract.py",
                 "--ad-file",
                 str(data_dir / "test-ad_daily_insights.csv"),
                 "--adset-file",

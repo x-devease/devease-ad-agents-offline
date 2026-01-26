@@ -5,8 +5,8 @@ Shared pytest fixtures for integration tests.
 from pathlib import Path
 
 import pytest
-from src.adset import DecisionRules, Allocator, SafetyRules
-from src.adset.allocator.utils.parser import Parser
+from src.meta.adset import DecisionRules, Allocator, SafetyRules
+from src.meta.adset.allocator.utils.parser import Parser
 
 
 @pytest.fixture

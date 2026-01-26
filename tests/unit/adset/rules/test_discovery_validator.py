@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.adset.allocator.lib.discovery_models import DiscoveredRule
-from src.adset.allocator.lib.discovery_validator import RuleValidator
+from src.meta.adset.allocator.lib.discovery_models import DiscoveredRule
+from src.meta.adset.allocator.lib.discovery_validator import RuleValidator
 
 
 @pytest.fixture

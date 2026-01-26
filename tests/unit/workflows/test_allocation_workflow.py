@@ -18,8 +18,8 @@ pytestmark = pytest.mark.skipif(
     reason="Mock setup issues in CI, skipped"
 )
 
-from src.adset.allocator.workflows.allocation_workflow import AllocationWorkflow
-from src.adset.allocator.features.workflows.base import WorkflowResult
+from src.meta.adset.allocator.workflows.allocation_workflow import AllocationWorkflow
+from src.meta.adset.allocator.features.workflows.base import WorkflowResult
 
 
 @pytest.fixture
@@ -49,9 +49,9 @@ def sample_config():
 class TestAllocationWorkflowInitializeAllocator:
     """Test AllocationWorkflow._initialize_allocator method."""
 
-    @patch("src.adset.allocator.workflows.allocation_workflow.SafetyRules")
-    @patch("src.adset.allocator.workflows.allocation_workflow.DecisionRules")
-    @patch("src.adset.allocator.workflows.allocation_workflow.Allocator")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.SafetyRules")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.DecisionRules")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.Allocator")
     def test_initialize_allocator(
         self,
         mock_allocator_class,
@@ -268,8 +268,8 @@ class TestAllocationWorkflowProcessCustomer:
     @patch("src.utils.customer_paths.ensure_customer_dirs")
     @patch("src.utils.customer_paths.get_customer_adset_features_path")
     @patch("src.utils.customer_paths.get_customer_allocations_path")
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_success(
         self,
         mock_tracker_class,
@@ -393,8 +393,8 @@ class TestAllocationWorkflowProcessCustomer:
     @patch("src.utils.customer_paths.ensure_customer_dirs")
     @patch("src.utils.customer_paths.get_customer_adset_features_path")
     @patch("src.utils.customer_paths.get_customer_allocations_path")
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_with_explicit_paths(
         self,
         mock_tracker_class,
@@ -458,8 +458,8 @@ class TestAllocationWorkflowProcessCustomer:
     @patch("src.utils.customer_paths.ensure_customer_dirs")
     @patch("src.utils.customer_paths.get_customer_adset_features_path")
     @patch("src.utils.customer_paths.get_customer_allocations_path")
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_calculates_statistics(
         self,
         mock_tracker_class,
@@ -524,8 +524,8 @@ class TestAllocationWorkflowProcessCustomer:
 class TestAllocationWorkflowIntegration:
     """Integration tests for AllocationWorkflow orchestration."""
 
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
     @patch("src.utils.customer_paths.get_all_customers")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
     @patch("src.utils.customer_paths.get_customer_adset_features_path")
@@ -609,8 +609,8 @@ class TestAllocationWorkflowIntegration:
         assert workflow.metrics.total_customers == 2
         assert workflow.metrics.successful_customers == 2
 
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
-    @patch("src.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
     @patch("src.utils.customer_paths.get_customer_adset_features_path")
     @patch("src.utils.customer_paths.get_customer_allocations_path")

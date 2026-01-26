@@ -11,7 +11,7 @@ pytestmark = pytest.mark.skipif(
     reason="Tests outdated Config class, skipped in CI"
 )
 
-from src.adset.allocator.features.feature_store import FeatureStore
+from src.meta.adset.allocator.features.feature_store import FeatureStore
 from src.utils import Config
 
 

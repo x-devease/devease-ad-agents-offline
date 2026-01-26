@@ -13,7 +13,7 @@ import time
 
 import pytest
 
-from src.adset.allocator.features.workflows.base import Workflow, WorkflowResult, WorkflowMetrics
+from src.meta.adset.allocator.features.workflows.base import Workflow, WorkflowResult, WorkflowMetrics
 
 
 class TestWorkflowResult:
@@ -438,7 +438,7 @@ class TestWorkflow:
         assert any("customer2" in msg for msg in logs)
         assert any("customer3" in msg for msg in logs)
 
-    @patch("src.adset.allocator.utils.parser.Parser")
+    @patch("src.meta.adset.allocator.utils.parser.Parser")
     def test_get_customer_config_success(self, mock_parser_class):
         """Test get_customer_config successful loading."""
         mock_config = MagicMock()
@@ -454,7 +454,7 @@ class TestWorkflow:
             platform="meta",
         )
 
-    @patch("src.adset.allocator.utils.parser.Parser")
+    @patch("src.meta.adset.allocator.utils.parser.Parser")
     def test_get_customer_config_file_not_found(self, mock_parser_class):
         """Test get_customer_config with FileNotFoundError."""
         mock_parser_class.side_effect = FileNotFoundError("Config not found")
@@ -464,7 +464,7 @@ class TestWorkflow:
         with pytest.raises(FileNotFoundError, match="Config not found"):
             workflow.get_customer_config("test_customer")
 
-    @patch("src.adset.allocator.utils.parser.Parser")
+    @patch("src.meta.adset.allocator.utils.parser.Parser")
     def test_get_customer_config_value_error(self, mock_parser_class):
         """Test get_customer_config with ValueError."""
         mock_parser_class.side_effect = ValueError("Invalid config")

@@ -14,8 +14,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.adset.allocator.features.workflows.extract_workflow import ExtractWorkflow
-from src.adset.allocator.features.workflows.base import WorkflowResult
+from src.meta.adset.allocator.features.workflows.extract_workflow import ExtractWorkflow
+from src.meta.adset.allocator.features.workflows.base import WorkflowResult
 
 
 @pytest.fixture

@@ -3,7 +3,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from src.adset.allocator.features.feature_selector import FeatureSelector
+from src.meta.adset.allocator.features.feature_selector import FeatureSelector
 
 
 class TestFeatureSelector:

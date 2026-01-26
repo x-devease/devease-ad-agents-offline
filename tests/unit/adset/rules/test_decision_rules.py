@@ -13,8 +13,8 @@ Tests priority-based budget adjustment rules including:
 
 from unittest.mock import Mock
 
-from src.adset.allocator.lib.decision_rules import DecisionRules
-from src.adset.allocator.lib.decision_rules_helpers import DecisionRulesHelpers
+from src.meta.adset.allocator.lib.decision_rules import DecisionRules
+from src.meta.adset.allocator.lib.decision_rules_helpers import DecisionRulesHelpers
 
 
 class TestDecisionRules:

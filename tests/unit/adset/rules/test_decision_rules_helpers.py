@@ -3,7 +3,7 @@ Unit tests for DecisionRulesHelpers class.
 Tests helper functions for decision rules calculations.
 """
 
-from src.adset.allocator.lib.decision_rules_helpers import DecisionRulesHelpers
+from src.meta.adset.allocator.lib.decision_rules_helpers import DecisionRulesHelpers
 
 
 class TestDecisionRulesHelpers:

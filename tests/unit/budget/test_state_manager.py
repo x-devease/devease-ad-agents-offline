@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from src.adset.allocator.budget.state_manager import MonthlyBudgetState
+from src.meta.adset.allocator.budget.state_manager import MonthlyBudgetState
 
 
 class TestMonthlyBudgetState:
@@ -438,7 +438,7 @@ class TestMonthlyBudgetStateReset:
         )
 
         # Mock datetime.now() to return January 2026
-        with patch("src.adset.allocator.budget.state_manager.datetime") as mock_dt:
+        with patch("src.meta.adset.allocator.budget.state_manager.datetime") as mock_dt:
             mock_dt.now.return_value.strftime.return_value = "2026-01"
 
             # Should detect rollover

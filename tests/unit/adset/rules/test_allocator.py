@@ -5,10 +5,10 @@ Tests the integration of SafetyRules and DecisionRules.
 """
 
 from unittest.mock import Mock
-from src.adset.allocator.allocator import Allocator
-from src.adset.allocator.lib.safety_rules import SafetyRules
-from src.adset.allocator.lib.decision_rules import DecisionRules
-from src.adset.allocator.utils.parser import Parser
+from src.meta.adset.allocator.allocator import Allocator
+from src.meta.adset.allocator.lib.safety_rules import SafetyRules
+from src.meta.adset.allocator.lib.decision_rules import DecisionRules
+from src.meta.adset.allocator.utils.parser import Parser
 
 
 class TestAllocator:

@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.adset.allocator.lib.decision_rules import DecisionRules
+from src.meta.adset.allocator.lib.decision_rules import DecisionRules
 
 
 class TestShopifyROASIntegration:

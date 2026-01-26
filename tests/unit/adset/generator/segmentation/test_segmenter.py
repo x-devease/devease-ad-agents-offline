@@ -4,7 +4,7 @@ import pytest
 import pandas as pd
 import numpy as np
 
-from src.adset.generator.segmentation.segmenter import Segmenter
+from src.meta.adset.generator.segmentation.segmenter import Segmenter
 
 pytestmark = pytest.mark.filterwarnings(
     "ignore::UserWarning", "ignore::DeprecationWarning"

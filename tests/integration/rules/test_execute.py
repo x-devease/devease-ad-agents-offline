@@ -12,8 +12,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from src.adset import Allocator, DecisionRules, SafetyRules
-from src.adset.allocator.utils.parser import Parser
+from src.meta.adset import Allocator, DecisionRules, SafetyRules
+from src.meta.adset.allocator.utils.parser import Parser
 
 
 def run_script(script_path, args):
@@ -141,7 +141,7 @@ class TestExecute:
         run_script_and_verify_output(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -162,7 +162,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -190,7 +190,7 @@ class TestExecute:
     )
     def test_execute_script_test_mode(self):
         """Test execute.py in test mode"""
-        result = run_script(sys.executable, ["src/adset/allocator/cli/commands/execute.py", "--test"])
+        result = run_script(sys.executable, ["src/meta/adset/allocator/cli/commands/execute.py", "--test"])
 
         # Test mode should execute successfully
         assert result.returncode == 0, f"Test mode failed: {result.stderr}"
@@ -202,7 +202,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--input",
                 "nonexistent_file.csv",
                 "--output",
@@ -224,7 +224,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -248,7 +248,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -273,7 +273,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -303,7 +303,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -349,7 +349,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -383,7 +383,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--input",
                 str(empty_file),
                 "--output",
@@ -422,7 +422,7 @@ decision_rules:
         result = run_script(
             sys.executable,
             [
-                "src/adset/allocator/cli/commands/execute.py",
+                "src/meta/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",

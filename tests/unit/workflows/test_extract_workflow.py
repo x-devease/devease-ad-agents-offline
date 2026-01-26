@@ -17,8 +17,8 @@ pytestmark = pytest.mark.skipif(
     reason="Workflow tests require file system access, skipped in CI"
 )
 
-from src.adset.allocator.features.workflows.extract_workflow import ExtractWorkflow
-from src.adset.allocator.features.workflows.base import WorkflowResult
+from src.meta.adset.allocator.features.workflows.extract_workflow import ExtractWorkflow
+from src.meta.adset.allocator.features.workflows.base import WorkflowResult
 
 
 @pytest.fixture
@@ -141,7 +141,7 @@ class TestExtractWorkflowInit:
 class TestExtractWorkflowLoadData:
     """Test ExtractWorkflow._load_data method."""
 
-    @patch("src.adset.allocator.features.Loader.load_all_data")
+    @patch("src.meta.adset.allocator.features.Loader.load_all_data")
     def test_load_data_default(self, mock_load_all_data):
         """Test _load_data with no explicit files."""
         mock_load_all_data.return_value = {"ad": pd.DataFrame()}
@@ -153,7 +153,7 @@ class TestExtractWorkflowLoadData:
 
         mock_load_all_data.assert_called_once_with(data_dir=str(data_dir))
 
-    @patch("src.adset.allocator.features.Loader.load_all_data")
+    @patch("src.meta.adset.allocator.features.Loader.load_all_data")
     def test_load_data_with_explicit_files(self, mock_load_all_data):
         """Test _load_data with explicit file paths."""
         mock_load_all_data.return_value = {"ad": pd.DataFrame()}
@@ -177,7 +177,7 @@ class TestExtractWorkflowLoadData:
             ad_file="custom_ad.csv",
         )
 
-    @patch("src.adset.allocator.features.Loader.load_all_data")
+    @patch("src.meta.adset.allocator.features.Loader.load_all_data")
     def test_load_data_partial_explicit_files(self, mock_load_all_data):
         """Test _load_data with only some explicit files."""
         mock_load_all_data.return_value = {"ad": pd.DataFrame()}
@@ -196,7 +196,7 @@ class TestExtractWorkflowLoadData:
 class TestExtractWorkflowAggregateToAdset:
     """Test ExtractWorkflow._aggregate_to_adset method."""
 
-    @patch("src.adset.allocator.cli.commands.extract._aggregate_ad_to_adset")
+    @patch("src.meta.adset.allocator.cli.commands.extract._aggregate_ad_to_adset")
     def test_aggregate_to_adset_success(self, mock_aggregate_fn):
         """Test successful aggregation to adset level."""
         mock_aggregate_fn.return_value = pd.DataFrame(
@@ -223,8 +223,8 @@ class TestExtractWorkflowProcessCustomer:
 
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     @patch("src.utils.customer_paths.get_customer_adset_features_path")
     def test_process_customer_success_with_aggregation(
@@ -296,8 +296,8 @@ class TestExtractWorkflowProcessCustomer:
 
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     def test_process_customer_success_without_aggregation(
         self,
@@ -380,8 +380,8 @@ class TestExtractWorkflowProcessCustomer:
 
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     def test_process_customer_file_not_found_error(
         self,
@@ -413,8 +413,8 @@ class TestExtractWorkflowProcessCustomer:
 
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     def test_process_customer_value_error(
         self,
@@ -446,8 +446,8 @@ class TestExtractWorkflowProcessCustomer:
 
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     def test_process_customer_unexpected_error(
         self,
@@ -478,8 +478,8 @@ class TestExtractWorkflowProcessCustomer:
 
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     @patch("src.utils.customer_paths.get_customer_adset_features_path")
     def test_process_customer_with_explicit_files(
@@ -549,8 +549,8 @@ class TestExtractWorkflowProcessCustomer:
     @patch("pathlib.Path.mkdir", return_value=None)
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     def test_process_customer_respects_preprocess_flags(
         self,
@@ -596,8 +596,8 @@ class TestExtractWorkflowIntegration:
     @patch("src.utils.customer_paths.get_all_customers")
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     def test_workflow_run_multiple_customers(
         self,
@@ -649,8 +649,8 @@ class TestExtractWorkflowIntegration:
     @patch("src.utils.customer_paths.get_all_customers")
     @patch("src.utils.customer_paths.get_customer_data_dir")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.adset.allocator.features.Joiner.join_all_levels")
-    @patch("src.adset.allocator.features.Aggregator.create_aggregated_features")
+    @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
+    @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
     @patch("src.utils.customer_paths.get_customer_ad_features_path")
     @patch("pandas.DataFrame.to_csv")
     @patch("pathlib.Path.mkdir", return_value=None)

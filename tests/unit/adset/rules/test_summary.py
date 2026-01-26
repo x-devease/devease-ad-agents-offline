@@ -3,7 +3,7 @@ Unit tests for summary.py module.
 Tests the complete rule execution functions.
 """
 
-from src.adset.allocator.utils.summary import (
+from src.meta.adset.allocator.utils.summary import (
     apply_post_modifications,
     calculate_budget_adjustment,
     execute_all_rules,

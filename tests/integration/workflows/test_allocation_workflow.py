@@ -21,8 +21,8 @@ pytestmark = pytest.mark.skipif(
     reason="Mock setup issues in CI, skipped"
 )
 
-from src.adset.allocator.workflows.allocation_workflow import AllocationWorkflow
-from src.adset.allocator.features.workflows.base import WorkflowResult
+from src.meta.adset.allocator.workflows.allocation_workflow import AllocationWorkflow
+from src.meta.adset.allocator.features.workflows.base import WorkflowResult
 
 
 @pytest.fixture
@@ -122,8 +122,8 @@ def sample_config(tmp_path):
 class TestAllocationWorkflow:
     """Test AllocationWorkflow end-to-end."""
 
-    @patch("src.adset.allocator.budget.state_manager.MonthlyBudgetState")
-    @patch("src.adset.allocator.budget.monthly_tracker.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.budget.state_manager.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.budget.monthly_tracker.MonthlyBudgetTracker")
     def test_rules_based_allocation(
         self,
         mock_tracker_class,

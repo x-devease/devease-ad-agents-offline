@@ -102,7 +102,7 @@ class AutoParams:
         print(f"Auto-calculating parameters for {customer}/{platform}...")
 
         # Load data
-        from src.adset.allocator.features.feature_store import FeatureStore
+        from src.meta.adset.allocator.features.feature_store import FeatureStore
 
         fs = FeatureStore(customer=customer, platform=platform)
 

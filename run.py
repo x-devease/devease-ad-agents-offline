@@ -34,7 +34,7 @@ Usage:
     
     # Creative operations
     python run.py extract-features --ad-data-csv data/ad_data.csv --output-csv data/features_with_roas.csv
-    python run.py recommend --input-csv data/features_with_roas.csv --output-dir config/recommendations/moprobo/meta
+    python run.py recommend --input-csv data/features_with_roas.csv --output-dir config/ad/recommender
     python run.py prompt structured --base-prompt "A professional product image"
     python run.py generate --source-image product.jpg --prompt "Professional product image" --num-variations 3
     python run.py run --source-image product.jpg --base-prompt "A professional product image" --num-variations 3
@@ -363,7 +363,7 @@ constraints.
 
 def _cmd_extract(args):
     """Handle extract command using workflow."""
-    from src.adset.features.workflows import ExtractWorkflow
+    from src.adset.allocator.features.workflows import ExtractWorkflow
 
     logger.info("=" * 70)
     logger.info("EXTRACT: Feature Extraction")
@@ -418,7 +418,7 @@ def _combine_customer_data(customer, platform, skip_validation=False):
     Returns:
         True if successful, False otherwise
     """
-    from src.adset.features.utils.csv_combiner import CSVCombiner
+    from src.adset.allocator.features.utils.csv_combiner import CSVCombiner
     from pathlib import Path
 
     project_root = Path(__file__).parent
@@ -592,7 +592,7 @@ def _cmd_tune(args):
     # Handle legacy examples (backward compatibility)
     if args.example_single_param or args.example_grid_search:
         # Fall back to original tune.py for legacy examples
-        import src.adset.cli.commands.tune as tune_module
+        import src.adset.allocator.cli.commands.tune as tune_module
 
         tune_argv = ["tune.py"]
         if args.example_single_param:
@@ -1105,8 +1105,8 @@ actionable recommendations with evidence.
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="config/recommendations",
-        help="Output directory for recommendations (default: config/recommendations)",
+        default="config/ad/recommender",
+        help="Output directory for recommendations (default: config/ad/recommender)",
     )
     
     parser.add_argument(
@@ -1148,18 +1148,21 @@ def _cmd_recommend(args):
         logger.info("Generating recommendations...")
         recommendations = rule_engine.generate_recommendations(df)
         
-        # Save recommendations
+        # Save recommendations (MD format only)
+        # Output to config/ad/recommender/{customer}/{platform}
         output_dir = Path(args.output_dir) / args.customer / args.platform
         output_dir.mkdir(parents=True, exist_ok=True)
-        
-        output_file = output_dir / "recommendations.json"
-        import json
-        with open(output_file, 'w') as f:
-            json.dump(recommendations, f, indent=2)
-        
+
+        from src.ad.recommender.recommendations.md_io import (
+            export_recommendations_md,
+        )
+
+        output_md = output_dir / "recommendations.md"
+        export_recommendations_md(recommendations, output_md)
+
         logger.info("=" * 70)
         logger.info("SUCCESS: Recommendations generated!")
-        logger.info("Output: %s", output_file)
+        logger.info("Output: %s", output_md)
         logger.info("=" * 70)
         
         return 0
@@ -1206,8 +1209,11 @@ Modes:
     parser.add_argument(
         "--base-prompt",
         type=str,
-        default="A professional product image",
-        help="Base prompt text (default: A professional product image)",
+        default=(
+            "Professional product photography, sharp focus, studio lighting, "
+            "high resolution, clean composition, commercial quality"
+        ),
+        help="Base prompt for positive/structured output",
     )
     
     parser.add_argument(
@@ -1221,7 +1227,7 @@ Modes:
         "--recommendations-file",
         type=str,
         default=None,
-        help="Path to recommendations JSON file",
+        help="Path to recommendations file (.md from ad/recommender)",
     )
     
     parser.set_defaults(func=_cmd_prompt)
@@ -1235,51 +1241,53 @@ def _cmd_prompt(args):
     
     try:
         from pathlib import Path
-        import json
-        
-        # Load recommendations
+
+        # Load recommendations (.json or .md from ad/recommender)
+        from src.ad.recommender.recommendations.md_io import (
+            load_recommendations_file,
+        )
+
         if args.recommendations_file:
             recs_path = Path(args.recommendations_file)
         else:
-            recs_path = Path(f"config/recommendations/{args.customer}/{args.platform}/recommendations.json")
-        
-        if not recs_path.exists():
-            logger.error("Recommendations file not found: %s", recs_path)
-            return 1
-        
-        with open(recs_path) as f:
-            recommendations = json.load(f)
-        
+            # Look in config/ad/recommender/{customer}/{platform}
+            base = Path(
+                f"config/ad/recommender/{args.customer}/{args.platform}"
+            )
+            recs_path = base / "recommendations.md"
+        recommendations = load_recommendations_file(recs_path)
+
         if args.mode == "structured":
-            from src.ad.recommender.recommendations.prompt_formatter import format_recs_as_prompts
-            
+            from src.ad.recommender.recommendations.prompt_formatter import (
+                format_recs_as_prompts,
+            )
+
             result = format_recs_as_prompts(
                 recommendations,
                 base_positive=args.base_prompt,
             )
-            
             logger.info("Generated prompt:")
-            logger.info("Positive: %s", result.get('positive_prompt', ''))
-            logger.info("Negative: %s", result.get('negative_prompt', ''))
-            
+            logger.info("Positive: %s", result.get("final_prompt", ""))
+            logger.info("Negative: %s", result.get("negative_prompt", ""))
+
         elif args.mode == "nano":
             if not args.source_image:
                 logger.error("--source-image is required for nano mode")
                 return 1
-            
-            from src.ad.generator.core.generation.prompt_converter import PromptConverter
-            from src.utils.api_keys import get_openai_api_key
-            
+
+            from src.ad.generator.core.generation.prompt_converter import (
+                PromptConverter,
+            )
+            from src.ad.recommender.utils.api_keys import get_openai_api_key
+
             api_key = get_openai_api_key()
             converter = PromptConverter(api_key=api_key)
-            
-            prompt = converter.convert_to_nano_banana(
+            out = converter.convert_to_nano_banana(
                 base_prompt=args.base_prompt,
                 source_image_path=args.source_image,
                 recommendations=recommendations,
             )
-            
-            logger.info("Generated Nano Banana prompt: %s", prompt)
+            logger.info("Generated Nano Banana prompt: %s", out.get("flux_prompt", ""))
         
         logger.info("=" * 70)
         logger.info("SUCCESS: Prompt generation complete!")
@@ -1421,8 +1429,11 @@ Run complete creative generation pipeline:
     parser.add_argument(
         "--base-prompt",
         type=str,
-        default="A professional product image",
-        help="Base prompt text (default: A professional product image)",
+        default=(
+            "Professional product photography, sharp focus, studio lighting, "
+            "high resolution, clean composition, commercial quality"
+        ),
+        help="Base prompt for generation",
     )
     
     parser.add_argument(
@@ -1450,14 +1461,24 @@ def _cmd_run(args):
     
     try:
         from src.ad.generator.pipeline import CreativePipeline
-        from src.ad.generator.pipeline.pipeline import CreativePipelineConfig
+        from src.ad.generator.pipeline.pipeline import (
+            CreativePipelineConfig,
+            RecommendationPaths,
+        )
         from pathlib import Path
         
-        # Build config
+        # Determine recommendation path (ad/recommender format)
+        # Look in config/ad/recommender/{customer}/{platform}
+        rec_path = Path(
+            f"config/ad/recommender/{args.customer}/{args.platform}/recommendations.md"
+        )
+        
+        # Build config with recommendation path
         config = CreativePipelineConfig(
             product_name=args.product_name or args.customer,
-            customer=args.customer,
-            platform=args.platform,
+            recommendation_paths=RecommendationPaths(
+                recommendation_path=rec_path if rec_path.exists() else None
+            ),
         )
         
         # Initialize pipeline

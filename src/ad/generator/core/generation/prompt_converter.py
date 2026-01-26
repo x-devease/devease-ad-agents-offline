@@ -336,3 +336,66 @@ class PromptConverter:
         except Exception as e:
             logger.error("Error converting prompt via GPT-4o: %s", e)
             raise
+
+    def convert_to_nano_banana(
+        self,
+        base_prompt: str,
+        source_image_path: Optional[str] = None,
+        recommendations: Optional[dict] = None,
+        temperature: float = 0.7,
+        product_context: Optional[str] = None,
+    ) -> Dict[str, str]:
+        """Build feature instructions from ad/recommender output and convert to Nano Banana prompt.
+
+        Args:
+            base_prompt: Base product description.
+            source_image_path: Optional source image for reference.
+            recommendations: Dict with "recommendations" list (from JSON or MD).
+            temperature: GPT-4o temperature.
+            product_context: Optional product context.
+
+        Returns:
+            Dict with 'flux_prompt' and 'filename'.
+        """
+        feature_instructions = None
+        feature_values = None
+        recs = (recommendations or {}).get("recommendations") or []
+        if recs:
+            dos = []
+            donts = []
+            fv = {}
+            for r in recs:
+                feat = r.get("feature", "").strip()
+                rec_val = r.get("recommended", "").strip()
+                typ = r.get("type", "improvement")
+                conf = r.get("reason", r.get("confidence", ""))
+                if not feat:
+                    continue
+                line = f"- **{feat}**: {rec_val}"
+                if conf:
+                    line += f" ({conf})"
+                if typ == "anti_pattern":
+                    donts.append(line)
+                else:
+                    dos.append(line)
+                    if rec_val and not rec_val.upper().startswith("NOT "):
+                        fv[feat] = rec_val
+            parts = []
+            if dos:
+                parts.append("**DOs (incorporate these):**")
+                parts.extend(dos)
+            if donts:
+                parts.append("**DON'Ts (avoid these):**")
+                parts.extend(donts)
+            if parts:
+                feature_instructions = "\n".join(parts)
+            if fv:
+                feature_values = fv
+        return self.convert_to_flux_prompt(
+            base_prompt=base_prompt,
+            feature_instructions=feature_instructions,
+            source_image_path=source_image_path,
+            temperature=temperature,
+            feature_values=feature_values,
+            product_context=product_context,
+        )

@@ -165,6 +165,16 @@ update_params(new_params)  # No checks
 - Fix all failures
 - Maintain code quality standards
 
+#### Pre-Push CI/CD Checklist
+Before pushing code, verify:
+
+- [ ] **No test failures in CI pipeline** - All unit tests must pass
+- [ ] **No lint failures** - pylint, mypy, and other linters must report 0 errors
+- [ ] **Coverage maintained at or above baseline** - Check `.coverage.baseline` file; coverage must not drop (e.g., from 49% to 47%)
+- [ ] **No increase in unjustified test skips** - CI skips should only be used for real environment limitations, not to hide failures
+- [ ] **No workarounds to bypass CI checks** - Fix root causes instead of using temporary workarounds
+- [ ] **Type checking passes** - mypy and other type checkers must report no errors
+
 ### 6. Daily Data Updates
 **Algorithm and parameters must update when new daily data arrives.**
 
@@ -503,7 +513,12 @@ Before making any code change, Claude must verify:
 - [ ] Is this the minimum change needed?
 - [ ] Preserves existing behavior where appropriate
 - [ ] Maintains backward compatibility
-- [ ] All CI workflows pass
+- [ ] **All CI workflows pass**
+  - [ ] No test failures in CI pipeline
+  - [ ] No lint failures (pylint, mypy, etc.)
+  - [ ] **Coverage maintained at or above baseline** (check `.coverage.baseline`)
+  - [ ] No increase in unjustified test skips
+  - [ ] No workarounds used to bypass CI checks
 
 ### Reliability Check
 - [ ] Is this safe for production with real money?
@@ -766,6 +781,14 @@ Before making any code change, Claude must verify:
 41. Missing confidence scores (generator)
 42. Missing evidence dictionaries (generator)
 43. Over-claiming without segment data (generator)
+
+### 🚩 CI/CD Violations (CRITICAL)
+44. **Coverage regression** - Code coverage drops below baseline (e.g., from 49% to 47%)
+45. **Test failures in CI** - Any unit tests failing in CI pipeline
+46. **Lint failures in CI** - pylint or other linting tools reporting errors
+47. **Skipping CI checks to bypass failures** - Using workarounds to pass CI instead of fixing root causes
+48. **Increasing test skip count without justification** - Adding CI skips to hide test failures rather than fixing them
+49. **Type checking failures** - mypy or other type checkers reporting errors that are ignored
 
 ### 🚩 Design Violations (Both)
 44. Ignore historical baseline comparison

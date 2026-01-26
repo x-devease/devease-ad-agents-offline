@@ -18,14 +18,17 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.orchestrator.prompt_builder import PromptBuilder, PromptBuilderConfig
-from src.pipeline.feature_reproduction import FeatureReproductionTracker
-from src.pipeline.product_context import (
+from src.ad.generator.orchestrator.prompt_builder import PromptBuilder, PromptBuilderConfig
+from src.ad.generator.pipeline.feature_reproduction import FeatureReproductionTracker
+from src.ad.generator.pipeline.product_context import (
     ProductContextConfig,
     ProductIdentity,
     create_product_context,
 )
-from src.pipeline.recommendation_loader import RecommendationLoader
+from src.ad.generator.pipeline.recommendation_loader import RecommendationLoader
+from src.ad.generator.pipeline.ad_recommender_adapter import (
+    load_recommendations_as_visual_formula,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -41,12 +44,24 @@ class RecommendationPaths:
 
 @dataclass
 class PromptBuilderModes:
-    """PromptBuilder mode configuration."""
+    """PromptBuilder mode configuration (DEPRECATED - all modes are now professional quality)."""
 
-    lean_mode: bool = False
-    v2_mode: bool = False
+    lean_mode: bool = False  # DEPRECATED
+    v2_mode: bool = True  # DEPRECATED
     branch_name: Optional[str] = None
     step2_mode: bool = False
+
+    # Feature flags (all default to True for professional quality)
+    anti_hallucination_enhanced: bool = True
+    camera_specs: bool = True
+    material_textures: bool = True
+    three_point_lighting: bool = True
+    depth_of_field: bool = True
+    post_processing: bool = True
+    shadow_specification: bool = True
+    frame_occupancy: bool = True
+    visual_flow: bool = True
+    color_accuracy_tolerance: bool = True
 
 
 @dataclass
@@ -138,11 +153,16 @@ class CreativePipeline:
         # Session state (1 attribute)
         self.visual_recommendation = None
 
-        # Set up tracker session
+        # Set up tracker session (formula_path may not exist yet)
+        formula_path = (
+            str(self.recommendation_loader.recommendation_path)
+            if hasattr(self.recommendation_loader, "recommendation_path")
+            else "unknown"
+        )
         self.tracker.set_session_info(
             product_name=config.product_name,
             market=self.product_context.get("market", "US"),
-            formula_path=str(self.recommendation_loader.recommendation_path),
+            formula_path=formula_path,
             config={},
         )
 
@@ -221,17 +241,93 @@ class CreativePipeline:
         """Create prompt builder."""
         return PromptBuilder(
             PromptBuilderConfig(
-                lean_mode=config.lean_mode,
-                v2_mode=config.v2_mode,
                 branch_name=config.branch_name,
                 step2_mode=config.step2_mode,
                 product_context=product_context,
+                anti_hallucination_enhanced=config.modes.anti_hallucination_enhanced,
+                camera_specs=config.modes.camera_specs,
+                material_textures=config.modes.material_textures,
+                three_point_lighting=config.modes.three_point_lighting,
+                depth_of_field=config.modes.depth_of_field,
+                post_processing=config.modes.post_processing,
+                shadow_specification=config.modes.shadow_specification,
+                frame_occupancy=config.modes.frame_occupancy,
+                visual_flow=config.modes.visual_flow,
+                color_accuracy_tolerance=config.modes.color_accuracy_tolerance,
             )
         )
 
     def load_recommendation(self) -> Dict[str, Any]:
-        """Load visual recommendation from scorer repository."""
-        return self.recommendation_loader.load()
+        """
+        Load visual recommendation from scorer repository or ad/recommender.
+        
+        Supports two formats:
+        1. Creative scorer format (entrance_features/headroom_features)
+        2. Ad recommender format (recommendations array) - auto-converts
+        """
+        rec_path = self.recommendation_loader.recommendation_path
+        
+        # Check if this is an ad/recommender format file
+        if rec_path and rec_path.exists():
+            # Try to detect format by checking file extension and content
+            if rec_path.suffix in [".md", ".json"]:
+                try:
+                    # Try loading as ad/recommender format first
+                    visual_formula = load_recommendations_as_visual_formula(
+                        rec_path,
+                        min_confidence="medium",
+                        min_high_performer_pct=0.25,
+                    )
+                    logger.info(
+                        "Loaded recommendations from ad/recommender format: %s",
+                        rec_path
+                    )
+                    return visual_formula
+                except (ValueError, KeyError, FileNotFoundError) as e:
+                    logger.debug(
+                        "Not ad/recommender format (will try scorer format): %s", e
+                    )
+                    # Fall through to scorer format
+        
+        # Default: try scorer format
+        try:
+            return self.recommendation_loader.load()
+        except FileNotFoundError:
+            # If scorer format not found, try ad/recommender format from default location
+            # Try MD first (primary format), then JSON as fallback
+            base_dir = Path("config/ad/recommender")
+            # Try to infer customer/platform from product_name or use defaults
+            customer = self._config.product_name.lower().replace(" ", "_")
+            platform = "meta"
+            
+            md_path = base_dir / customer / platform / "recommendations.md"
+            json_path = base_dir / customer / platform / "recommendations.json"
+            
+            if md_path.exists():
+                logger.info(
+                    "Scorer format not found, using ad/recommender MD: %s",
+                    md_path
+                )
+                return load_recommendations_as_visual_formula(
+                    md_path,
+                    min_confidence="medium",
+                    min_high_performer_pct=0.25,
+                )
+            elif json_path.exists():
+                logger.info(
+                    "Scorer format not found, using ad/recommender JSON (fallback): %s",
+                    json_path
+                )
+                return load_recommendations_as_visual_formula(
+                    json_path,
+                    min_confidence="medium",
+                    min_high_performer_pct=0.25,
+                )
+            raise FileNotFoundError(
+                f"Neither scorer format nor ad/recommender format found. "
+                f"Tried: {self.recommendation_loader.recommendation_path}, "
+                f"{md_path}, {json_path}"
+            )
 
     def generate_prompt(
         self,
@@ -292,7 +388,12 @@ class CreativePipeline:
             logger.info("Generated prompt: %s...", prompt[:100])
             # Track prompt
             if save_prompts:
-                prompt_file = self.output_dir / f"prompt_{i+1:02d}.txt"
+                # Save to config/ad/recommender/{customer}/{platform}/prompts.md
+                customer = self._config.product_name.lower().replace(" ", "_")
+                platform = "meta"
+                prompts_dir = Path("config/ad/recommender") / customer / platform
+                prompts_dir.mkdir(parents=True, exist_ok=True)
+                prompt_file = prompts_dir / "prompts.md"
                 prompt_file.write_text(prompt, encoding="utf-8")
                 logger.debug("Saved prompt to %s", prompt_file)
 

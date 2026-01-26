@@ -438,7 +438,7 @@ class TestMonthlyBudgetStateReset:
         )
 
         # Mock datetime.now() to return January 2026
-        with patch("src.budget.state_manager.datetime") as mock_dt:
+        with patch("src.adset.allocator.budget.state_manager.datetime") as mock_dt:
             mock_dt.now.return_value.strftime.return_value = "2026-01"
 
             # Should detect rollover

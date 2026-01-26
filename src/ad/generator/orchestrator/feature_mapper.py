@@ -507,7 +507,12 @@ class FeatureMapper:
         visual_formula: Dict[str, Any],
     ) -> str:
         """
-        Extract lighting detail from brightness_distribution feature.
+        Extract lighting detail from lighting_detail or brightness_distribution feature.
+
+        Priority:
+        1. Check for lighting_detail (from recommendations, e.g., "direction" -> "lighting_detail")
+        2. Check brightness_distribution (legacy feature)
+        3. Use default
 
         Uses ROAS-based selection: highest ROAS value.
         Maps to descriptive photographic instruction.
@@ -518,11 +523,11 @@ class FeatureMapper:
         Returns:
             Lighting detail string (e.g., "subtle light-to-shadow gradient across the floor")
         """
-        # Find all brightness_distribution features
         candidates = []
-        # Check headroom_features
+        
+        # Priority 1: Check for lighting_detail (from recommendations mapping)
         for feature in visual_formula.get("headroom_features", []):
-            if feature.get("feature_name") == "brightness_distribution":
+            if feature.get("feature_name") == "lighting_detail":
                 roas = feature.get("avg_roas", 0)
                 roas_lift = feature.get("roas_lift_pct", 0)
                 value = feature.get("feature_value", "")
@@ -533,11 +538,11 @@ class FeatureMapper:
                             "roas": roas,
                             "roas_lift": roas_lift,
                             "source": "headroom",
+                            "feature": "lighting_detail",
                         }
                     )
-        # Check entrance_features
         for feature in visual_formula.get("entrance_features", []):
-            if feature.get("feature_name") == "brightness_distribution":
+            if feature.get("feature_name") == "lighting_detail":
                 roas = feature.get("avg_roas", 0)
                 value = feature.get("feature_value", "")
                 if value:
@@ -547,34 +552,77 @@ class FeatureMapper:
                             "roas": roas,
                             "roas_lift": 0,
                             "source": "entrance",
+                            "feature": "lighting_detail",
                         }
                     )
+        
+        # Priority 2: Check brightness_distribution (legacy feature)
+        if not candidates:
+            for feature in visual_formula.get("headroom_features", []):
+                if feature.get("feature_name") == "brightness_distribution":
+                    roas = feature.get("avg_roas", 0)
+                    roas_lift = feature.get("roas_lift_pct", 0)
+                    value = feature.get("feature_value", "")
+                    if value and roas_lift >= 0:
+                        candidates.append(
+                            {
+                                "value": value,
+                                "roas": roas,
+                                "roas_lift": roas_lift,
+                                "source": "headroom",
+                                "feature": "brightness_distribution",
+                            }
+                        )
+            for feature in visual_formula.get("entrance_features", []):
+                if feature.get("feature_name") == "brightness_distribution":
+                    roas = feature.get("avg_roas", 0)
+                    value = feature.get("feature_value", "")
+                    if value:
+                        candidates.append(
+                            {
+                                "value": value,
+                                "roas": roas,
+                                "roas_lift": 0,
+                                "source": "entrance",
+                                "feature": "brightness_distribution",
+                            }
+                        )
 
         if not candidates:
             # Use default
             default = self.defaults.get("lighting_detail", "")
             logger.debug(
-                "No brightness_distribution found, using default: %s", default
+                "No lighting_detail or brightness_distribution found, using default: %s",
+                default
             )
             return default
+        
         # Select highest ROAS
         best = max(candidates, key=lambda x: x["roas"])
         value = best["value"].lower()
-        # Map to descriptive instruction
-        if "gradient" in value:
-            lighting = "subtle light-to-shadow gradient across the floor"
-        elif "uniform" in value:
-            lighting = "uniform brightness distribution"
-        elif "spotlight" in value:
-            lighting = "focused spotlight on product"
+        
+        # If value is already a descriptive instruction (from recommendations mapping),
+        # use it directly; otherwise map brightness_distribution values
+        if best["feature"] == "lighting_detail":
+            # Already transformed by recommendation mapping, use as-is
+            lighting = best["value"]
         else:
-            lighting = f"{value} brightness distribution"
+            # Map brightness_distribution to descriptive instruction
+            if "gradient" in value:
+                lighting = "subtle light-to-shadow gradient across the floor"
+            elif "uniform" in value:
+                lighting = "uniform brightness distribution"
+            elif "spotlight" in value:
+                lighting = "focused spotlight on product"
+            else:
+                lighting = f"{value} brightness distribution"
 
         logger.info(
-            "Selected lighting_detail='%s' (ROAS: %.2f, source: %s)",
+            "Selected lighting_detail='%s' (ROAS: %.2f, source: %s, feature: %s)",
             lighting,
             best["roas"],
             best["source"],
+            best["feature"],
         )
         return lighting
 

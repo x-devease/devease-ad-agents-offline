@@ -9,14 +9,14 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-project_root = Path(__file__).parent.parent.parent
+project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 import numpy as np
 import pandas as pd
-from src.adset.features import Loader, Joiner, Aggregator
-from src.adset.features.utils.constants import BASE_SUM_COLUMNS
-from src.adset.features.utils.revenue_utils import (
+from src.adset.allocator.features import Loader, Joiner, Aggregator
+from src.adset.allocator.features.utils.constants import BASE_SUM_COLUMNS
+from src.adset.allocator.features.utils.revenue_utils import (
     calculate_revenue_from_purchase_actions,
 )
 from src.utils.customer_paths import (
@@ -1269,7 +1269,7 @@ def _integrate_shopify_data(
         Adset DataFrame with Shopify metrics added.
     """
     try:
-        from src.adset.features.integrations.shopify import (
+        from src.adset.allocator.features.integrations.shopify import (
             ShopifyFeatureExtractor,
             get_shopify_data_path,
         )

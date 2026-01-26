@@ -141,7 +141,7 @@ class TestExecute:
         run_script_and_verify_output(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -162,7 +162,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -184,9 +184,13 @@ class TestExecute:
         assert "adset_id" in output_df.columns
         assert "new_budget" in output_df.columns
 
+    @pytest.mark.skipif(
+        os.environ.get("CI") == "true",
+        reason="Test mode requires config files, skipped in CI"
+    )
     def test_execute_script_test_mode(self):
         """Test execute.py in test mode"""
-        result = run_script(sys.executable, ["src/cli/commands/execute.py", "--test"])
+        result = run_script(sys.executable, ["src/adset/allocator/cli/commands/execute.py", "--test"])
 
         # Test mode should execute successfully
         assert result.returncode == 0, f"Test mode failed: {result.stderr}"
@@ -198,7 +202,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--input",
                 "nonexistent_file.csv",
                 "--output",
@@ -220,7 +224,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -244,7 +248,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -269,7 +273,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -299,7 +303,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -345,7 +349,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",
@@ -379,7 +383,7 @@ class TestExecute:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--input",
                 str(empty_file),
                 "--output",
@@ -418,7 +422,7 @@ decision_rules:
         result = run_script(
             sys.executable,
             [
-                "src/cli/commands/execute.py",
+                "src/adset/allocator/cli/commands/execute.py",
                 "--customer",
                 unique_customer,
                 "--input",

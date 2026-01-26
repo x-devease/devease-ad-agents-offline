@@ -12,6 +12,8 @@ Tests:
 
 import numpy as np
 import pandas as pd
+import pytest
+from pathlib import Path
 import sys
 from pathlib import Path
 
@@ -34,10 +36,15 @@ from src.adset.generator.core.recommender import (
 )
 
 
-def load_moprobo_data(n_samples: int = 5000):
-    """Load sample moprobo data."""
-    print(f"\nLoading {n_samples} samples from moprobo data...")
-    df = pd.read_csv("datasets/moprobo/meta/features/ad_features.csv", nrows=n_samples)
+@pytest.fixture
+def df():
+    """Load sample moprobo data. Skip test if file doesn't exist."""
+    data_file = Path("datasets/moprobo/meta/features/ad_features.csv")
+    if not data_file.exists():
+        pytest.skip(f"Data file not found: {data_file}")
+    
+    print(f"\nLoading 5000 samples from moprobo data...")
+    df = pd.read_csv(str(data_file), nrows=5000)
 
     # Filter valid data
     df_valid = df[
@@ -287,7 +294,7 @@ def main():
     print("=" * 60)
 
     # Load data
-    df = load_moprobo_data(n_samples=5000)
+    df = load_moprobo_data(5000)
 
     # Run tests
     results = {

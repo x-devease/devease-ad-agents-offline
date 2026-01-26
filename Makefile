@@ -154,7 +154,13 @@ lint:
 		echo "pylint not found, installing..."; \
 		pip3 install pylint --quiet; \
 	fi
-	@python3 -m pylint --rcfile=.pylintrc src/ tests/ --recursive=y --errors-only || exit 1
+	@CURRENT_DIR=$$(pwd); \
+	if [ -z "$$PYTHONPATH" ]; then \
+		PYTHONPATH_VAR="$$CURRENT_DIR"; \
+	else \
+		PYTHONPATH_VAR="$$PYTHONPATH:$$CURRENT_DIR"; \
+	fi; \
+	PYTHONPATH="$$PYTHONPATH_VAR" python3 -m pylint --rcfile=.pylintrc src/ tests/ --recursive=y --errors-only || exit 1
 
 # Type check code
 type-check:

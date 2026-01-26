@@ -10,7 +10,7 @@ from typing import Optional
 from src.adset.allocator.optimizer.lib.bayesian_tuner import BayesianTuner
 from src.adset.allocator.optimizer.tuning import TuningConstraints
 from src.utils.customer_paths import ensure_customer_dirs
-from src.adset.features.workflows.base import Workflow, WorkflowResult
+from src.adset.allocator.features.workflows.base import Workflow, WorkflowResult
 
 logger = logging.getLogger(__name__)
 

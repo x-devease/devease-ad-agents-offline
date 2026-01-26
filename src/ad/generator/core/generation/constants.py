@@ -51,6 +51,31 @@ TEXTURE_ENHANCEMENT_FACTOR = 1.3
 
 
 # ============================================================================
+# Frame Occupancy Constants
+# ============================================================================
+
+# Frame occupancy mapping from visual_prominence to frame percentage
+# Used in templates for consistent product sizing
+FRAME_OCCUPANCY_MAP = {
+    "dominant": {
+        "percentage": 45,
+        "description": "Product occupying 45% of frame (dominant prominence).",
+        "use_case": "Hero product, single-product focus",
+    },
+    "balanced": {
+        "percentage": 30,
+        "description": "Product occupying 30% of frame (balanced).",
+        "use_case": "Standard commercial shots, multi-product",
+    },
+    "subtle": {
+        "percentage": 20,
+        "description": "Product occupying 20% of frame (subtle, lifestyle focus).",
+        "use_case": "Environmental context, lifestyle scenes",
+    },
+}
+
+
+# ============================================================================
 # Watermark Constants
 # ============================================================================
 
@@ -100,12 +125,21 @@ DEFAULT_GENERATION_CONFIG = {
         "include_negative_guidance": True,
         "use_llm": True,
         "use_orchestrator": False,
-        "lean_mode": False,
-        "v2_mode": False,
-        "branch_name": None,
+        "branch_name": None,  # "golden_ratio" | "high_efficiency" | "cool_peak"
         "step2_mode": False,
         "strength": 0.85,
         "guidance_scale": 8.0,
         "num_inference_steps": 30,
+        # Feature flags (all default to True for professional quality)
+        "anti_hallucination_enhanced": True,
+        "camera_specs": True,
+        "material_textures": True,
+        "three_point_lighting": True,
+        "depth_of_field": True,
+        "post_processing": True,
+        "shadow_specification": True,
+        "frame_occupancy": True,
+        "visual_flow": True,
+        "color_accuracy_tolerance": True,
     },
 }

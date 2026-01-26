@@ -17,7 +17,7 @@ from src.utils.customer_paths import (
     get_customer_adset_features_path,
     get_customer_allocations_path,
 )
-from src.adset.features.workflows.base import Workflow, WorkflowResult
+from src.adset.allocator.features.workflows.base import Workflow, WorkflowResult
 
 # Import budget tracking module
 from src.adset.allocator.budget import MonthlyBudgetTracker, MonthlyBudgetState

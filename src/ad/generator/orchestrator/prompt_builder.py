@@ -23,6 +23,7 @@ from .feature_registry import (
 )
 from .scene_config import get_scene_overview
 from .template_engine import TemplateEngine
+from ..core.generation.constants import FRAME_OCCUPANCY_MAP
 
 
 logger = logging.getLogger(__name__)
@@ -30,15 +31,29 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PromptBuilderConfig:
-    """Configuration for PromptBuilder initialization."""
+    """Configuration for PromptBuilder initialization.
+
+    Feature flags control which high-fidelity sections are included in prompts.
+    All flags default to True for professional quality output.
+    """
 
     defaults: Optional[Dict[str, str]] = None
     template: Optional[str] = None
-    lean_mode: bool = False
-    v2_mode: bool = False
     branch_name: Optional[str] = None
     step2_mode: bool = False
     product_context: Optional[Dict[str, Any]] = None
+
+    # High-fidelity feature flags (all default to True for professional quality)
+    anti_hallucination_enhanced: bool = True  # 18-line enhanced anti-hallucination block
+    camera_specs: bool = True  # Canon EOS R5 + lens specifications
+    material_textures: bool = True  # Surface grain, micro-imperfections
+    three_point_lighting: bool = True  # Key/Fill/Rim with stops
+    depth_of_field: bool = True  # Multi-layer f/8, f/4, f/2.8
+    post_processing: bool = True  # Unsharp Mask, S-curve
+    shadow_specification: bool = True  # RGB values, direction
+    frame_occupancy: bool = True  # "Occupying 45% of frame"
+    visual_flow: bool = True  # Z-pattern eye tracking
+    color_accuracy_tolerance: bool = True  # "<2% tolerance"
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -154,21 +169,19 @@ class PromptBuilder:
         if self._template_engine is None:
             self._template_engine = TemplateEngine(
                 template=self._config.template,
-                lean_mode=self._config.lean_mode,
-                v2_mode=self._config.v2_mode,
                 branch_name=self._config.branch_name,
             )
         return self._template_engine
 
     @property
     def lean_mode(self) -> bool:
-        """Get lean mode from config."""
-        return self._config.lean_mode
+        """DEPRECATED: Removed - use feature flags instead."""
+        return False
 
     @property
     def v2_mode(self) -> bool:
-        """Get v2 mode from config."""
-        return self._config.v2_mode
+        """DEPRECATED: Removed - all templates are now professional quality."""
+        return True
 
     @property
     def branch_name(self) -> Optional[str]:
@@ -191,10 +204,15 @@ class PromptBuilder:
         """
         Extract global view definition based on branch/feature context.
 
+        Priority:
+        1. Check visual_formula for global_view_definition (from recommendations)
+        2. Check branch name (tri-template architecture)
+        3. Fallback to product_visibility inference
+
         Tri-Template Architecture:
-        - golden_ratio (V2_WIDE_SCENE): Wide-angle lifestyle photography
-        - high_efficiency (V2_MACRO_DETAIL): Professional close-up (handled in template)
-        - cool_peak (V2_FLAT_TECH): Low-profile flat-lay (handled in template)
+        - golden_ratio (WIDE_SCENE): Wide-angle lifestyle photography
+        - high_efficiency (MACRO_DETAIL): Professional close-up (handled in template)
+        - cool_peak (FLAT_TECH): Low-profile flat-lay (handled in template)
 
         Args:
             visual_formula: Visual formula JSON dict
@@ -202,19 +220,30 @@ class PromptBuilder:
         Returns:
             Global view definition string (only used for legacy V2 or fallback)
         """
-        # Check for branch name first
+        # Priority 1: Check visual_formula for global_view_definition (from recommendations)
+        global_view = self.feature_mapper.get_feature_value(
+            visual_formula, "global_view_definition"
+        )
+        if global_view:
+            logger.info(
+                "Using global_view_definition from recommendations: %s",
+                global_view
+            )
+            return global_view
+        
+        # Priority 2: Check for branch name
         if self.branch_name == "golden_ratio":
-            # V2_WIDE_SCENE: Wide-angle lifestyle (10.7 ROAS Hero)
+            # WIDE_SCENE: Wide-angle lifestyle (10.7 ROAS Hero)
             return "Wide-angle lifestyle photography"
         if self.branch_name == "high_efficiency":
-            # V2_MACRO_DETAIL: Template handles this directly
+            # MACRO_DETAIL: Template handles this directly
             # Return empty string as template has its own header
             return ""
         if self.branch_name == "cool_peak":
-            # V2_FLAT_TECH: Template handles this directly
+            # FLAT_TECH: Template handles this directly
             # Return empty string as template has its own header
             return ""
-        # Fallback: Check product_visibility to infer view type
+        # Priority 3: Fallback - Check product_visibility to infer view type
         product_visibility = self.feature_mapper.get_feature_value(
             visual_formula, "product_visibility"
         )
@@ -264,6 +293,120 @@ class PromptBuilder:
 
         return f"{product_name}, {uniqueness_text}"
 
+    def _inject_optional_sections(self, placeholder_values: Dict[str, Any]) -> None:
+        """Inject optional advanced sections based on feature flags.
+
+        This method conditionally populates placeholder values for advanced
+        sections based on the feature flags in self._config.
+
+        Args:
+            placeholder_values: Dictionary to populate with optional sections
+        """
+        config = self._config
+
+        # Anti-hallucination enhancement (18-line block)
+        if config.anti_hallucination_enhanced:
+            placeholder_values["enhanced_anti_hallucination"] = (
+                "CRITICAL ANTI-HALLUCINATION: Do NOT add any elements not visible in Image 1. "
+                "Do NOT create product variations, redesigns, or modifications. "
+                "Do NOT add extra text, labels, or branding not in source. "
+                "Do NOT change product proportions, component positions, or assembly. "
+                "Do NOT add accessories, props, or decorative elements not in source. "
+                "Do NOT modify product colors, materials, or finishes. "
+                "ONLY change background/scene - product must remain 100% identical to Image 1. "
+            )
+        else:
+            placeholder_values["enhanced_anti_hallucination"] = ""
+
+        # Camera specs (Canon EOS R5)
+        if config.camera_specs:
+            placeholder_values["camera_specs_section"] = (
+                "Shot on Canon EOS R5 full-frame camera with 85mm f/1.4 lens. "
+                "ISO 100, f/8 aperture for deep focus ensuring all text, labels, "
+                "metallic textures, and component details are sharp and crisp. "
+            )
+        else:
+            placeholder_values["camera_specs_section"] = ""
+
+        # Material textures
+        if config.material_textures:
+            placeholder_values["material_textures_section"] = (
+                "Material textures: Visible surface grain, subtle micro-imperfections, "
+                "realistic material properties. Metallic surfaces show anisotropic highlights "
+                "with directional reflection patterns. Avoid uniform, plastic-like surfaces. "
+                "Include subtle dust particles in light, natural surface variations, "
+                "slight film grain for photographic realism. "
+            )
+        else:
+            placeholder_values["material_textures_section"] = ""
+
+        # Three-point lighting
+        if config.three_point_lighting:
+            placeholder_values["three_point_lighting_section"] = (
+                "Professional three-point lighting: Key light (45° top-right, 1.5 stops brighter "
+                "than ambient), Fill light (45° top-left, 0.5 stops), "
+                "Rim light (back-left, 1 stop for edge separation). "
+                "Product illuminated 1.5 stops brighter than background for clear separation. "
+            )
+        else:
+            placeholder_values["three_point_lighting_section"] = ""
+
+        # Depth of field
+        if config.depth_of_field:
+            placeholder_values["depth_of_field_section"] = (
+                "Depth of field layering: Foreground (product) f/8 perfect focus; "
+                "midground (supporting elements) f/4, 70% sharpness; "
+                "background (environment) f/2.8, soft bokeh, 30% sharpness. "
+                "Lens-compressed background perspective. Product in perfect focus, "
+                "background softly blurred for depth separation. "
+            )
+        else:
+            placeholder_values["depth_of_field_section"] = ""
+
+        # Post-processing
+        if config.post_processing:
+            placeholder_values["post_processing_section"] = (
+                "Post-processing: Professional commercial retouching with subtle sharpening "
+                "(Unsharp Mask 150%, 1.0px, 0 threshold). Color grading: S-curve for contrast, "
+                "slight vibrance boost, selective saturation on product vs background. "
+            )
+        else:
+            placeholder_values["post_processing_section"] = ""
+
+        # Shadow specification
+        if config.shadow_specification:
+            placeholder_values["shadow_specification"] = (
+                "Shadow specification: Contact shadows hard, dark (RGB 20,20,20), "
+                "defined edges where product touches. Cast shadows soft, medium gray "
+                "(RGB 80,80,80), direction from key light (45°). Shadow falloff: "
+                "natural exponential decay, no hard cutoffs. "
+            )
+        else:
+            placeholder_values["shadow_specification"] = "Contact shadows: Dark, defined where product touches."
+
+        # Frame occupancy
+        if not config.frame_occupancy:
+            placeholder_values["frame_occupancy"] = ""
+
+        # Visual flow
+        if config.visual_flow:
+            placeholder_values["visual_flow_section"] = (
+                "Composition: Product at primary focal point (highest visual weight). "
+                "Visual flow: Z-pattern eye tracking from top-left → product → bottom-right. "
+            )
+        else:
+            placeholder_values["visual_flow_section"] = ""
+
+        # Color accuracy tolerance
+        if config.color_accuracy_tolerance:
+            placeholder_values["color_accuracy_section"] = (
+                "Color accuracy: Match ALL product colors exactly as in Image 1 with <2% tolerance. "
+                "NO color tinting, NO white balance shifts, NO saturation changes. "
+                "Product colors must remain 100% accurate regardless of lighting temperature. "
+            )
+        else:
+            placeholder_values["color_accuracy_section"] = "Preserve ALL product colors exactly as in Image 1."
+
     def generate_p0_prompt(
         self,
         visual_formula: Dict[str, Any],
@@ -301,13 +444,13 @@ class PromptBuilder:
         self._extract_base_product_info(
             visual_formula, product_context, placeholder_values
         )
-        # Process V2 branch-specific features
-        if self.v2_mode and self.branch_name:
-            self._process_v2_branch_features(
+        # Process branch-specific features
+        if self.branch_name:
+            self._process_branch_features(
                 visual_formula, product_context, placeholder_values
             )
         else:
-            # Non-V2 or no branch: Use standard extraction
+            # No branch specified: Use standard extraction
             self._process_standard_features(
                 visual_formula, product_context, placeholder_values
             )
@@ -331,15 +474,24 @@ class PromptBuilder:
         placeholder_values["scene_overview"] = self._extract_scene_overview(
             visual_formula, placeholder_values, product_context
         )
-        # Process V2 Enhanced ROAS features
-        if self.v2_mode:
-            self._process_v2_enhanced_features(
+        # Process Enhanced ROAS features
+        if True:
+            self._process_enhanced_features(
                 visual_formula, product_context, placeholder_values
             )
+        # Build optional advanced sections based on feature flags
+        self._inject_optional_sections(placeholder_values)
         # Step 2: Inject Aesthetic Modifiers (if enabled)
         if self.step2_mode:
             modifiers = self._get_step2_modifiers(placeholder_values)
             placeholder_values.update(modifiers)
+        else:
+            # Templates use these placeholders; set empty when step2 disabled
+            if True:
+                placeholder_values.setdefault("lighting_enhancement", "")
+                placeholder_values.setdefault("render_quality", "")
+                placeholder_values.setdefault("metallic_texture_enhancement", "")
+                placeholder_values.setdefault("interaction_scene_enhancement", "")
         # Validate critical placeholders
         if not placeholder_values.get("subject_description"):
             raise ValueError(
@@ -368,15 +520,15 @@ class PromptBuilder:
     ) -> None:
         """Extract base product information and global view."""
         # 0. Extract global view definition based on branch (for dynamic image reference)
-        # Note: V2_MACRO_DETAIL and V2_FLAT_TECH templates have their own headers
-        # Only V2_WIDE_SCENE and legacy V2 use global_view_definition
+        # Note: MACRO_DETAIL and FLAT_TECH templates have their own headers
+        # Only WIDE_SCENE and legacy V2 use global_view_definition
         global_view = self._extract_global_view_definition(visual_formula)
         if global_view or not (
-            self.v2_mode and self.branch_name in ["high_efficiency", "cool_peak"]
+            self.branch_name in ["high_efficiency", "cool_peak"]
         ):
             placeholder_values["global_view_definition"] = global_view
         # 1. Extract product information from product_context
-        if self.v2_mode or self.lean_mode:
+        if False:
             placeholder_values["subject_description"] = (
                 self._extract_lean_subject_description(product_context)
             )
@@ -388,7 +540,7 @@ class PromptBuilder:
             product_context
         )
         # Color constraint and grounding instruction are handled below based on mode
-        if not self.v2_mode and not self.lean_mode:
+        if False:
             placeholder_values["completeness_instruction"] = (
                 self._extract_completeness_instruction(product_context)
             )
@@ -439,13 +591,13 @@ class PromptBuilder:
         return cleaned
     # ========== NEW HELPER METHODS FOR REFACTORING ==========
     # These methods extract logic from generate_p0_prompt to reduce local variables
-    def _process_v2_branch_features(
+    def _process_branch_features(
         self,
         visual_formula: Dict[str, Any],
         product_context: Dict[str, Any],
         placeholder_values: Dict[str, Any],
     ) -> None:
-        """Process V2 branch-specific features (golden_ratio, high_efficiency, cool_peak)."""
+        """Process branch-specific features (golden_ratio, high_efficiency, cool_peak)."""
         # V2 PRODUCTION STRATEGY: ROAS Synergy with Configuration Override
         # UNIFIED FEATURE REGISTRY: All values use centralized registry for consistency
         # UNIVERSAL CONFIGURATION: Allow override via product_context["branch_synergies"]
@@ -508,7 +660,7 @@ class PromptBuilder:
             )
         else:
             # Fallback: Use standard extraction with registry normalization
-            self._process_v2_fallback(
+            self._process_fallback(
                 visual_formula, product_context, placeholder_values,
                 headroom_color_balance
             )
@@ -732,7 +884,7 @@ class PromptBuilder:
             )
         )
 
-    def _process_v2_fallback(
+    def _process_fallback(
         self,
         visual_formula: Dict[str, Any],
         product_context: Dict[str, Any],
@@ -876,7 +1028,7 @@ class PromptBuilder:
         placeholder_values: Dict[str, Any],
     ) -> None:
         """Process non-V2 or no-branch features using standard extraction."""
-        # Non-V2 or no branch: Use standard extraction with registry normalization
+        # No branch specified: Use standard extraction with registry normalization
         product_pos = self.feature_mapper.get_product_position(visual_formula)
         placeholder_values["product_position"] = (
             normalize_feature_value("product_position", product_pos)
@@ -932,14 +1084,14 @@ class PromptBuilder:
         # MACRO BRANCH: Use visual filling (tight framing) instead of negative space
         # Avoid 'balanced' space usage (negative performer)
         # UNIFIED REGISTRY: Use canonical value from registry
-        if self.v2_mode:
-            self._extract_v2_layout_features(visual_formula, placeholder_values)
+        if True:
+            self._extract_layout_features(visual_formula, placeholder_values)
 
         self._extract_product_visibility(visual_formula, placeholder_values)
         self._extract_visual_impact(visual_formula, placeholder_values)
         self._extract_remaining_layout_features(visual_formula, placeholder_values)
 
-    def _extract_v2_layout_features(
+    def _extract_layout_features(
         self,
         visual_formula: Dict[str, Any],
         placeholder_values: Dict[str, Any],
@@ -955,10 +1107,10 @@ class PromptBuilder:
             )
         else:
             # Branch 1 & 3: Check scorer recommendation for composition_style
-            self._extract_v2_composition_style(visual_formula, placeholder_values)
-            self._extract_v2_negative_space(visual_formula, placeholder_values)
+            self._extract_composition_style(visual_formula, placeholder_values)
+            self._extract_negative_space(visual_formula, placeholder_values)
 
-    def _extract_v2_composition_style(
+    def _extract_composition_style(
         self,
         visual_formula: Dict[str, Any],
         placeholder_values: Dict[str, Any],
@@ -975,7 +1127,7 @@ class PromptBuilder:
                 )
             )
             logger.info(
-                "V2 Production: Using scorer recommendation for "
+                "Production: Using scorer recommendation for "
                 "composition_style='%s' (overriding hardcoded 'generous')",
                 scorer_composition_style,
             )
@@ -986,11 +1138,11 @@ class PromptBuilder:
                 )
             )
             logger.warning(
-                "V2 Production: No scorer recommendation for composition_style, "
+                "Production: No scorer recommendation for composition_style, "
                 "using hardcoded fallback: 'generous negative space'"
             )
 
-    def _extract_v2_negative_space(
+    def _extract_negative_space(
         self,
         visual_formula: Dict[str, Any],
         placeholder_values: Dict[str, Any],
@@ -1007,7 +1159,7 @@ class PromptBuilder:
                 )
             )
             logger.info(
-                "V2 Production: Using scorer recommendation for "
+                "Production: Using scorer recommendation for "
                 "negative_space_usage='%s' (overriding hardcoded 'generous')",
                 scorer_negative_space,
             )
@@ -1018,7 +1170,7 @@ class PromptBuilder:
                 )
             )
             logger.warning(
-                "V2 Production: No scorer recommendation for negative_space_usage, "
+                "Production: No scorer recommendation for negative_space_usage, "
                 "using hardcoded fallback: 'generous'"
             )
 
@@ -1095,6 +1247,11 @@ class PromptBuilder:
                 "visual_prominence",
             )
         )
+        # Frame occupancy for V2 high-fidelity (dominant 45%, balanced 30%, subtle 20%)
+        prominence = (placeholder_values.get("visual_prominence") or "balanced").lower()
+        placeholder_values["frame_occupancy"] = (
+            FRAME_OCCUPANCY_MAP.get(prominence, FRAME_OCCUPANCY_MAP["balanced"])["description"]
+        )
 
     def _extract_interaction_context(
         self,
@@ -1107,7 +1264,7 @@ class PromptBuilder:
         # Priority: 1. Explicit interaction_context from product_context (highest)
         #          2. Branch-specific hardcoding (ROAS synergies)
         #          3. Feature-based extraction (fallback)
-        # V2_MACRO_DETAIL: Skip interaction_context (stripped for close-up focus)
+        # MACRO_DETAIL: Skip interaction_context (stripped for close-up focus)
         interaction_context = self._determine_interaction_context(
             visual_formula, product_context
         )
@@ -1119,7 +1276,7 @@ class PromptBuilder:
         product_context: Dict[str, Any],
     ) -> str:
         """Determine interaction context based on priority rules."""
-        if self.v2_mode and self.branch_name == "high_efficiency":
+        if self.branch_name == "high_efficiency":
             # Branch 2: Macro detail - no interaction context
             return ""
         # Check explicit product_context
@@ -1135,7 +1292,7 @@ class PromptBuilder:
         if interaction_context is not None:
             return interaction_context
         # Check branch-specific hardcoding
-        if self.v2_mode and self.branch_name == "golden_ratio":
+        if self.branch_name == "golden_ratio":
             return self._get_golden_ratio_interaction_context(product_context)
         # Fallback: Extract from visual_formula features
         return self._get_feature_interaction_context(visual_formula)
@@ -1210,15 +1367,15 @@ class PromptBuilder:
         interaction_context = self.feature_mapper.get_interaction_context(
             visual_formula
         )
-        # For lean/V2 mode, use concise interaction description
-        if self.v2_mode or self.lean_mode:
+        # For production mode, use concise interaction description
+        if False:
             interaction_context = self._simplify_interaction_context(
                 interaction_context
             )
         return interaction_context
 
     def _simplify_interaction_context(self, interaction_context: str) -> str:
-        """Simplify interaction context for lean/V2 mode."""
+        """Simplify interaction context for production mode."""
         if not interaction_context:
             return ""
 
@@ -1233,8 +1390,8 @@ class PromptBuilder:
     ) -> None:
         """Extract static context/background based on mode."""
         # Background/context mapping
-        # V2_MACRO_DETAIL: Skip static_context (stripped for close-up focus)
-        if self.v2_mode and self.branch_name == "high_efficiency":
+        # MACRO_DETAIL: Skip static_context (stripped for close-up focus)
+        if self.branch_name == "high_efficiency":
             placeholder_values["static_context"] = ""
         elif self.lean_mode:
             # Lean Anchor: Concise background
@@ -1310,10 +1467,10 @@ class PromptBuilder:
         Branch 1: Will be hardcoded to "natural home environment elements"
         Branch 3: Must be hardcoded to "low-clearance furniture" BEFORE physical state mapping
         """
-        if self.v2_mode and self.branch_name == "cool_peak":
+        if self.branch_name == "cool_peak":
             # Branch 3: Set placement_target BEFORE physical state mapping
             placement_target = "low-clearance furniture"
-        elif self.v2_mode and self.branch_name == "golden_ratio":
+        elif self.branch_name == "golden_ratio":
             # Branch 1: Set placement_target for product-in-environment
             # Override with scenario-specific grounding if available
             if grounding_method == "base_on_floor":
@@ -1338,14 +1495,14 @@ class PromptBuilder:
         """
         Get grounding instruction based on mode and interaction context.
 
-        V2_MACRO_DETAIL: Skip grounding_instruction (not used in macro template)
-        V2_FLAT_TECH: Use sliding-under-furniture logic (handled in template)
+        MACRO_DETAIL: Skip grounding_instruction (not used in macro template)
+        FLAT_TECH: Use sliding-under-furniture logic (handled in template)
         """
-        if self.v2_mode and self.branch_name == "high_efficiency":
+        if self.branch_name == "high_efficiency":
             # Macro detail doesn't use grounding_instruction
             return ""
 
-        if not (self.v2_mode or self.lean_mode):
+        if not (False):
             # Not used in full template, but provide empty string to avoid errors
             return ""
         # Default to "resting/leaning" state for lifestyle context
@@ -1449,37 +1606,37 @@ class PromptBuilder:
         placeholder_values["cmf_core"] = cmf_core
         placeholder_values["color_constraint"] = color_constraint
 
-    def _process_v2_enhanced_features(
+    def _process_enhanced_features(
         self,
         visual_formula: Dict[str, Any],
         product_context: Dict[str, Any],  # pylint: disable=unused-argument
         placeholder_values: Dict[str, Any],
     ) -> None:
-        """Process V2 Enhanced ROAS features (branch-specific feature handling)."""
-        # V2 Enhanced ROAS features (must be before template rendering)
+        """Process Enhanced ROAS features (branch-specific feature handling)."""
+        # Enhanced ROAS features (must be before template rendering)
         # Tri-Template Architecture: Branch-specific feature handling
         if self.branch_name == "high_efficiency":
-            self._process_v2_macro_features(placeholder_values)
+            self._process_macro_features(placeholder_values)
         elif self.branch_name == "cool_peak":
-            self._process_v2_flat_tech_features(
+            self._process_flat_tech_features(
                 visual_formula, placeholder_values
             )
         elif self.branch_name == "golden_ratio":
-            self._process_v2_wide_scene_features(
+            self._process_wide_scene_features(
                 visual_formula, placeholder_values
             )
         else:
             # Legacy V2: Use standard extraction
-            self._process_v2_legacy_features(
+            self._process_legacy_features(
                 visual_formula, placeholder_values
             )
 
-    def _process_v2_macro_features(
+    def _process_macro_features(
         self,
         placeholder_values: Dict[str, Any],
     ) -> None:
-        """Process V2_MACRO_DETAIL features (high_efficiency branch)."""
-        # V2_MACRO_DETAIL: SCENE-FIRST NARRATIVE STRUCTURE
+        """Process MACRO_DETAIL features (high_efficiency branch)."""
+        # MACRO_DETAIL: SCENE-FIRST NARRATIVE STRUCTURE
         # Layer 1: Scene - Global environment and lighting setup
         # Layer 2: Action - Product interaction with floor
         # Layer 3: Anchor - Consistency descriptors (Geometry & CMF)
@@ -1503,17 +1660,17 @@ class PromptBuilder:
         )
 
         logger.info(
-            "V2_MACRO_DETAIL: Scene-First Narrative Structure applied "
+            "MACRO_DETAIL: Scene-First Narrative Structure applied "
             "(Scene -> Action -> Anchor -> Polish) with Feature-Embedded tags"
         )
 
-    def _process_v2_flat_tech_features(
+    def _process_flat_tech_features(
         self,
         visual_formula: Dict[str, Any],
         placeholder_values: Dict[str, Any],
     ) -> None:
-        """Process V2_FLAT_TECH features (cool_peak branch)."""
-        # V2_FLAT_TECH: placement_target already set BEFORE physical_state mapping
+        """Process FLAT_TECH features (cool_peak branch)."""
+        # FLAT_TECH: placement_target already set BEFORE physical_state mapping
         if not placeholder_values.get("placement_target"):
             placeholder_values["placement_target"] = "low-clearance furniture"
         # Branch 3: Force generous negative space (ROAS 2.94)
@@ -1566,17 +1723,17 @@ class PromptBuilder:
             placeholder_values["environment_objects_suffix"] = ""
 
         logger.info(
-            "V2_FLAT_TECH: Physical logic synced "
+            "FLAT_TECH: Physical logic synced "
             "(sliding under furniture, not leaning)"
         )
 
-    def _process_v2_wide_scene_features(
+    def _process_wide_scene_features(
         self,
         visual_formula: Dict[str, Any],
         placeholder_values: Dict[str, Any],
     ) -> None:
-        """Process V2_WIDE_SCENE features (golden_ratio branch)."""
-        # V2_WIDE_SCENE (golden_ratio): Full feature injection
+        """Process WIDE_SCENE features (golden_ratio branch)."""
+        # WIDE_SCENE (golden_ratio): Full feature injection
         # Hardcode product-in-environment for 10.7 ROAS synergy
         # Force product-in-environment relationship
         # NOTE: placement_target already set in physical state section above
@@ -1604,7 +1761,7 @@ class PromptBuilder:
         )
 
         logger.info(
-            "V2_WIDE_SCENE: Full feature injection for environment integration"
+            "WIDE_SCENE: Full feature injection for environment integration"
         )
 
     def _ensure_placement_target(
@@ -1675,7 +1832,7 @@ class PromptBuilder:
                 break
         return f", featuring {env_text}"
 
-    def _process_v2_legacy_features(
+    def _process_legacy_features(
         self,
         visual_formula: Dict[str, Any],
         placeholder_values: Dict[str, Any],
@@ -1994,7 +2151,7 @@ class PromptBuilder:
         if self.lean_mode:
             return self._get_lean_material(has_metallic, has_white, has_black, has_premium)
         # V2 mode: More detailed descriptions
-        return self._get_v2_material(has_metallic, has_black, has_premium, has_hygienic)
+        return self._get_professional_material(has_metallic, has_black, has_premium, has_hygienic)
 
     def _get_lean_material(
         self, has_metallic: bool, has_white: bool, has_black: bool, has_premium: bool  # pylint: disable=unused-argument
@@ -2008,7 +2165,7 @@ class PromptBuilder:
             return "silver/white casing"
         return "silver casing"
 
-    def _get_v2_material(
+    def _get_professional_material(
         self, has_metallic: bool, has_black: bool, has_premium: bool, has_hygienic: bool
     ) -> str:
         """Get V2 mode material description."""
@@ -2031,7 +2188,10 @@ class PromptBuilder:
         """
         Extract static context (background) from visual_formula.
 
-        Maps from background_type feature or uses default.
+        Priority:
+        1. Check static_context feature (from recommendations mapping)
+        2. Check background_type feature (legacy)
+        3. Use default
 
         Args:
             visual_formula: Visual formula JSON dict
@@ -2039,7 +2199,19 @@ class PromptBuilder:
         Returns:
             Static context string
         """
-        # Try to get from background_type feature
+        # Priority 1: Check static_context (from recommendations, e.g., background_content_type -> static_context)
+        static_context = self.feature_mapper.get_feature_value(
+            visual_formula,
+            "static_context",
+        )
+        if static_context:
+            logger.info(
+                "Using static_context from recommendations: %s",
+                static_context
+            )
+            return static_context
+        
+        # Priority 2: Try to get from background_type feature (legacy)
         background_type = self.feature_mapper.get_feature_value(
             visual_formula,
             "background_type",
@@ -2059,7 +2231,7 @@ class PromptBuilder:
                 background_type.lower(),
                 f"{background_type} background",
             )
-        # Use default (Meta Ad optimized: sunlit, modern minimalist home)
+        # Priority 3: Use default (Meta Ad optimized: sunlit, modern minimalist home)
         default_context = "sunlit, modern minimalist home environment"
         return self.defaults.get("static_context", default_context)
 
@@ -2118,7 +2290,20 @@ class PromptBuilder:
         Returns:
             Atmosphere value: "Cool", "Warm", or "Neutral"
         """
-        # Priority 1: Check temperature (highest priority)
+        # Priority 1: Check atmosphere_description (from recommendations mapping, e.g., temperature -> atmosphere_description)
+        atmosphere_desc = self.feature_mapper.get_feature_value(
+            visual_formula, "atmosphere_description"
+        )
+        if atmosphere_desc:
+            # atmosphere_description is already "Cool"/"Warm"/"Neutral" from mapping
+            if atmosphere_desc in ["Cool", "Warm", "Neutral"]:
+                logger.info(
+                    "Atmosphere Slot: Using atmosphere_description from recommendations: %s",
+                    atmosphere_desc
+                )
+                return atmosphere_desc
+        
+        # Priority 2: Check temperature (highest priority)
         temperature_feature = self.feature_mapper.get_feature_value(
             visual_formula, "temperature"
         )
@@ -2137,7 +2322,7 @@ class PromptBuilder:
                     "(ignoring color_balance)"
                 )
                 return "Warm"
-        # Priority 2: Check color_balance (only if temperature not provided)
+        # Priority 3: Check color_balance (only if temperature not provided)
         color_balance_feature = self.feature_mapper.get_color_balance(
             visual_formula
         )
@@ -2489,17 +2674,17 @@ class PromptBuilder:
                 subject = subject.split(", ")[0]
 
         if physical_state == "Macro-focused":
-            # V2_MACRO_DETAIL: No physical state description (close-up focus)
+            # MACRO_DETAIL: No physical state description (close-up focus)
             return ""
         if physical_state == "Flat":
-            # V2_FLAT_TECH: Universal flat-lay state
+            # FLAT_TECH: Universal flat-lay state
             return (
                 f"{subject} lying 180-degree flat against the floor, sliding under "
                 "low-clearance furniture, demonstrating flat-lay capability, "
                 "firmly grounded with contact shadows"
             )
         # Leaning (golden_ratio or default)
-        # V2_WIDE_SCENE: Use grounding_method to determine specific grounding
+        # WIDE_SCENE: Use grounding_method to determine specific grounding
         if grounding_method == "held_by_hand":
             # Held by hand: Product is being actively held by a person
             return (
@@ -2634,7 +2819,7 @@ class PromptBuilder:
         if product_context:
             merged_context.update(product_context)
         # Use configurable scene overview system
-        if self.v2_mode and self.branch_name:
+        if self.branch_name:
             return get_scene_overview(
                 self.branch_name, merged_context, placeholder_values
             )

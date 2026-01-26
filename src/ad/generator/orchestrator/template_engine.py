@@ -43,35 +43,50 @@ P0_LEAN_MASK = (
     "Interaction: {interaction_context}. "
     "Context: {static_context} with {color_balance}."
 )
-# V2 Enhanced ROAS template: Expanded feature injection while maintaining anchor integrity
-# Structure: [Anchor] -> [Physical] -> [CMF] -> [Layout+Composition] ->
-# [Interaction] -> [Context+Environment]
-# New placeholders: placement_target, composition_style, lighting_detail, environment_objects
+# Enhanced ROAS template: Expanded feature injection while maintaining anchor integrity
+# Structure: [Constraints] -> [Anchor] -> [Physical] -> [CMF] -> [Focus] ->
+# [Layout+Composition] -> [Interaction] -> [Context+Environment]
+# HIGH-FIDELITY: Anti-hallucination, camera specs, material textures,
+# three-point lighting, shadow spec, post-processing, frame occupancy
 # Note: Template uses conditional formatting to handle empty values gracefully
 # Note: This template is kept for backward compatibility but
 # tri-template architecture is preferred
-P0_V2_ENHANCED_ROAS_MASK = (
+ENHANCED_ROAS_MASK = (
     "{global_view_definition} of {subject_description}, strictly maintaining "
     "the color accuracy, metallic textures, and geometric profile of the "
     "provided reference image. "
+    "CRITICAL ANTI-HALLUCINATION: Do NOT add elements not in Image 1. "
+    "Do NOT create variations, redesigns, or add extra text/accessories. "
+    "ONLY change background/scene - product 100% identical to Image 1. "
     "Physical: mop shown in realistic leaning position against "
     "{placement_target}, firmly grounded with contact shadows. "
+    "Shadow specification: Contact shadows hard, dark; cast shadows soft, key light (45°). "
     "CMF: {material_finish}; {color_constraint}. "
-    "Layout: {product_position}{composition_style_suffix}. "
+    "Material textures: Visible surface grain, micro-imperfections, anisotropic highlights. "
+    "Color accuracy: Match product colors exactly as in Image 1, <2% tolerance. "
+    "[Focus] Shot on Canon EOS R5 full-frame, 85mm f/1.4, ISO 100, f/8 deep focus. "
+    "Depth of field: Product f/8; midground f/4; background f/2.8 bokeh. "
+    "Layout: {product_position}{composition_style_suffix}{frame_occupancy}. "
+    "Professional three-point lighting: Key (45° top-right, 1.5 stops), "
+    "Fill (45° top-left, 0.5 stops), Rim (back-left, 1 stop). "
+    "Post-processing: Subtle sharpening, S-curve contrast. "
     "Interaction: {interaction_context}. "
     "Context: {static_context} with {color_balance}"
     "{lighting_detail_suffix}{environment_objects_suffix}."
 )
 # Tri-Template Architecture: Branch-specific optimized templates
-# Template 1: V2_WIDE_SCENE (10.7 ROAS Hero - golden_ratio)
+# Template 1: WIDE_SCENE (10.7 ROAS Hero - golden_ratio)
 # Target: Maximum environment integration for lifestyle ads
 # Image: 侧俯.png or 右侧45.png
 # CONSISTENCY-FIRST: [Constraints] and [Product] at top to prioritize
 # geometry and product integrity
+# HIGH-FIDELITY: Camera specs, material textures, anti-hallucination,
+# three-point lighting, depth layering, shadow spec, post-processing,
+# frame occupancy, composition/visual flow (HIGH_FIDELITY_IMPROVEMENTS)
 # STRICT MODULAR TEMPLATE: [Constraints] -> [Product] -> [Scene Overview] ->
-# [CMF] -> [Physical] -> [Layout] -> [Interaction] -> [Environment]
+# [CMF] -> [Focus] -> [Physical] -> [Layout] -> [Interaction] -> [Environment]
 # CMF_Core must be at position 200-300 for subject primacy
-P0_V2_WIDE_SCENE = (
+WIDE_SCENE = (
     "[Constraints] Strictly maintain the exact geometric structure and proportions of Image 1. "
     "Product integrity is non-negotiable. The product MUST be properly "
     "grounded with visible contact shadows. "
@@ -84,38 +99,77 @@ P0_V2_WIDE_SCENE = (
     "Do NOT redesign, modify, or create variations of the product. "
     "Show ONLY ONE product instance - no duplicates, no additional products, "
     "no accessories. "
+    "CRITICAL ANTI-HALLUCINATION: Do NOT add any elements not visible in Image 1. "
+    "Do NOT create product variations, redesigns, or modifications. "
+    "Do NOT add extra text, labels, or branding not in source. "
+    "Do NOT change product proportions, component positions, or assembly. "
+    "Do NOT add accessories, props, or decorative elements not in source. "
+    "Do NOT modify product colors, materials, or finishes. "
+    "ONLY change background/scene - product must remain 100% identical to Image 1. "
     "[Product] {subject_description}. "
     "[Scene Overview] {scene_overview} "
     "[CMF] {cmf_core}{metallic_texture_enhancement}. "
-    "[Focus] Product in deep focus (f/8+) ensuring all text, labels, "
+    "Material textures: Visible surface grain, subtle micro-imperfections, "
+    "realistic material properties. Metallic surfaces show anisotropic highlights "
+    "with directional reflection patterns. Avoid uniform, plastic-like surfaces. "
+    "Include subtle dust particles in light, natural surface variations, "
+    "slight film grain for photographic realism. "
+    "Color accuracy: Match ALL product colors exactly as in Image 1 with <2% tolerance. "
+    "NO color tinting, NO white balance shifts, NO saturation changes. "
+    "Product colors must remain 100% accurate regardless of lighting temperature. "
+    "[Focus] Shot on Canon EOS R5 full-frame camera with 85mm f/1.4 lens. "
+    "ISO 100, f/8 aperture for deep focus ensuring all text, labels, "
     "metallic textures, and component details are sharp and crisp. "
+    "Background: f/2.8 with natural bokeh (polygonal aperture shapes). "
+    "Depth of field layering: Foreground (product) f/8 perfect focus; "
+    "midground (supporting elements) f/4, 70% sharpness; "
+    "background (environment) f/2.8, soft bokeh, 30% sharpness. "
+    "Lens-compressed background perspective. Product in perfect focus, "
+    "background softly blurred for depth separation. "
     "[Physical] {physical_state_description}. "
-    "[Layout] {product_position}{composition_style_suffix}. "
+    "Shadow specification: Contact shadows hard, dark (RGB 20,20,20), "
+    "defined edges where product touches. Cast shadows soft, medium gray "
+    "(RGB 80,80,80), direction from key light (45°). Shadow falloff: "
+    "natural exponential decay, no hard cutoffs. "
+    "[Layout] {product_position}{composition_style_suffix}{frame_occupancy}. "
+    "Composition: Product at primary focal point (highest visual weight). "
+    "Visual flow: Z-pattern eye tracking from top-left → product → bottom-right. "
     "[Interaction] {interaction_context}{interaction_scene_enhancement}. "
-    "[Environment] {static_context} with {atmosphere_description}, "
-    "{lighting_enhancement}{lighting_detail_suffix}. CRITICAL: Completely "
-    "transparent lighting aesthetic with highlights overflowing, creating a "
-    "luminous glow that spills over edges. Vivid high-dynamic-range (HDR) "
-    "rendering with expanded contrast; crush the blacks slightly and boost "
-    "the peak whites for a punchy look. Vivid-pop color science achieving a "
-    "high-gloss commercial finish. NO studio equipment, NO visible "
-    "soft-boxes, NO photographic backdrops. NO color tinting - product "
-    "colors must remain accurate and unchanged."
-    "{environment_objects_suffix}. {render_quality} Completely transparent "
-    "lighting with highlights overflowing, luminous glow spilling over edges."
+    "[Environment] {static_context} with {atmosphere_description}. "
+    "Professional three-point lighting: Key light (45° top-right, 1.5 stops brighter "
+    "than ambient), Fill light (45° top-left, 0.5 stops), "
+    "Rim light (back-left, 1 stop for edge separation). "
+    "Product illuminated 1.5 stops brighter than background for clear separation. "
+    "Contact shadows: Dark, defined where product touches (darker than cast shadows). "
+    "Physical indentations visible where weight is applied. "
+    "{lighting_enhancement}{lighting_detail_suffix}. "
+    "CRITICAL: Completely transparent lighting aesthetic with highlights overflowing, "
+    "creating a luminous glow that spills over edges. "
+    "Vivid high-dynamic-range (HDR) rendering with expanded contrast; "
+    "crush the blacks slightly and boost the peak whites for a punchy look. "
+    "Vivid-pop color science achieving a high-gloss commercial finish. "
+    "Post-processing: Professional commercial retouching with subtle sharpening "
+    "(Unsharp Mask 150%, 1.0px, 0 threshold). Color grading: S-curve for contrast, "
+    "slight vibrance boost, selective saturation on product vs background. "
+    "NO studio equipment, NO visible soft-boxes, NO photographic backdrops. "
+    "NO color tinting - product colors must remain accurate and unchanged. "
+    "{environment_objects_suffix}. {render_quality} "
+    "Completely transparent lighting with highlights overflowing, luminous glow spilling over edges."
 )
-# Template 2: V2_MACRO_DETAIL (5.15 ROAS Close-up - high_efficiency)
+# Template 2: MACRO_DETAIL (5.15 ROAS Close-up - high_efficiency)
 # Target: Extreme focus on mechanics and CMF textures
 # CONSISTENCY-FIRST: [Constraints] and [Product] at top to prioritize
 # geometry and product integrity
+# HIGH-FIDELITY: Anti-hallucination, camera specs, material textures,
+# color accuracy, shadow spec, post-processing (HIGH_FIDELITY_IMPROVEMENTS)
 # SCENE-FIRST NARRATIVE: [Constraints] -> [Product] -> [Scene Overview] ->
-# [Action] -> [Product Consistency] -> [Aesthetics]
+# [Action] -> [Product Consistency] -> [Technical] -> [Aesthetics]
 # FEATURE-EMBEDDED: Keywords mapped to Feature Tracking registry for
 # extractor visibility
 # CRITICAL: Explicit Feature Exclusion List - strips Person, Background
 # Decor, Layout even if Formula requests them
 # Image: 侧俯.png (cropped to base) - clean geometry for macro detail
-P0_V2_MACRO_DETAIL = (
+MACRO_DETAIL = (
     "[Constraints] {geometric_constraint} "
     "Product integrity is non-negotiable. Firm contact shadows define the "
     "unit's shape and grounding. "
@@ -128,21 +182,38 @@ P0_V2_MACRO_DETAIL = (
     "Do NOT redesign, modify, or create variations of the product. "
     "Show ONLY ONE product instance - no duplicates, no additional products, "
     "no accessories. "
+    "CRITICAL ANTI-HALLUCINATION: Do NOT add any elements not visible in Image 1. "
+    "Do NOT create product variations, redesigns, or modifications. "
+    "Do NOT add extra text, labels, or branding not in source. "
+    "Do NOT change product proportions, component positions, or assembly. "
+    "Do NOT add accessories, props, or decorative elements not in source. "
+    "Do NOT modify product colors, materials, or finishes. "
+    "ONLY change background/scene - product must remain 100% identical to Image 1. "
     "[Product] {subject_description}. "
     "[Scene Overview] {scene_overview} "
     "[Action] {action_description} "
     "[Product Consistency] {consistency_anchor}. "
+    "[Technical] Shot on Canon EOS R5 full-frame, 85mm f/1.4, ISO 100, f/8 deep focus. "
+    "Material textures: Visible surface grain, subtle micro-imperfections, "
+    "anisotropic highlights. Avoid plastic-like surfaces. Slight film grain. "
+    "Color accuracy: Match product colors exactly as in Image 1, <2% tolerance. "
+    "Shadow specification: Contact shadows hard, dark; cast shadows soft, "
+    "direction from key light (45°). Natural shadow falloff. "
+    "Post-processing: Subtle sharpening, S-curve contrast, selective saturation. "
     "[Aesthetics] {aesthetic_polish}"
 )
-# Template 3: V2_FLAT_TECH (8.34 ROAS Differentiator - cool_peak)
+# Template 3: FLAT_TECH (8.34 ROAS Differentiator - cool_peak)
 # Target: Demonstrating 180-degree flat-lay capability
 # CONSISTENCY-FIRST: [Constraints] and [Product] at top to prioritize
 # geometry and product integrity
+# HIGH-FIDELITY: Anti-hallucination, camera specs, material textures,
+# three-point lighting, depth layering, shadow spec, post-processing,
+# frame occupancy, composition (HIGH_FIDELITY_IMPROVEMENTS)
 # STRICT MODULAR TEMPLATE: [Constraints] -> [Product] -> [Scene Overview] ->
-# [CMF] -> [Physical] -> [Layout] -> [Environment]
+# [CMF] -> [Focus] -> [Physical] -> [Layout] -> [Environment]
 # Physical Logic: Hardcoded flat-lay state (no leaning/standing conflict)
 # Image: 180躺平.png
-P0_V2_FLAT_TECH = (
+FLAT_TECH = (
     "[Constraints] Strictly maintain the exact geometric structure and proportions of Image 1. "
     "Product integrity is non-negotiable. Firm contact shadows define the "
     "unit's shape and grounding. "
@@ -155,18 +226,34 @@ P0_V2_FLAT_TECH = (
     "Do NOT redesign, modify, or create variations of the product. "
     "Show ONLY ONE product instance - no duplicates, no additional products, "
     "no accessories. "
+    "CRITICAL ANTI-HALLUCINATION: Do NOT add any elements not visible in Image 1. "
+    "Do NOT create product variations, redesigns, or modifications. "
+    "Do NOT add extra text, labels, or branding not in source. "
+    "Do NOT change product proportions, component positions, or assembly. "
+    "Do NOT add accessories, props, or decorative elements not in source. "
+    "Do NOT modify product colors, materials, or finishes. "
+    "ONLY change background/scene - product must remain 100% identical to Image 1. "
     "[Product] {subject_description}. "
     "[Scene Overview] {scene_overview} "
     "[CMF] {cmf_core}{metallic_texture_enhancement}. "
+    "Material textures: Visible surface grain, subtle micro-imperfections, "
+    "anisotropic highlights. Avoid plastic-like surfaces. Slight film grain. "
+    "Color accuracy: Match product colors exactly as in Image 1, <2% tolerance. "
+    "[Focus] Shot on Canon EOS R5 full-frame, 85mm f/1.4, ISO 100, f/8 deep focus. "
+    "Depth of field: Product f/8 perfect focus; midground f/4; background f/2.8 bokeh. "
     "[Physical] {physical_state_description}. "
-    "[Layout]{composition_style_suffix}. "
-    "[Environment] {static_context} with {atmosphere_description}, "
+    "Shadow specification: Contact shadows hard, dark; cast shadows soft, key light (45°). "
+    "[Layout]{composition_style_suffix}{frame_occupancy}. "
+    "Visual flow: Z-pattern eye tracking; product at primary focal point. "
+    "[Environment] {static_context} with {atmosphere_description}. "
+    "Professional three-point lighting: Key (45° top-right, 1.5 stops), "
+    "Fill (45° top-left, 0.5 stops), Rim (back-left, 1 stop). "
+    "Product 1.5 stops brighter than background. "
     "{lighting_enhancement}{lighting_detail_suffix}{environment_objects_suffix}. "
     "CRITICAL: Completely transparent lighting aesthetic with highlights "
-    "overflowing, creating a luminous glow that spills over edges. "
-    "Vivid high-dynamic-range (HDR) rendering with expanded contrast; "
-    "crush the blacks slightly and boost the peak whites for a punchy look. "
-    "Vivid-pop color science achieving a high-gloss commercial finish. "
+    "overflowing, luminous glow that spills over edges. "
+    "Vivid high-dynamic-range (HDR) rendering; crush blacks, boost peak whites. "
+    "Post-processing: Subtle sharpening, S-curve contrast, selective saturation. "
     "NO studio equipment, NO visible soft-boxes, NO photographic backdrops. "
     "NO color tinting - product colors must remain accurate and unchanged. "
     "{render_quality} Completely transparent lighting with highlights "
@@ -178,6 +265,9 @@ class TemplateEngine:
     """
     Renders P0 Master Mask template with provided values.
 
+    All templates are professional quality with optional sections controlled
+    by feature flags in PromptBuilderConfig.
+
     Handles:
     - Template rendering with Python str.format()
     - Placeholder validation
@@ -187,41 +277,30 @@ class TemplateEngine:
     def __init__(
         self,
         template: Optional[str] = None,
-        lean_mode: bool = False,
-        v2_mode: bool = False,
         branch_name: Optional[str] = None,
     ):
         """
         Initialize template engine.
 
         Args:
-            template: Template string (uses P0_MASTER_MASK if None)
-            lean_mode: If True, use P0_LEAN_MASK instead
-            v2_mode: If True, use V2 template (overrides lean_mode)
+            template: Template string (uses WIDE_SCENE if None)
             branch_name: Branch identifier for tri-template selection:
-                - "golden_ratio" -> V2_WIDE_SCENE
-                - "high_efficiency" -> V2_MACRO_DETAIL
-                - "cool_peak" -> V2_FLAT_TECH
+                - "golden_ratio" -> WIDE_SCENE (hero lifestyle, 10.7x ROAS)
+                - "high_efficiency" -> MACRO_DETAIL (close-up, 5.15x ROAS)
+                - "cool_peak" -> FLAT_TECH (flat-lay, 8.34x ROAS)
+                - None -> WIDE_SCENE (default)
         """
         if template is None:
-            if v2_mode and branch_name:
-                # Tri-template architecture: branch-specific templates
-                if branch_name == "golden_ratio":
-                    self.template = P0_V2_WIDE_SCENE
-                elif branch_name == "high_efficiency":
-                    self.template = P0_V2_MACRO_DETAIL
-                elif branch_name == "cool_peak":
-                    self.template = P0_V2_FLAT_TECH
-                else:
-                    # Fallback to legacy V2 template
-                    self.template = P0_V2_ENHANCED_ROAS_MASK
-            elif v2_mode:
-                # Legacy V2 mode (no branch specified)
-                self.template = P0_V2_ENHANCED_ROAS_MASK
-            elif lean_mode:
-                self.template = P0_LEAN_MASK
+            # Tri-template architecture: branch-specific templates
+            if branch_name == "golden_ratio":
+                self.template = WIDE_SCENE
+            elif branch_name == "high_efficiency":
+                self.template = MACRO_DETAIL
+            elif branch_name == "cool_peak":
+                self.template = FLAT_TECH
             else:
-                self.template = P0_MASTER_MASK
+                # Default to wide scene template
+                self.template = WIDE_SCENE
         else:
             self.template = template
         self.required_placeholders = self._extract_placeholders()

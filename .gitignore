@@ -44,6 +44,7 @@ ad_budget_allocations.csv
 logs/
 *.log
 outputs/
+output/
 runs/
 tensorboard/
 wandb/

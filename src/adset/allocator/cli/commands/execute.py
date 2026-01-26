@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 # Add project root to path
-project_root = Path(__file__).parent.parent.parent
+project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.adset import Allocator, DecisionRules, SafetyRules
@@ -35,7 +35,7 @@ logger = setup_logging()
 from src.adset.allocator.budget import MonthlyBudgetTracker, MonthlyBudgetState
 
 # Add project root to path
-project_root = Path(__file__).parent
+project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 
@@ -127,6 +127,11 @@ def _parse_arguments():
 
 def _load_config(config_path, customer_name="moprobo", platform="meta"):
     """Load configuration from file"""
+    # Use default customer/platform-specific path if config_path is None
+    if config_path is None:
+        config_path = f"config/adset/allocator/{customer_name}/{platform}/rules.yaml"
+        logger.debug("Using default config path: %s", config_path)
+
     try:
         config = Parser(
             config_path=config_path,

@@ -34,8 +34,8 @@ def _process_recommendations(recommendations):
         recommended = rec.get("recommended", "")
         current = rec.get("current", "")
 
-        # Positive improvements (rule-based and AI counterfactuals)
-        positive_sources = source in ["rule", "ai_counterfactual"]
+        # Positive improvements (rule-based, MD-loaded, AI counterfactuals)
+        positive_sources = source in ["rule", "ai_counterfactual", "md"]
         if positive_sources and rec_type != "anti_pattern":
             feature_prompt = _feature_to_positive_prompt(feature, recommended)
             if feature_prompt:
@@ -57,9 +57,13 @@ def _process_recommendations(recommendations):
 def format_recs_as_prompts(
     recommendation_output: Dict[str, Any],
     base_positive: str = (
-        "Professional advertisement, high quality, 4K, clean design"
+        "Professional product photography, sharp focus, studio lighting, "
+        "high resolution, clean composition, commercial quality, 4K"
     ),
-    base_negative: str = "low quality, blurry, ugly, distorted, watermark",
+    base_negative: str = (
+        "low quality, blurry, distorted, watermark, oversaturated, "
+        "plastic look, flat lighting, cluttered, amateur"
+    ),
 ) -> Dict[str, Any]:
     """Format recommendation engine output as positive and negative prompts.
 
@@ -83,7 +87,10 @@ def format_recs_as_prompts(
         if positive_additions
         else base_positive
     )
-    negative_prompt = f"{base_negative}, {', '.join(negative_parts)}"
+    neg_additions = ", ".join(negative_parts)
+    negative_prompt = (
+        f"{base_negative}, {neg_additions}" if neg_additions else base_negative
+    )
 
     # Get metadata
     confidence_scores = recommendation_output.get("confidence_scores", {})
@@ -122,31 +129,44 @@ def _feature_to_positive_prompt(feature: str, recommended: str) -> str:
     Returns:
         Prompt phrase for positive prompt
     """
-    # Map features to prompt language
+    # Map features to prompt language (rich, model-friendly phrases)
     feature_mappings = {
         "has_logo": {
-            "True": "company logo in top-right corner",
-            "true": "company logo in top-right corner",
-            "yes": "company logo in top-right corner",
+            "True": "company logo in top-right corner, brand visible",
+            "true": "company logo in top-right corner, brand visible",
+            "yes": "company logo in top-right corner, brand visible",
         },
         "cta_button": {
-            "yes": "prominent call-to-action button",
-            "no": "",  # Shouldn't happen for positive
+            "yes": "prominent call-to-action button, clear CTA",
+            "no": "",
         },
         "text_overlay": {
-            "True": "clear text overlay",
-            "true": "clear text overlay",
+            "True": "clear, readable text overlay",
+            "true": "clear, readable text overlay",
         },
         "dominant_color": {
-            "blue": "blue color scheme",
-            "green": "green color scheme",
-            "black": "black color scheme",
-            "white": "white color scheme",
+            "blue": "blue color palette, cool tones",
+            "green": "green color palette, natural tones",
+            "black": "black color palette, minimal contrast",
+            "white": "white color palette, clean background",
+            "red": "red accent palette, bold contrast",
+            "neutral": "neutral color palette, soft tones",
         },
         "layout": {
-            "center": "centered composition",
-            "left": "left-aligned composition",
-            "right": "right-aligned composition",
+            "center": "centered composition, product as focal point",
+            "left": "left-aligned composition, rule of thirds",
+            "right": "right-aligned composition, balanced negative space",
+        },
+        "direction": {
+            "Overhead": "overhead product shot, flat lay",
+            "overhead": "overhead product shot, flat lay",
+            "side": "side angle, product profile",
+            "front": "front-facing product shot",
+        },
+        "visual_prominence": {
+            "dominant": "product dominant, 40-50% of frame",
+            "balanced": "product balanced, 25-30% of frame",
+            "subtle": "product subtle, 15-20% of frame, lifestyle context",
         },
     }
 
@@ -192,19 +212,25 @@ def _feature_to_negative_prompt(
     # Map anti-patterns to negative prompt language
     anti_pattern_mappings = {
         "dominant_color": {
-            "red": "red color scheme",
-            "dark": "dark color scheme",
+            "red": "red color scheme, harsh tones",
+            "dark": "dark color scheme, underexposed",
         },
         "layout": {
-            "cluttered": "cluttered design",
-            "busy": "busy composition",
+            "cluttered": "cluttered design, busy composition",
+            "busy": "busy composition, distracting elements",
+            "left": "off-center left, unbalanced",
+            "right": "off-center right, unbalanced",
         },
     }
 
-    # Check exact matches
+    # Check exact matches first (use mapping over raw "NOT x" when available)
     if feature in anti_pattern_mappings:
         if current in anti_pattern_mappings[feature]:
             return anti_pattern_mappings[feature][current]
+        # Normalize for lookup (e.g. "Left" -> "left")
+        cur_lower = str(current).strip().lower()
+        if cur_lower in anti_pattern_mappings[feature]:
+            return anti_pattern_mappings[feature][cur_lower]
 
     # If recommended starts with "NOT", extract the bad value
     if isinstance(recommended, str) and recommended.startswith("NOT "):

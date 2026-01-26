@@ -22,7 +22,7 @@ class TestExtractMetricsFromRow:
 
     def test_extract_basic_metrics(self):
         """Test extraction of basic metrics"""
-        from src.adset.cli.commands.execute import _extract_metrics_from_row
+        from src.adset.allocator.cli.commands.execute import _extract_metrics_from_row
 
         row = pd.Series(
             {
@@ -62,7 +62,7 @@ class TestExtractMetricsFromRow:
 
     def test_extract_metrics_with_nan_values(self):
         """Test extraction with NaN values"""
-        from src.adset.cli.commands.execute import _extract_metrics_from_row
+        from src.adset.allocator.cli.commands.execute import _extract_metrics_from_row
 
         row = pd.Series(
             {
@@ -91,7 +91,7 @@ class TestExtractMetricsFromRow:
 
     def test_extract_metrics_with_roas_comparisons(self):
         """Test extraction of ROAS comparison metrics"""
-        from src.adset.cli.commands.execute import _extract_metrics_from_row
+        from src.adset.allocator.cli.commands.execute import _extract_metrics_from_row
 
         row = pd.Series(
             {
@@ -115,7 +115,7 @@ class TestExtractMetricsFromRow:
 
     def test_extract_metrics_with_efficiency(self):
         """Test extraction of efficiency metrics"""
-        from src.adset.cli.commands.execute import _extract_metrics_from_row
+        from src.adset.allocator.cli.commands.execute import _extract_metrics_from_row
 
         row = pd.Series(
             {
@@ -139,7 +139,7 @@ class TestExtractMetricsFromRow:
 
     def test_extract_metrics_with_budget_utilization(self):
         """Test extraction of budget utilization metrics"""
-        from src.adset.cli.commands.execute import _extract_metrics_from_row
+        from src.adset.allocator.cli.commands.execute import _extract_metrics_from_row
 
         row = pd.Series(
             {
@@ -165,7 +165,7 @@ class TestExtractMetricsFromRow:
 
     def test_extract_metrics_with_ad_level_features(self):
         """Test extraction of ad-level statistical features"""
-        from src.adset.cli.commands.execute import _extract_metrics_from_row
+        from src.adset.allocator.cli.commands.execute import _extract_metrics_from_row
 
         row = pd.Series(
             {
@@ -203,7 +203,7 @@ class TestExtractMetricsFromRow:
 
     def test_extract_metrics_defaults_for_missing_ad_features(self):
         """Test default values when ad-level features are missing"""
-        from src.adset.cli.commands.execute import _extract_metrics_from_row
+        from src.adset.allocator.cli.commands.execute import _extract_metrics_from_row
 
         row = pd.Series({"spend": 100.0})
 
@@ -228,7 +228,7 @@ class TestProcessResults:
 
     def test_process_results_basic_scaling(self):
         """Test basic budget scaling"""
-        from src.adset.cli.commands.execute import _process_results
+        from src.adset.allocator.cli.commands.execute import _process_results
 
         results = [
             {
@@ -270,7 +270,7 @@ class TestProcessResults:
 
     def test_process_results_zero_total_budget(self):
         """Test processing when total new budget is zero"""
-        from src.adset.cli.commands.execute import _process_results
+        from src.adset.allocator.cli.commands.execute import _process_results
 
         results = [
             {
@@ -294,7 +294,7 @@ class TestProcessResults:
 
     def test_process_results_preserves_other_fields(self):
         """Test that other fields are preserved during processing"""
-        from src.adset.cli.commands.execute import _process_results
+        from src.adset.allocator.cli.commands.execute import _process_results
 
         results = [
             {
@@ -325,7 +325,7 @@ class TestLoadData:
     @patch("pandas.read_csv")
     def test_load_data_success(self, mock_read_csv):
         """Test successful data loading"""
-        from src.adset.cli.commands.execute import _load_data
+        from src.adset.allocator.cli.commands.execute import _load_data
 
         mock_df = pd.DataFrame(
             {"adset_id": ["adset1", "adset2"], "spend": [100.0, 200.0]}
@@ -339,10 +339,10 @@ class TestLoadData:
         mock_read_csv.assert_called_once_with("test.csv")
 
     @patch("pandas.read_csv")
-    @patch("src.adset.cli.commands.execute.logger")
+    @patch("src.adset.allocator.cli.commands.execute.logger")
     def test_load_data_file_not_found(self, mock_logger, mock_read_csv):
         """Test loading with FileNotFoundError"""
-        from src.adset.cli.commands.execute import _load_data
+        from src.adset.allocator.cli.commands.execute import _load_data
 
         mock_read_csv.side_effect = FileNotFoundError("File not found")
 
@@ -352,10 +352,10 @@ class TestLoadData:
         mock_logger.error.assert_called()
 
     @patch("pandas.read_csv")
-    @patch("src.adset.cli.commands.execute.logger")
+    @patch("src.adset.allocator.cli.commands.execute.logger")
     def test_load_data_empty_file(self, mock_logger, mock_read_csv):
         """Test loading with empty data error"""
-        from src.adset.cli.commands.execute import _load_data
+        from src.adset.allocator.cli.commands.execute import _load_data
 
         mock_read_csv.side_effect = pd.errors.EmptyDataError("Empty file")
 
@@ -368,10 +368,10 @@ class TestLoadData:
 class TestProcessAdsets:
     """Test _process_adsets function"""
 
-    @patch("src.adset.cli.commands.execute._extract_metrics_from_row")
+    @patch("src.adset.allocator.cli.commands.execute._extract_metrics_from_row")
     def test_process_adsets_basic(self, mock_extract):
         """Test basic adset processing"""
-        from src.adset.cli.commands.execute import _process_adsets
+        from src.adset.allocator.cli.commands.execute import _process_adsets
 
         # Mock the extract function
         mock_extract.return_value = {
@@ -400,10 +400,10 @@ class TestProcessAdsets:
         assert results[0]["new_budget"] == pytest.approx(100.0)
         assert results[0]["decision_path"] == "increase"
 
-    @patch("src.adset.cli.commands.execute._extract_metrics_from_row")
+    @patch("src.adset.allocator.cli.commands.execute._extract_metrics_from_row")
     def test_process_adsets_calculates_change_pct(self, mock_extract):
         """Test that change percentage is calculated correctly"""
-        from src.adset.cli.commands.execute import _process_adsets
+        from src.adset.allocator.cli.commands.execute import _process_adsets
 
         mock_extract.return_value = {
             "adset_id": "adset1",
@@ -434,7 +434,7 @@ class TestIntegration:
 
     def test_extract_and_process_pipeline(self):
         """Test extracting metrics and processing results"""
-        from src.adset.cli.commands.execute import _extract_metrics_from_row, _process_results
+        from src.adset.allocator.cli.commands.execute import _extract_metrics_from_row, _process_results
 
         # Create test data
         row = pd.Series(

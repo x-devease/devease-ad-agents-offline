@@ -5,12 +5,20 @@ in high-performing vs low-performing creatives.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+import pandas as pd
 
 
 logger = logging.getLogger(__name__)
+
+# Hard-coded thresholds (SELF_REFLECTION: no tuning on test data)
+TOP_PCT = 0.25
+BOTTOM_PCT = 0.25
+LIFT_MIN = 1.5
+PREVALENCE_MIN = 0.10
+MAX_RECS_PER_CREATIVE = 10
 
 
 class RuleEngine:
@@ -173,7 +181,151 @@ class RuleEngine:
         # Sort by potential impact
         recommendations.sort(key=lambda x: x["potential_impact"], reverse=True)
 
-        return recommendations[:10]  # Top 10 rule-based recommendations
+        return recommendations[:MAX_RECS_PER_CREATIVE]
+
+    def _discover_patterns_from_df(
+        self,
+        df: pd.DataFrame,
+        target_col: str = "roas_parsed",
+        top_pct: float = TOP_PCT,
+        bottom_pct: float = BOTTOM_PCT,
+        lift_min: float = LIFT_MIN,
+        prevalence_min: float = PREVALENCE_MIN,
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        """Discover DO/anti-patterns from top vs bottom performers.
+
+        Uses top_pct / bottom_pct of rows by target; lift and prevalence
+        thresholds are hard-coded to avoid data leakage.
+        """
+        candidates = [
+            c
+            for c in ["roas_parsed", "roas", "mean_roas", "total_roas"]
+            if c in df.columns
+        ]
+        tc = target_col if target_col in df.columns else (candidates[0] if candidates else None)
+        if tc is None:
+            logger.warning("No ROAS-like column found; using no patterns")
+            return [], []
+
+        df = df.dropna(subset=[tc]).copy()
+        if len(df) < 20:
+            logger.warning("Too few rows with ROAS; skipping pattern discovery")
+            return [], []
+
+        exclude = {tc, "id", "creative_id", "filename", "image_path"}
+        feature_cols = [
+            c
+            for c in df.select_dtypes(include=["object", "bool", "category"]).columns
+            if c not in exclude and df[c].nunique() >= 1 and df[c].nunique() < 100
+        ]
+        if not feature_cols:
+            logger.warning("No suitable feature columns for pattern discovery")
+            return [], []
+
+        q_top = 1.0 - top_pct
+        q_bot = bottom_pct
+        t = df[tc].quantile([q_bot, q_top])
+        bot_thresh, top_thresh = t.iloc[0], t.iloc[1]
+        top_df = df[df[tc] >= top_thresh]
+        bot_df = df[df[tc] <= bot_thresh]
+        n_top = max(1, len(top_df))
+        n_bot = max(1, len(bot_df))
+
+        patterns: List[Dict[str, Any]] = []
+        anti_patterns: List[Dict[str, Any]] = []
+
+        for col in feature_cols:
+            for val in df[col].dropna().unique():
+                val = str(val).strip()
+                if not val or val.lower() in ("nan", "none", ""):
+                    continue
+                top_has = (top_df[col].astype(str).str.strip() == val).sum()
+                bot_has = (bot_df[col].astype(str).str.strip() == val).sum()
+                p_top = top_has / n_top
+                p_bot = bot_has / n_bot
+                if p_bot <= 0:
+                    lift = float("inf") if p_top > 0 else 1.0
+                else:
+                    lift = p_top / p_bot
+                if lift >= lift_min and p_top >= prevalence_min:
+                    patterns.append({
+                        "feature": col,
+                        "value": val,
+                        "lift": lift,
+                        "high_pct": p_top,
+                        "recommendation_type": "DO",
+                    })
+                rev_lift = p_bot / p_top if p_top > 0 else (float("inf") if p_bot > 0 else 1.0)
+                if rev_lift >= lift_min and p_bot >= prevalence_min:
+                    anti_patterns.append({
+                        "feature": col,
+                        "value": val,
+                        "low_pct": p_bot,
+                        "reverse_lift": rev_lift,
+                    })
+
+        logger.info(
+            "Discovered %d patterns and %d anti-patterns from %d top / %d bottom rows",
+            len(patterns),
+            len(anti_patterns),
+            n_top,
+            n_bot,
+        )
+        return patterns, anti_patterns
+
+    def generate_recommendations(
+        self,
+        df: pd.DataFrame,
+        target_col: str = "roas_parsed",
+        discover_patterns: bool = True,
+    ) -> Dict[str, Any]:
+        """Run pattern discovery (if enabled), then aggregate recommendations.
+
+        Returns a single dict compatible with format_recs_as_prompts:
+        {"recommendations": [...], "creative_id": "aggregated", "confidence_scores": {...}}
+        """
+        if discover_patterns:
+            pats, anti = self._discover_patterns_from_df(df, target_col=target_col)
+            self.load_patterns(pats, anti)
+
+        all_recs: List[Dict[str, Any]] = []
+        candidates = [
+            c
+            for c in ["roas_parsed", "roas", "mean_roas", "total_roas"]
+            if c in df.columns
+        ]
+        tc = target_col if target_col in df.columns else (candidates[0] if candidates else "roas_parsed")
+
+        for _, row in df.iterrows():
+            creative = row.to_dict()
+            recs = self.analyze(creative, target_col=tc)
+            for r in recs:
+                all_recs.append(dict(r))
+
+        # Deduplicate by (feature, recommended) keeping highest impact
+        seen: Dict[tuple, Dict[str, Any]] = {}
+        for r in all_recs:
+            key = (r["feature"], r.get("recommended", ""))
+            prev = seen.get(key)
+            if prev is None or (r.get("potential_impact") or 0) > (prev.get("potential_impact") or 0):
+                seen[key] = r
+        unique = list(seen.values())
+        unique.sort(key=lambda x: -(x.get("potential_impact") or 0))
+
+        conf = {"combined_confidence": 0.7}
+        if unique:
+            conf["combined_confidence"] = min(
+                0.95,
+                0.5 + 0.1 * sum(1 for r in unique if r.get("confidence") == "high"),
+            )
+
+        return {
+            "recommendations": unique,
+            "creative_id": "aggregated",
+            "current_roas": float(df[tc].mean()) if tc in df.columns else 0.0,
+            "predicted_roas": float(df[tc].mean()) if tc in df.columns else 0.0,
+            "confidence_scores": conf,
+        }
 
     def get_pattern_summary(self) -> Dict[str, Any]:
         """Get summary statistics of loaded patterns.

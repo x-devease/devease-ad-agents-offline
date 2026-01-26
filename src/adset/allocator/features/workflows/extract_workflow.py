@@ -10,14 +10,14 @@ from typing import Optional
 
 import pandas as pd
 
-from src.adset.features import Aggregator, Joiner, Loader
+from src.adset.allocator.features import Aggregator, Joiner, Loader
 from src.utils.customer_paths import (
     ensure_customer_dirs,
     get_customer_ad_features_path,
     get_customer_adset_features_path,
     get_customer_data_dir,
 )
-from src.adset.features.workflows.base import Workflow, WorkflowResult
+from src.adset.allocator.features.workflows.base import Workflow, WorkflowResult
 
 logger = logging.getLogger(__name__)
 
@@ -211,6 +211,6 @@ class ExtractWorkflow(Workflow):
         """
         # Import the full implementation from extract.py
         # For now, use a simple aggregation
-        from src.adset.cli.commands.extract import _aggregate_ad_to_adset
+        from src.adset.allocator.cli.commands.extract import _aggregate_ad_to_adset
 
         return _aggregate_ad_to_adset(enriched_df)

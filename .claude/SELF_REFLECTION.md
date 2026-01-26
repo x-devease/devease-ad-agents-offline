@@ -120,6 +120,200 @@ update_params(new_params)  # No checks
 
 ---
 
+## 4 Major Components Under src/meta
+
+The Meta Ads Autopilot system consists of 4 major components organized under `src/meta/`:
+
+### Architecture Overview
+
+```
+src/meta/
+├── ad/                          # Ad-level modules
+│   ├── recommender/             # Creative recommendation engine
+│   └── generator/               # Creative image generation engine
+└── adset/                       # Adset-level modules
+    ├── allocator/               # Budget allocation engine
+    └── generator/               # Audience configuration engine
+```
+
+### Component Interaction Workflow
+
+```
+Extract Creative Features (Ad Recommender)
+           ↓
+    Generate Creative Recommendations
+           ↓
+    Convert Recommendations to Prompts
+           ↓
+    Generate Images (Ad Generator)
+           ↓
+Generate Audience Configurations (Adset Generator)
+           ↓
+    Allocate Budget Across Adsets (Adset Allocator)
+```
+
+### 1. Ad Recommender (`src/meta/ad/recommender/`)
+
+**Purpose:** Statistical pattern-based creative optimization - analyzes image features to generate ROAS improvement recommendations
+
+**Design Philosophy:**
+- **"NO AI. NO SPECULATION. JUST STATISTICS."**
+- Rules-based statistical pattern detection (no ML models)
+- Hard-coded thresholds to prevent data leakage
+- Conservative impact estimates (50% factor on observed lifts)
+- Historical baseline comparison required
+
+**Core Capabilities:**
+- Extract creative features using GPT-4 Vision API
+- Identify statistical patterns (top 25% vs bottom 25% performers)
+- Generate DO/DON'T recommendations with confidence scores
+- Chi-square statistical significance testing
+- Evidence-based recommendations from actual data
+
+**Key Design Principles:**
+1. **Statistics Over ML**: No black-box models, only transparent statistical patterns
+2. **Data Leakage Prevention**: Hard-code thresholds (top_pct=0.25, lift≥1.5, prevalence≥10%)
+3. **Conservative Estimates**: 50% factor on impact estimates prevents overpromising
+4. **Statistical Significance**: Chi-square tests required (p-value < 0.05)
+5. **Actionable Output**: Clear DOs and DON'Ts with supporting evidence
+
+**File Paths:**
+- Config: `config/ad/recommender/gpt4/` (features.yaml, prompts.yaml)
+- Output: `config/ad/recommender/{customer}/{platform}/{date}/recommendations.md`
+- Utils: `src/meta/ad/recommender/utils/config_manager.py`, `paths.py`
+
+### 2. Ad Generator (`src/meta/ad/generator/`)
+
+**Purpose:** Image generation system that converts feature recommendations into optimized prompts and generates images via FAL.ai
+
+**Design Philosophy:**
+- **"Feature-driven prompts, validated output"**
+- Load recommendations from creative scorer
+- Convert features to optimized prompts for Nano Banana models
+- Validate generated images match requested features
+- Customer/platform/date isolation for all configs
+
+**Core Capabilities:**
+- Load creative scorer recommendations as input
+- Convert features to optimized prompts (structured, nano, variants)
+- Generate images using FAL.ai (Nano Banana models)
+- Validate that generated features match recommendations
+- Template-based generation for consistency
+
+**Key Design Principles:**
+1. **Feature-Driven**: All generation based on feature recommendations from scorer
+2. **Prompt Optimization**: Convert features to optimized prompts for image models
+3. **Validation**: Ensure generated images match requested features
+4. **Isolation**: Separate configs per customer/platform/date
+5. **Template-Based**: Use templates for consistent, reproducible generation
+
+**File Paths:**
+- Config: `config/ad/generator/{customer}/{platform}/generation_config.yaml`
+- Templates: `config/ad/generator/templates/{customer}/{platform}/`
+- Prompts: `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/`
+- Generated: `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/`
+- Utils: `src/meta/ad/generator/core/paths.py` (`Paths` class)
+
+### 3. Adset Allocator (`src/meta/adset/allocator/`)
+
+**Purpose:** Budget allocation engine that distributes daily budget across adsets using rules-based decision logic with Bayesian-optimized parameters
+
+**Design Philosophy:**
+- **"Allocate budget to maximize ROAS, not to achieve perfection"**
+- Beat or match historical performance
+- Conservative safety factors (0.95 multiplier)
+- Monthly budget tracking and cap enforcement
+- Rules-based transparent logic (KISS principle)
+
+**Core Capabilities:**
+- Daily budget allocation across adsets
+- 42+ decision rules (safety, performance tiers, lifecycle, trends)
+- Monthly budget tracking with state persistence
+- Bayesian optimization for parameter tuning
+- Conservative scaling (freeze low performers before scaling winners)
+
+**Key Design Principles:**
+1. **Reliability Over Aggression**: Real money at stake, no A/B testing
+2. **Historical Validation**: Compare against historical baseline
+3. **Conservative Scaling**: 0.95 multiplier, freeze low performers first
+4. **Monthly Budget Tracking**: Track cumulative spend, respect caps
+5. **Rules-Based**: Transparent logic, immediate changes (no retraining)
+
+**File Paths:**
+- Config: `config/adset/allocator/{customer}/{platform}/rules.yaml`
+- State: `results/{customer}/{platform}/monthly_state_YYYY-MM.json`
+- Utils: `src/utils/customer_paths.py` (allocator uses shared utility)
+
+### 4. Adset Generator (`src/meta/adset/generator/`)
+
+**Purpose:** Audience configuration engine that generates strategies for creating adset audience configurations (regions, ages, creative formats, audience types) with historical performance validation
+
+**Design Philosophy:**
+- **"Every recommendation must answer: Will this perform better than what we've seen historically?"**
+- Validate all recommendations against historical performance
+- Rules-based, transparent logic (KISS principle)
+- Calculate headroom before recommending scale-up or new audiences
+- Platform-aware design (Meta vs Google vs TikTok)
+
+**Core Capabilities:**
+- Generate audience configurations across 4 dimensions (geo, age, audience type, creative format)
+- Detect mistakes in current configurations (wasting, too_broad, missing_lal, oversaturated)
+- Calculate opportunity size with headroom validation
+- Historical performance validation (95th percentile caps)
+- Platform-specific targeting capability awareness
+
+**Key Design Principles:**
+1. **Historical Validation**: All recommendations must beat or match historical baseline
+2. **Headroom Calculation**: Check market capacity before recommending scale-up/new
+3. **Platform-Aware**: Respect platform-specific targeting capabilities
+4. **Testing Over Committing**: Recommend A/B tests vs single configurations
+5. **Conservative Estimates**: Calibrate predictions to historical 95th percentile
+
+**File Paths:**
+- Config: `config/adset/generator/{customer}/{platform}/` (params.yaml, adsets.yaml)
+- Output: `results/{customer}/{platform}/recommendations/`
+- Utils: `src/utils/customer_paths.py` (generator uses shared utility)
+
+### Cross-Cutting Design Patterns
+
+**All 4 components share these common principles:**
+
+1. **Rules-Based Logic**: No black-box ML for decision making (only GPT-4 Vision for feature extraction)
+2. **Config Isolation**: Separate configs per customer/platform
+3. **Path Abstraction**: Use path utilities, never hard-code paths
+4. **Historical Validation**: Compare against historical baseline
+5. **Conservative Approach**: Protect real money, validate before acting
+6. **Transparent Logic**: KISS principle, interpretable decisions
+7. **Evidence-Based**: Output confidence scores and supporting evidence
+
+### Component Integration
+
+**Workflow: Extract Features → Tune Parameters → Allocate Budget → Generate Recommendations → Review Results**
+
+1. **Ad Recommender**: Extract features, generate creative recommendations
+2. **Ad Generator**: Convert recommendations to prompts, generate images
+3. **Adset Generator**: Generate audience configurations (with creative compatibility)
+4. **Adset Allocator**: Allocate budget across adsets (including new ones from generator)
+
+**Data Flow:**
+```
+config/ad/recommender/{customer}/{platform}/{date}/recommendations.md
+           ↓ (loaded by)
+src/meta/ad/generator/pipeline/recommendation_loader.py
+           ↓ (generates)
+config/ad/generator/prompts/{customer}/{platform}/{date}/
+           ↓ (generates)
+config/ad/generator/generated/{customer}/{platform}/{date}/{model}/
+           ↓ (used in)
+src/meta/adset/generator/generation/creative_compatibility.py
+           ↓ (generates)
+results/{customer}/{platform}/recommendations/
+           ↓ (allocates budget to)
+src/meta/adset/allocator/allocator.py
+```
+
+---
+
 ## Repo Goals
 
 ### 1. Primary Goals

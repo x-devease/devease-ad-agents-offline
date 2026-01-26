@@ -1,6 +1,13 @@
-# Meta Ads Autopilot
+# Ads Autopilot
 
-Comprehensive adset management system for Meta Ads combining budget allocation, audience configuration, and creative optimization. Uses rules-based approaches with Bayesian-optimized parameters to analyze 21+ features across ad, adset, campaign, and account levels. The workflow is Extract Features → Tune Parameters → Allocate Budget → Generate Recommendations → Review Results.
+Comprehensive ad management system for Meta Ads with 4 major components:
+
+1. **Ad Recommender** (`src/meta/ad/recommender/`) - Creative recommendation engine using statistical pattern detection
+2. **Ad Generator** (`src/meta/ad/generator/`) - Creative image generation using FAL.ai
+3. **Adset Allocator** (`src/meta/adset/allocator/`) - Budget allocation engine with Bayesian-optimized parameters
+4. **Adset Generator** (`src/meta/adset/generator/`) - Audience configuration engine with historical validation
+
+The system uses rules-based approaches to analyze 21+ features across ad, adset, campaign, and account levels. Workflow: Extract Creative Features → Generate Recommendations → Generate Images → Generate Audience Configs → Allocate Budget.
 
 ## Prerequisites
 ```bash
@@ -63,25 +70,26 @@ python3 run.py {command} --help
 │   │   ├── path_manager.py      # Platform-aware path resolution
 │   │   ├── manager.py           # Configuration loading & validation
 │   │   └── schemas.py           # Configuration schema definitions
-│   ├── ad/                      # Ad-level modules
-│   │   ├── recommender/          # Creative recommendation engine
-│   │   │   ├── features/        # Feature extraction (GPT-4 Vision)
-│   │   │   │   ├── extract.py   # Feature extraction and ROAS integration
-│   │   │   │   ├── extractors/   # GPT-4 Vision extractor
-│   │   │   │   ├── transformers/# Feature transformers
-│   │   │   │   └── lib/          # Utilities (parsers, loaders, mergers)
-│   │   │   ├── recommendations/ # Recommendation generation
-│   │   │   │   ├── rule_engine.py      # Statistical pattern-based recommendations
-│   │   │   │   └── prompt_formatter.py # Format recommendations as prompts
-│   │   │   └── utils/           # Utilities (api_keys, config_manager, paths, statistics)
-│   │   └── generator/            # Creative image generation engine
-│   │       ├── core/            # Core functionality
-│   │       │   ├── paths.py     # Path utilities (customer/platform support)
-│   │       │   ├── prompts/     # Feature-to-prompt conversion
-│   │       │   └── generation/  # Image generation via FAL.ai
-│   │       ├── orchestrator/    # Prompt building and orchestration
-│   │       └── pipeline/        # End-to-end generation pipeline
-│   ├── adset/                   # Adset management modules
+│   ├── meta/                    # Meta Ads modules
+│   │   ├── ad/                  # Ad-level modules
+│   │   │   ├── recommender/     # Creative recommendation engine
+│   │   │   │   ├── features/    # Feature extraction (GPT-4 Vision)
+│   │   │   │   │   ├── extract.py # Feature extraction and ROAS integration
+│   │   │   │   │   ├── extractors/ # GPT-4 Vision extractor
+│   │   │   │   │   ├── transformers/ # Feature transformers
+│   │   │   │   │   └── lib/     # Utilities (parsers, loaders, mergers)
+│   │   │   │   ├── recommendations/ # Recommendation generation
+│   │   │   │   │   ├── rule_engine.py # Statistical pattern-based recommendations
+│   │   │   │   │   └── prompt_formatter.py # Format recommendations as prompts
+│   │   │   │   └── utils/       # Utilities (api_keys, config_manager, paths, statistics)
+│   │   │   └── generator/       # Creative image generation engine
+│   │   │       ├── core/        # Core functionality
+│   │   │       │   ├── paths.py # Path utilities (customer/platform support)
+│   │   │       │   ├── prompts/ # Feature-to-prompt conversion
+│   │   │       │   └── generation/ # Image generation via FAL.ai
+│   │   │       ├── orchestrator/ # Prompt building and orchestration
+│   │   │       └── pipeline/    # End-to-end generation pipeline
+│   │   └── adset/               # Adset management modules
 │   │   ├── allocator/           # Budget allocation engine
 │   │   │   ├── allocator.py     # Main allocator interface
 │   │   │   ├── budget/          # Budget tracking

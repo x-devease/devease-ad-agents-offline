@@ -531,6 +531,102 @@ class FeatureReproductionTracker:
                 )
             )
         return records
+    def validate_prompt_vs_formula(
+        self,
+        prompt: str,
+        formula: Dict[str, Any],
+        customer: str,
+        min_coverage: float = 0.95,
+    ) -> Dict[str, Any]:
+        """
+        Validate that prompt covers features from formula.
+
+        Args:
+            prompt: Generated prompt text
+            formula: Visual formula with entrance_features, headroom_features
+            customer: Customer name for logging
+            min_coverage: Minimum feature coverage threshold (default 95%)
+
+        Returns:
+            Dict with validation results:
+            {
+                "passed": bool,
+                "coverage": float,
+                "total_features": int,
+                "covered_features": int,
+                "missing_features": List[str],
+                "critical_missing": List[str],
+                "warnings": List[str]
+            }
+        """
+        # Extract all features from formula
+        feature_records = self._extract_features_from_formula(formula)
+        total_features = len(feature_records)
+
+        # Check coverage
+        covered_features = []
+        missing_features = []
+        for record in feature_records:
+            in_prompt, _ = self._check_feature_in_prompt(
+                record.feature_name,
+                record.expected_value,
+                prompt
+            )
+            if in_prompt:
+                covered_features.append(record.feature_name)
+            else:
+                missing_features.append(record.feature_name)
+
+        coverage = len(covered_features) / total_features if total_features > 0 else 0.0
+        passed = coverage >= min_coverage
+
+        # Identify critical missing features (entrance > headroom)
+        critical_missing = []
+        for record in feature_records:
+            if record.feature_type == "entrance" and record.feature_name in missing_features:
+                critical_missing.append(record.feature_name)
+
+        # Generate warnings
+        warnings = []
+        if not passed:
+            warnings.append(
+                f"Feature coverage {coverage*100:.0f}% below threshold {min_coverage*100:.0f}%"
+            )
+        if critical_missing:
+            warnings.append(
+                f"{len(critical_missing)} critical entrance features missing: {critical_missing}"
+            )
+
+        result = {
+            "passed": passed,
+            "coverage": coverage,
+            "total_features": total_features,
+            "covered_features": len(covered_features),
+            "missing_features": missing_features,
+            "critical_missing": critical_missing,
+            "warnings": warnings,
+            "customer": customer,
+        }
+
+        # Log results
+        if passed:
+            logger.info(
+                "Prompt validation PASSED: %d/%d features covered (%.0f%%)",
+                len(covered_features),
+                total_features,
+                coverage * 100,
+            )
+        else:
+            logger.warning(
+                "Prompt validation FAILED: %d/%d features covered (%.0f%%). Missing: %s",
+                len(covered_features),
+                total_features,
+                coverage * 100,
+                missing_features[:5],  # Log first 5
+            )
+
+        return result
+
     def _check_feature_in_prompt(
         self,
         feature_name: str,

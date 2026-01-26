@@ -382,14 +382,30 @@ class CreativePipeline:
         )
         # Generate prompts
         results = []
+        customer = self._config.product_name.lower().replace(" ", "_")
         for i in range(num_variations):
             logger.info("Generating variation %d/%d", i + 1, num_variations)
             prompt = self.generate_prompt(visual_recommendation)
             logger.info("Generated prompt: %s...", prompt[:100])
+
+            # Validate prompt coverage
+            validation_result = self.tracker.validate_prompt_vs_formula(
+                prompt=prompt,
+                formula=visual_recommendation,
+                customer=customer,
+                min_coverage=0.95
+            )
+            logger.info(
+                "Prompt validation: %s (%.0f%% coverage, %d/%d features)",
+                "PASSED" if validation_result["passed"] else "FAILED",
+                validation_result["coverage"] * 100,
+                validation_result["covered_features"],
+                validation_result["total_features"]
+            )
+
             # Track prompt
             if save_prompts:
                 # Save to config/ad/recommender/{customer}/{platform}/prompts.md
-                customer = self._config.product_name.lower().replace(" ", "_")
                 platform = "meta"
                 prompts_dir = Path("config/ad/recommender") / customer / platform
                 prompts_dir.mkdir(parents=True, exist_ok=True)
@@ -403,6 +419,7 @@ class CreativePipeline:
                     "prompt": prompt,
                     "source_image_path": source_image_path,
                     "recommendation": visual_recommendation,
+                    "validation": validation_result,
                 }
             )
 

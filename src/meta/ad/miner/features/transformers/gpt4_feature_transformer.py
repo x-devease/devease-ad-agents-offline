@@ -43,7 +43,7 @@ def convert_to_features(gpt_response: Dict[str, Any]) -> Dict[str, Any]:
         KeyError: If required configuration or response fields are missing.
     """
     # Load feature configuration
-    features_config = ConfigManager.get_config(None, "ad/recommender/gpt4/features.yaml")
+    features_config = ConfigManager.get_config(None, "ad/miner/gpt4/features.yaml")
     features_list = features_config.get("features", [])
 
     feature_dict = {}

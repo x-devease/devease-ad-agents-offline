@@ -8,7 +8,7 @@ This module provides:
 - FeatureReproductionTracker: Track and validate feature reproduction (formula → prompt → image)
 """
 
-from .ad_recommender_adapter import (
+from .ad_miner_adapter import (
     convert_recommendations_to_visual_formula,
     load_recommendations_as_visual_formula,
 )

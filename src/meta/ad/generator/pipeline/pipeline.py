@@ -28,7 +28,7 @@ from src.meta.ad.generator.pipeline.product_context import (
     create_product_context,
 )
 from src.meta.ad.generator.pipeline.recommendation_loader import RecommendationLoader
-from src.meta.ad.generator.pipeline.ad_recommender_adapter import (
+from src.meta.ad.generator.pipeline.ad_miner_adapter import (
     load_recommendations_as_visual_formula,
 )
 
@@ -255,33 +255,33 @@ class CreativePipeline:
 
     def load_recommendation(self) -> Dict[str, Any]:
         """
-        Load visual recommendation from scorer repository or ad/recommender.
+        Load visual recommendation from scorer repository or ad/miner.
         
         Supports two formats:
         1. Creative scorer format (entrance_features/headroom_features)
-        2. Ad recommender format (recommendations array) - auto-converts
+        2. Ad miner format (recommendations array) - auto-converts
         """
         rec_path = self.recommendation_loader.recommendation_path
         
-        # Check if this is an ad/recommender format file
+        # Check if this is an ad/miner format file
         if rec_path and rec_path.exists():
             # Try to detect format by checking file extension and content
             if rec_path.suffix in [".md", ".json"]:
                 try:
-                    # Try loading as ad/recommender format first
+                    # Try loading as ad/miner format first
                     visual_formula = load_recommendations_as_visual_formula(
                         rec_path,
                         min_confidence="medium",
                         min_high_performer_pct=0.25,
                     )
                     logger.info(
-                        "Loaded recommendations from ad/recommender format: %s",
+                        "Loaded recommendations from ad/miner format: %s",
                         rec_path
                     )
                     return visual_formula
                 except (ValueError, KeyError, FileNotFoundError) as e:
                     logger.debug(
-                        "Not ad/recommender format (will try scorer format): %s", e
+                        "Not ad/miner format (will try scorer format): %s", e
                     )
                     # Fall through to scorer format
         
@@ -289,10 +289,10 @@ class CreativePipeline:
         try:
             return self.recommendation_loader.load()
         except FileNotFoundError:
-            # If scorer format not found, try ad/recommender format from default location
+            # If scorer format not found, try ad/miner format from default location
             # Try MD first (primary format), then JSON as fallback
             from datetime import datetime
-            base_dir = Path("config/ad/recommender")
+            base_dir = Path("config/ad/miner")
             # Try to infer customer/platform from product_name or use defaults
             customer = self._config.product_name.lower().replace(" ", "_")
             platform = "meta"
@@ -303,7 +303,7 @@ class CreativePipeline:
 
             if md_path.exists():
                 logger.info(
-                    "Scorer format not found, using ad/recommender MD: %s",
+                    "Scorer format not found, using ad/miner MD: %s",
                     md_path
                 )
                 return load_recommendations_as_visual_formula(
@@ -313,7 +313,7 @@ class CreativePipeline:
                 )
             elif json_path.exists():
                 logger.info(
-                    "Scorer format not found, using ad/recommender JSON (fallback): %s",
+                    "Scorer format not found, using ad/miner JSON (fallback): %s",
                     json_path
                 )
                 return load_recommendations_as_visual_formula(
@@ -322,7 +322,7 @@ class CreativePipeline:
                     min_high_performer_pct=0.25,
                 )
             raise FileNotFoundError(
-                f"Neither scorer format nor ad/recommender format found. "
+                f"Neither scorer format nor ad/miner format found. "
                 f"Tried: {self.recommendation_loader.recommendation_path}, "
                 f"{md_path}, {json_path}"
             )

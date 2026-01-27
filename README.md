@@ -2,7 +2,7 @@
 
 Comprehensive ad management system for Meta Ads with 4 major components:
 
-1. **Ad Recommender** (`src/meta/ad/recommender/`) - Creative recommendation engine using statistical pattern detection
+1. **Ad Miner** (`src/meta/ad/miner/`) - Creative recommendation engine using statistical pattern detection
 2. **Ad Generator** (`src/meta/ad/generator/`) - Creative image generation using FAL.ai
 3. **Adset Allocator** (`src/meta/adset/allocator/`) - Budget allocation engine with Bayesian-optimized parameters
 4. **Adset Generator** (`src/meta/adset/generator/`) - Audience configuration engine with historical validation

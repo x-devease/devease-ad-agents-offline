@@ -6,12 +6,12 @@ into the format expected by convert_features_to_prompts().
 
 Note:
     This module is for the creative scorer offline repository JSON format.
-    For ad/recommender markdown format (primary), use the ad_recommender_adapter
+    For ad/miner markdown format (primary), use the ad_miner_adapter
     which handles MD to visual formula conversion.
 
 Path formats:
     - Scorer repo (JSON): devease-creative-scorer-offline/data/headroom_analysis/recommendations.json
-    - Ad/recommender (MD, primary): config/ad/recommender/{customer}/{platform}/{date}/recommendations.md
+    - Ad/miner (MD, primary): config/ad/miner/{customer}/{platform}/{date}/recommendations.md
 """
 
 # flake8: noqa

@@ -54,7 +54,7 @@ class GPT4FeatureExtractor:
         self.images_folder = Constants.DEFAULT_IMAGES_FOLDER
 
         # Load prompt template from configuration file
-        prompts_config = ConfigManager.get_config(None, "ad/recommender/gpt4/prompts.yaml")
+        prompts_config = ConfigManager.get_config(None, "ad/miner/gpt4/prompts.yaml")
         self.prompt_template = prompts_config.get("prompt_template", "")
 
     def encode_image(self, image_path: str) -> str:
@@ -954,7 +954,7 @@ class GPT4FeatureExtractor:
     def extract_features_from_folder(
         self,
         images_folder: str = None,
-        output_dir: str = "config/ad/recommender/features",
+        output_dir: str = "config/ad/miner/features",
         batch_size: int = 5,
         rate_limit_delay: float = 3.0,
         performance_label: str = "unknown",

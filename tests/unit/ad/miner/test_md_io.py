@@ -12,7 +12,7 @@ pytestmark = pytest.mark.skipif(
     reason="Test assertion failures on MD format, skipped in CI"
 )
 
-from src.meta.ad.recommender.recommendations.md_io import (
+from src.meta.ad.miner.recommendations.md_io import (
     export_recommendations_md,
     load_recommendations_md,
     load_recommendations_file,

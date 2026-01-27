@@ -11,12 +11,12 @@ pytestmark = pytest.mark.skipif(
     reason="Test assertion failures on prompt formatting, skipped in CI"
 )
 
-from src.meta.ad.recommender.recommendations.md_io import (
+from src.meta.ad.miner.recommendations.md_io import (
     export_recommendations_md,
     load_recommendations_md,
     load_recommendations_file,
 )
-from src.meta.ad.recommender.recommendations.prompt_formatter import (
+from src.meta.ad.miner.recommendations.prompt_formatter import (
     format_recs_as_prompts,
 )
 

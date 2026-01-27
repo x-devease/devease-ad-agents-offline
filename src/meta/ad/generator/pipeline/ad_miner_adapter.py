@@ -1,14 +1,14 @@
 """
-Adapter to convert ad/recommender recommendations to visual formula format.
+Adapter to convert ad/miner recommendations to visual formula format.
 
 The ad generator expects recommendations in the creative scorer format:
 - entrance_features: High-performance baseline features
 - headroom_features: High ROAS, low penetration features
 
-The ad recommender outputs:
+The ad miner outputs:
 - recommendations: List with "feature", "recommended", "type" (improvement/anti_pattern)
 
-This adapter bridges the gap by converting ad/recommender format to visual formula format.
+This adapter bridges the gap by converting ad/miner format to visual formula format.
 """
 
 from __future__ import annotations
@@ -32,10 +32,10 @@ def convert_recommendations_to_visual_formula(
     min_high_performer_pct: float = 0.25,
 ) -> Dict[str, Any]:
     """
-    Convert ad/recommender recommendations to visual formula format.
+    Convert ad/miner recommendations to visual formula format.
 
     Args:
-        recommendations_data: Dict from ad/recommender with "recommendations" list
+        recommendations_data: Dict from ad/miner with "recommendations" list
         min_confidence: Minimum confidence level ("high", "medium", "low")
         min_high_performer_pct: Minimum high_performer_pct to include
 
@@ -45,7 +45,7 @@ def convert_recommendations_to_visual_formula(
     recs = recommendations_data.get("recommendations", [])
     
     # Separate DOs (improvements) and DON'Ts (anti_patterns)
-    # Note: ad/recommender uses "improvement" type for DOs
+    # Note: ad/miner uses "improvement" type for DOs
     improvements = [
         r for r in recs 
         if r.get("type") == "improvement" 
@@ -129,7 +129,7 @@ def convert_recommendations_to_visual_formula(
             "avg_roas": avg_roas,
             "penetration_pct": high_pct * 100,  # Convert to percentage
             "sample_count": int(high_pct * 100),  # Estimate from percentage
-            "roas_lift_pct": 0.0,  # Not available in ad/recommender format
+            "roas_lift_pct": 0.0,  # Not available in ad/miner format
             # Store original for reference
             "_original_feature": original_feature_name,
             "_original_value": original_feature_value,
@@ -173,7 +173,7 @@ def convert_recommendations_to_visual_formula(
             ((predicted_roas - current_roas) / current_roas * 100) 
             if current_roas > 0 else 0.0
         ),
-        "synergy_pairs": [],  # Not available in ad/recommender format
+        "synergy_pairs": [],  # Not available in ad/miner format
         "generation_instructions": {
             "must_include": [f.get("feature_name") for f in entrance_features[:5]],
             "prioritize": [f.get("feature_name") for f in headroom_features[:5]],
@@ -213,7 +213,7 @@ def load_recommendations_as_visual_formula(
     min_high_performer_pct: float = 0.25,
 ) -> Dict[str, Any]:
     """
-    Load recommendations from ad/recommender and convert to visual formula format.
+    Load recommendations from ad/miner and convert to visual formula format.
 
     Args:
         recommendations_path: Path to recommendations.md (primary) or recommendations.json (fallback)
@@ -223,7 +223,7 @@ def load_recommendations_as_visual_formula(
     Returns:
         Visual formula dict compatible with PromptBuilder
     """
-    from src.meta.ad.recommender.recommendations.md_io import load_recommendations_file
+    from src.meta.ad.miner.recommendations.md_io import load_recommendations_file
     
     path = Path(recommendations_path)
     if not path.exists():

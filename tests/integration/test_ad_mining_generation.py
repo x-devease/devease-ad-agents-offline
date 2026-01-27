@@ -1,8 +1,8 @@
 """
-End-to-end test for ad recommendation and generation pipeline.
+End-to-end test for ad mining and generation pipeline.
 
 Tests the complete flow:
-1. Load recommendations from ad/recommender (moprobo data)
+1. Load recommendations from ad/miner (moprobo data)
 2. Generate prompts using CreativePipeline
 3. Validate prompt quality and coverage
 4. Generate images (optional, disabled in CI)
@@ -35,11 +35,11 @@ def test_e2e_ad_recommendation_generation():
     """
     End-to-end test: Load recommendations, generate prompts, and optionally generate images.
 
-    Uses moprobo data from config/ad/recommender/moprobo/meta/
+    Uses moprobo data from config/ad/miner/moprobo/meta/
     Image generation is disabled in CI (set CI=true or GENERATE_IMAGES=false to disable)
     """
     logger.info("=" * 80)
-    logger.info("E2E Test: Ad Recommendation and Generation Pipeline")
+    logger.info("E2E Test: Ad Mining and Generation Pipeline")
     logger.info("=" * 80)
 
     # Check if image generation should be enabled
@@ -61,7 +61,7 @@ def test_e2e_ad_recommendation_generation():
     paths = Paths(customer=customer, platform=platform, date=date)
     recommendations_path_candidates = [
         paths.recommendations(),  # With date
-        Path("config/ad/recommender/moprobo/meta/recommendations.md"),  # Without date
+        Path("config/ad/miner/moprobo/meta/recommendations.md"),  # Without date
     ]
 
     recommendations_path = None
@@ -84,7 +84,7 @@ def test_e2e_ad_recommendation_generation():
     # Verify recommendations exist
     if not recommendations_path.exists():
         logger.error(f"Recommendations file not found: {recommendations_path}")
-        logger.error("Please run ad recommender first to generate recommendations")
+        logger.error("Please run ad miner first to generate recommendations")
         return False
 
     logger.info(f"✓ Recommendations file exists")

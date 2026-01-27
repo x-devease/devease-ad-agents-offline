@@ -10,8 +10,8 @@ Usage:
     from src.utils.config_manager import ConfigManager
 
     # Load a configuration file (flat structure)
-    prompts_config = ConfigManager.get_config(None, "ad/recommender/gpt4/prompts.yaml")
-    features_config = ConfigManager.get_config(None, "ad/recommender/gpt4/features.yaml")
+    prompts_config = ConfigManager.get_config(None, "ad/miner/gpt4/prompts.yaml")
+    features_config = ConfigManager.get_config(None, "ad/miner/gpt4/features.yaml")
 
     # Access nested values
     prompt_template = prompts_config.get("prompt_template", "")
@@ -81,7 +81,7 @@ class ConfigManager:
                 If provided, the file will be looked up in
                 config/{module}/{filename}. If None, the file will be
                 looked up directly in config/{filename}.
-            filename: Configuration file name (e.g., "ad/recommender/gpt4/prompts.yaml").
+            filename: Configuration file name (e.g., "ad/miner/gpt4/prompts.yaml").
 
         Returns:
             Path object to the configuration file.
@@ -121,7 +121,7 @@ class ConfigManager:
                 If provided, the file will be looked up in
                 config/{module}/{filename}. If None, the file will be
                 looked up directly in config/{filename}.
-            filename: Configuration file name (e.g., "ad/recommender/gpt4/prompts.yaml").
+            filename: Configuration file name (e.g., "ad/miner/gpt4/prompts.yaml").
             use_cache: If True, use cached configuration if available.
                 Defaults to True.
 

@@ -1,7 +1,7 @@
 """
 Recommendation Feature to Template Placeholder Mapping.
 
-Maps recommendation feature names (from ad/recommender) to template placeholders
+Maps recommendation feature names (from ad/miner) to template placeholders
 and provides value transformation functions.
 """
 

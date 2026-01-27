@@ -1,7 +1,7 @@
 # Claude Self-Reflection Framework
 
 ## Purpose
-Ensure any changes made align with the core goals and constraints of the **budget allocator**, **audience configuration generator**, **ad recommender** (creative scorer), and **ad generator** (creative image generation).
+Ensure any changes made align with the core goals and constraints of the **budget allocator**, **audience configuration generator**, **ad miner** (creative scorer), and **ad generator** (creative image generation).
 
 ---
 
@@ -73,16 +73,16 @@ Ensure any changes made align with the core goals and constraints of the **budge
 | Raw Data | `datasets/{customer}/{platform}/raw/` | `datasets/moprobo/meta/raw/` |
 | Features | `datasets/{customer}/{platform}/features/` | `datasets/moprobo/meta/features/` |
 | Results | `results/{customer}/{platform}/` | `results/moprobo/meta/` |
-| GPT-4 Configs (ad recommender) | `config/ad/recommender/gpt4/` | `config/ad/recommender/gpt4/features.yaml` |
-| Creative Features | `src/meta/ad/recommender/features/` | `src/meta/ad/recommender/features/extract.py` |
-| Creative Recommendations | `src/meta/ad/recommender/recommendations/` | `src/meta/ad/recommender/recommendations/rule_engine.py` |
-| Recommender Output | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
+| GPT-4 Configs (ad miner) | `config/ad/miner/gpt4/` | `config/ad/miner/gpt4/features.yaml` |
+| Creative Features | `src/meta/ad/miner/features/` | `src/meta/ad/miner/features/extract.py` |
+| Creative Recommendations | `src/meta/ad/miner/recommendations/` | `src/meta/ad/miner/recommendations/rule_engine.py` |
+| Recommender Output | `config/ad/miner/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 | Generator Config | `config/ad/generator/{customer}/{platform}/` | `config/ad/generator/moprobo/taboola/generation_config.yaml` |
 | Generator Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
 | Generator Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
 | Generator Output | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../moprobo/taboola/2026-01-23/nano-banana-pro/` |
 
-**Rule**: Allocator/adset generator use `src/utils/customer_paths.py`. Ad recommender uses `src/meta/ad/recommender/utils/paths.py` and `config_manager.py`. Ad generator uses `src/meta/ad/generator/core/paths.py`. Never hard-code paths.
+**Rule**: Allocator/adset generator use `src/utils/customer_paths.py`. Ad miner uses `src/meta/ad/miner/utils/paths.py` and `config_manager.py`. Ad generator uses `src/meta/ad/generator/core/paths.py`. Never hard-code paths.
 
 ---
 
@@ -139,7 +139,7 @@ src/meta/
 ### Component Interaction Workflow
 
 ```
-Extract Creative Features (Ad Recommender)
+Extract Creative Features (Ad Miner)
            ↓
     Generate Creative Recommendations
            ↓
@@ -152,9 +152,11 @@ Generate Audience Configurations (Adset Generator)
     Allocate Budget Across Adsets (Adset Allocator)
 ```
 
-### 1. Ad Recommender (`src/meta/ad/recommender/`)
+### 1. Ad Miner (`src/meta/ad/miner/`)
 
 **Purpose:** Statistical pattern-based creative optimization - analyzes image features to generate ROAS improvement recommendations
+
+**Goal:** Mine historical ad data to discover proven creative patterns that drive performance, then output concrete DO/DON'T recommendations (e.g., "products positioned bottom-right show 2.3x higher ROAS", "bright backgrounds increase engagement by 40%") so new ads can be designed using data-backed insights rather than guesswork.
 
 **Design Philosophy:**
 - **"NO AI. NO SPECULATION. JUST STATISTICS."**
@@ -178,9 +180,9 @@ Generate Audience Configurations (Adset Generator)
 5. **Actionable Output**: Clear DOs and DON'Ts with supporting evidence
 
 **File Paths:**
-- Config: `config/ad/recommender/gpt4/` (features.yaml, prompts.yaml)
-- Output: `config/ad/recommender/{customer}/{platform}/{date}/recommendations.md`
-- Utils: `src/meta/ad/recommender/utils/config_manager.py`, `paths.py`
+- Config: `config/ad/miner/gpt4/` (features.yaml, prompts.yaml)
+- Output: `config/ad/miner/{customer}/{platform}/{date}/recommendations.md`
+- Utils: `src/meta/ad/miner/utils/config_manager.py`, `paths.py`
 
 ### 2. Ad Generator (`src/meta/ad/generator/`)
 
@@ -290,14 +292,14 @@ Generate Audience Configurations (Adset Generator)
 
 **Workflow: Extract Features → Tune Parameters → Allocate Budget → Generate Recommendations → Review Results**
 
-1. **Ad Recommender**: Extract features, generate creative recommendations
+1. **Ad Miner**: Extract features, generate creative recommendations
 2. **Ad Generator**: Convert recommendations to prompts, generate images
 3. **Adset Generator**: Generate audience configurations (with creative compatibility)
 4. **Adset Allocator**: Allocate budget across adsets (including new ones from generator)
 
 **Data Flow:**
 ```
-config/ad/recommender/{customer}/{platform}/{date}/recommendations.md
+config/ad/miner/{customer}/{platform}/{date}/recommendations.md
            ↓ (loaded by)
 src/meta/ad/generator/pipeline/recommendation_loader.py
            ↓ (generates)
@@ -1021,22 +1023,22 @@ Before making any code change, Claude must verify:
 | **Segmentation** | `src/meta/adset/generator/segmentation/segmenter.py` | Segment analysis |
 | **Constraints** | `src/meta/adset/generator/analyzers/advantage_constraints.py` | Competitive advantages |
 
-### Ad Recommender Core Files (`src/meta/ad/recommender/`)
+### Ad Miner Core Files (`src/meta/ad/miner/`)
 | Component | File | Purpose |
 |-----------|------|---------|
-| **Extract** | `src/meta/ad/recommender/features/extract.py` | Feature extraction and ROAS integration |
-| **GPT-4 Extractor** | `src/meta/ad/recommender/features/extractors/gpt4_feature_extractor.py` | GPT-4 Vision API extractor |
-| **Transformer** | `src/meta/ad/recommender/features/transformers/gpt4_feature_transformer.py` | Transform GPT-4 responses to features |
-| **Interactions** | `src/meta/ad/recommender/features/interactions.py` | Feature interactions |
-| **Lib** | `src/meta/ad/recommender/features/lib/` | Loaders, mergers, parsers, synthetic data |
-| **Rule Engine** | `src/meta/ad/recommender/recommendations/rule_engine.py` | Statistical pattern-based recommendation engine |
-| **Prompt Formatter** | `src/meta/ad/recommender/recommendations/prompt_formatter.py` | Format recommendations as prompts |
-| **Evidence** | `src/meta/ad/recommender/recommendations/evidence_builder.py` | Build evidence for recommendations |
-| **Formatters** | `src/meta/ad/recommender/recommendations/formatters.py` | Output formatting |
-| **Config** | `src/meta/ad/recommender/utils/config_manager.py` | Config loading (gpt4 features/prompts) |
-| **Paths** | `src/meta/ad/recommender/utils/paths.py` | Data dir, features CSV resolution |
-| **Statistics** | `src/meta/ad/recommender/utils/statistics.py` | Chi-square and statistical tests |
-| **Predictor** | `src/meta/ad/recommender/predictor.py` | Prediction utilities |
+| **Extract** | `src/meta/ad/miner/features/extract.py` | Feature extraction and ROAS integration |
+| **GPT-4 Extractor** | `src/meta/ad/miner/features/extractors/gpt4_feature_extractor.py` | GPT-4 Vision API extractor |
+| **Transformer** | `src/meta/ad/miner/features/transformers/gpt4_feature_transformer.py` | Transform GPT-4 responses to features |
+| **Interactions** | `src/meta/ad/miner/features/interactions.py` | Feature interactions |
+| **Lib** | `src/meta/ad/miner/features/lib/` | Loaders, mergers, parsers, synthetic data |
+| **Rule Engine** | `src/meta/ad/miner/recommendations/rule_engine.py` | Statistical pattern-based recommendation engine |
+| **Prompt Formatter** | `src/meta/ad/miner/recommendations/prompt_formatter.py` | Format recommendations as prompts |
+| **Evidence** | `src/meta/ad/miner/recommendations/evidence_builder.py` | Build evidence for recommendations |
+| **Formatters** | `src/meta/ad/miner/recommendations/formatters.py` | Output formatting |
+| **Config** | `src/meta/ad/miner/utils/config_manager.py` | Config loading (gpt4 features/prompts) |
+| **Paths** | `src/meta/ad/miner/utils/paths.py` | Data dir, features CSV resolution |
+| **Statistics** | `src/meta/ad/miner/utils/statistics.py` | Chi-square and statistical tests |
+| **Predictor** | `src/meta/ad/miner/predictor.py` | Prediction utilities |
 
 ### Ad Generator Core Files (`src/meta/ad/generator/`)
 | Component | File | Purpose |
@@ -1063,7 +1065,7 @@ Before making any code change, Claude must verify:
 | **Allocator Workflow** | `src/workflows/allocation_workflow.py` | Allocation workflow |
 | **Generator CLI** | `src/cli/commands/rules.py` | Rules pipeline |
 | **Generator CLI** | `src/cli/commands/auto_params.py` | Auto-calc parameters |
-| **Ad Recommender/Generator CLI** | `run.py` | extract-features, recommend, prompt, generate, run |
+| **Ad Miner/Generator CLI** | `run.py` | extract-features, recommend, prompt, generate, run |
 
 ---
 
@@ -1094,7 +1096,7 @@ If the answer is "I don't know" or "maybe," then the recommendation should be fr
 - Respect platform-specific targeting capabilities
 - **If uncertain, recommend small test vs full rollout**
 
-### Ad Recommender (Creative Scorer)
+### Ad Miner (Creative Scorer)
 **"NO AI. NO SPECULATION. JUST STATISTICS."**
 
 - Statistical pattern detection only (no ML)
@@ -1163,7 +1165,7 @@ daily_budget = (monthly_cap - total_spent) / remaining_days * 0.95
 
 ---
 
-## Creative Recommender Architecture (`src/meta/ad/recommender/`)
+## Creative Recommender Architecture (`src/meta/ad/miner/`)
 
 **Purpose:** Statistical pattern-based creative optimization - analyzes image features to generate ROAS improvement recommendations
 
@@ -1183,7 +1185,7 @@ daily_budget = (monthly_cap - total_spent) / remaining_days * 0.95
 - `evidence_builder.py`: Build evidence for recommendations
 
 **Utils** (`utils/`):
-- `config_manager.py`: Config loading for `config/ad/recommender/gpt4/` (features, prompts)
+- `config_manager.py`: Config loading for `config/ad/miner/gpt4/` (features, prompts)
 - `paths.py`: Data dir, features CSV resolution (`CREATIVE_SCORER_DATA_DIR`, `CREATIVE_SCORER_FEATURES_CSV`)
 - `statistics.py`: Chi-square and statistical tests
 - `api_keys.py`, `config_loader.py`, `constants.py`, `platform_normalizer.py`, `model_persistence.py`: Support utilities
@@ -1242,20 +1244,20 @@ daily_budget = (monthly_cap - total_spent) / remaining_days * 0.95
 
 ### Configuration
 
-- **GPT-4 Config**: `config/ad/recommender/gpt4/features.yaml` (feature definitions)
-- **GPT-4 Prompts**: `config/ad/recommender/gpt4/prompts.yaml` (prompt templates)
-- **Output**: `config/ad/recommender/{customer}/{platform}/{date}/recommendations.md` (markdown format, DOs/DON'Ts)
+- **GPT-4 Config**: `config/ad/miner/gpt4/features.yaml` (feature definitions)
+- **GPT-4 Prompts**: `config/ad/miner/gpt4/prompts.yaml` (prompt templates)
+- **Output**: `config/ad/miner/{customer}/{platform}/{date}/recommendations.md` (markdown format, DOs/DON'Ts)
 
-### File Location Rules (Ad Recommender)
+### File Location Rules (Ad Miner)
 
 | Type | Location | Example |
 |------|----------|---------|
-| Configs | `config/ad/recommender/gpt4/` | `config/ad/recommender/gpt4/features.yaml` |
-| Creative Features | `src/meta/ad/recommender/features/` | `src/meta/ad/recommender/features/extract.py` |
-| Recommendations | `src/meta/ad/recommender/recommendations/` | `src/meta/ad/recommender/recommendations/rule_engine.py` |
-| Output | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
+| Configs | `config/ad/miner/gpt4/` | `config/ad/miner/gpt4/features.yaml` |
+| Creative Features | `src/meta/ad/miner/features/` | `src/meta/ad/miner/features/extract.py` |
+| Recommendations | `src/meta/ad/miner/recommendations/` | `src/meta/ad/miner/recommendations/rule_engine.py` |
+| Output | `config/ad/miner/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 
-**Rule**: Use `src/meta/ad/recommender/utils/config_manager.py` for config; `src/meta/ad/recommender/utils/paths.py` for data/features. Never hard-code paths.
+**Rule**: Use `src/meta/ad/miner/utils/config_manager.py` for config; `src/meta/ad/miner/utils/paths.py` for data/features. Never hard-code paths.
 
 ### Code Patterns to Follow
 
@@ -1354,7 +1356,7 @@ Before making any code change to creative recommender, Claude must verify:
 ### Core Components
 
 **Core** (`core/`):
-- `paths.py`: Customer/platform/date path management (`config/ad/generator/`, `config/ad/recommender/recommendations/`)
+- `paths.py`: Customer/platform/date path management (`config/ad/generator/`, `config/ad/miner/recommendations/`)
 - `scorer_recommendations_loader.py`: Load creative scorer recommendations
 - `prompts/`: Feature-to-prompt conversion
   - `converter.py`, `converter_simple.py`, `converter_advanced.py`, `converter_enhanced.py`: Prompt converters
@@ -1395,7 +1397,7 @@ Before making any code change to creative recommender, Claude must verify:
 - **Templates**: `config/ad/generator/templates/{customer}/{platform}/`
 - **Prompts**: `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` (e.g. `structured`, `nano`, `variants`)
 - **Generated**: `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` (e.g. `nano-banana-pro`)
-- **Recommendations** (input): `config/ad/recommender/{customer}/{platform}/{date}/recommendations.md`
+- **Recommendations** (input): `config/ad/miner/{customer}/{platform}/{date}/recommendations.md`
 
 ### File Location Rules (Ad Generator)
 
@@ -1405,7 +1407,7 @@ Before making any code change to creative recommender, Claude must verify:
 | Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
 | Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
 | Generated | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../nano-banana-pro/` |
-| Recommendations | `config/ad/recommender/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
+| Recommendations | `config/ad/miner/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
 
 **Rule**: Use `src/meta/ad/generator/core/paths.py` (`Paths`) for all config/output paths. Never hard-code paths.
 
@@ -1433,7 +1435,7 @@ Before making any code change to creative recommender, Claude must verify:
 Before making any code change to creative generator, Claude must verify:
 
 #### Goal Alignment
-- [ ] Does this load recommendations from creative scorer (`config/ad/recommender/recommendations/...`)?
+- [ ] Does this load recommendations from creative scorer (`config/ad/miner/recommendations/...`)?
 - [ ] Does this convert features to optimized prompts?
 - [ ] Does this use FAL.ai for image generation?
 - [ ] Does this validate generated features?

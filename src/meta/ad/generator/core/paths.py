@@ -110,7 +110,7 @@ class Paths:
 
         Example:
             paths.recommendations()
-            # → config/ad/recommender/moprobo/taboola/2026-01-26/recommendations.md
+            # → config/ad/miner/moprobo/taboola/2026-01-26/recommendations.md
         """
         cust = customer.lower().replace("-", "_") if customer else self.customer
         plat = platform.lower().replace("-", "_") if platform else self.platform
@@ -119,7 +119,7 @@ class Paths:
         return (
             self.config_dir
             / "ad"
-            / "recommender"
+            / "miner"
             / cust
             / plat
             / d
@@ -301,7 +301,7 @@ def detect_from_path(file_path: Path) -> dict[str, str]:
         Dict with customer, platform, date keys
 
     Example:
-        path = Path("config/ad/recommender/recommendations/moprobo/taboola/2026-01-21/recommendations.json")
+        path = Path("config/ad/miner/recommendations/moprobo/taboola/2026-01-21/recommendations.json")
         info = detect_from_path(path)
         # → {"customer": "moprobo", "platform": "taboola", "date": "2026-01-21"}
     """
@@ -356,7 +356,7 @@ def create_customer_platform_dirs(
     Example:
         dirs = create_customer_platform_dirs("moprobo", "taboola")
         # Creates:
-        # - config/ad/recommender/recommendations/moprobo/taboola/
+        # - config/ad/miner/recommendations/moprobo/taboola/
         # - config/ad/generator/prompts/moprobo/taboola/
         # - config/ad/generator/generated/moprobo/taboola/
         # - config/ad/generator/moprobo/taboola/

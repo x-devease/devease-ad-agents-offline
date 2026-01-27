@@ -49,13 +49,13 @@ class FeaturesConstants:
 
     # Default Paths
     DEFAULT_IMAGES_FOLDER: str = "images"
-    DEFAULT_OUTPUT_DIR: str = "config/ad/recommender/features"
+    DEFAULT_OUTPUT_DIR: str = "config/ad/miner/features"
     # Note: Progress/checkpoint/results files should go to results/ or cache/, not config/
     # These constants are unused and kept for reference only
-    DEFAULT_PROGRESS_FILE: str = "results/ad/recommender/analysis_progress.json"
-    DEFAULT_CHECKPOINT_FILE: str = "cache/ad/recommender/image_features_checkpoint.json"
-    DEFAULT_RESULTS_JSON: str = "results/ad/recommender/gpt4_analysis_results.json"
-    DEFAULT_RESULTS_CSV: str = "results/ad/recommender/gpt4_analysis_results.csv"
+    DEFAULT_PROGRESS_FILE: str = "results/ad/miner/analysis_progress.json"
+    DEFAULT_CHECKPOINT_FILE: str = "cache/ad/miner/image_features_checkpoint.json"
+    DEFAULT_RESULTS_JSON: str = "results/ad/miner/gpt4_analysis_results.json"
+    DEFAULT_RESULTS_CSV: str = "results/ad/miner/gpt4_analysis_results.csv"
 
     # GPT Model Configuration
     DEFAULT_GPT_MODEL: str = "gpt-4.1"
@@ -68,8 +68,8 @@ class FeaturesConstants:
     PERFORMANCE_LABEL_PREDICTION: str = "prediction"
 
     # Batch Processing
-    DEFAULT_TOP_150_FILE: str = "results/ad/recommender/top_150_images.csv"
-    DEFAULT_BOTTOM_150_FILE: str = "results/ad/recommender/bottom_150_images.csv"
+    DEFAULT_TOP_150_FILE: str = "results/ad/miner/top_150_images.csv"
+    DEFAULT_BOTTOM_150_FILE: str = "results/ad/miner/bottom_150_images.csv"
     BATCH_SIZE_FOR_CLASSIFIED: int = 5  # For top/bottom 150 processing
 
     # Feature Count

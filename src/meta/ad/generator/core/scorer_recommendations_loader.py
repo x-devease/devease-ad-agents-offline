@@ -69,7 +69,7 @@ class CreativeScorerLoader:
 
         Args:
             recommendations_path: Path to recommendations.json from creative scorer repository
-                         (Note: ad/recommender outputs .md format, use ad_recommender_adapter for that)
+                         (Note: ad/miner outputs .md format, use ad_miner_adapter for that)
             min_confidence: Minimum confidence level (high, medium, low)
             min_high_performer_pct: Minimum high performer percentage (0.0-1.0)
             min_priority_score: Minimum priority score
@@ -356,8 +356,8 @@ def load_scorer_recommendations(
 
     Note:
         This function loads JSON format from the creative scorer repository.
-        For markdown format from ad/recommender, use load_recommendations_as_visual_formula()
-        from ad_recommender_adapter instead.
+        For markdown format from ad/miner, use load_recommendations_as_visual_formula()
+        from ad_miner_adapter instead.
 
     Example:
         recs = load_scorer_recommendations(

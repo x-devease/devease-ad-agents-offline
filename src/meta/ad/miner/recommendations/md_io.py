@@ -1,7 +1,7 @@
 """Markdown I/O for recommendations.
 
 Export and load recommendations in .md format (DOs / DON'Ts) so the
-creative generator can consume the ad/recommender output file.
+creative generator can consume the ad/miner output file.
 """
 
 from __future__ import annotations
@@ -440,7 +440,7 @@ def _build_recommendation_from_comprehensive(
 
 
 def load_recommendations_file(path: Path | str) -> Dict[str, Any]:
-    """Load recommendations from .json or .md (ad/recommender output).
+    """Load recommendations from .json or .md (ad/miner output).
 
     Returns dict with "recommendations" list, compatible with
     format_recs_as_prompts and prompt conversion.

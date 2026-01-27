@@ -47,7 +47,7 @@ def test_combinatorial_prompt_generation():
 
     # Setup paths
     paths = Paths(customer=customer, platform=platform, date=date)
-    recommendations_path = Path("config/ad/recommender/moprobo/meta/recommendations.md")
+    recommendations_path = Path("config/ad/miner/moprobo/meta/recommendations.md")
 
     if not recommendations_path.exists():
         logger.error(f"Recommendations file not found: {recommendations_path}")

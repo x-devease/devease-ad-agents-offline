@@ -13,7 +13,7 @@ Main entry point for all 4 major components:
 2. Adset Generator (src/adset/generator/):
    - rules: Run rules-based audience configuration pipeline
 
-3. Ad Recommender (src/ad/recommender/):
+3. Ad Miner (src/ad/miner/):
    - extract-features: Extract features from images using GPT-4 Vision API
    - recommend: Generate creative recommendations from feature data
 
@@ -34,7 +34,7 @@ Usage:
     
     # Creative operations
     python run.py extract-features --ad-data-csv data/ad_data.csv --output-csv data/features_with_roas.csv
-    python run.py recommend --input-csv data/features_with_roas.csv --output-dir config/ad/recommender
+    python run.py recommend --input-csv data/features_with_roas.csv --output-dir config/ad/miner
     python run.py prompt structured --base-prompt "A professional product image"
     python run.py generate --source-image product.jpg --prompt "Professional product image" --num-variations 3
     python run.py run --source-image product.jpg --base-prompt "A professional product image" --num-variations 3
@@ -70,7 +70,7 @@ Examples:
   # Adset Generator
   python run.py rules --customer moprobo --platform meta
 
-  # Ad Recommender
+  # Ad Miner
   python run.py extract-features --ad-data-csv data/ad_data.csv --output-csv data/features_with_roas.csv
   python run.py recommend --input-csv data/features_with_roas.csv --output-dir config/recommendations/moprobo/meta
 
@@ -122,7 +122,7 @@ Environment Configuration:
     # 2. Adset Generator
     _add_rules_subcommand(subparsers)
     
-    # 3. Ad Recommender
+    # 3. Ad Miner
     _add_extract_features_subcommand(subparsers)
     _add_recommend_subcommand(subparsers)
     
@@ -965,7 +965,7 @@ def _cmd_rules(args):
 
 
 def _add_extract_features_subcommand(subparsers):
-    """Add extract-features subcommand for ad recommender."""
+    """Add extract-features subcommand for ad miner."""
     parser = subparsers.add_parser(
         "extract-features",
         help="Extract features from images using GPT-4 Vision API",
@@ -1018,13 +1018,13 @@ Can extract from:
 
 
 def _cmd_extract_features(args):
-    """Handle extract-features command for ad recommender."""
+    """Handle extract-features command for ad miner."""
     logger.info("=" * 70)
     logger.info("EXTRACT-FEATURES: Image Feature Extraction")
     logger.info("=" * 70)
     
     try:
-        from src.meta.ad.recommender.features import extract_batch_features, add_roas_to_features
+        from src.meta.ad.miner.features import extract_batch_features, add_roas_to_features
         
         if args.top_csv and args.bottom_csv:
             # Extract from top/bottom CSVs
@@ -1082,7 +1082,7 @@ def _cmd_extract_features(args):
 
 
 def _add_recommend_subcommand(subparsers):
-    """Add recommend subcommand for ad recommender."""
+    """Add recommend subcommand for ad miner."""
     parser = subparsers.add_parser(
         "recommend",
         help="Generate creative recommendations from feature data",
@@ -1105,8 +1105,8 @@ actionable recommendations with evidence.
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="config/ad/recommender",
-        help="Output directory for recommendations (default: config/ad/recommender)",
+        default="config/ad/miner",
+        help="Output directory for recommendations (default: config/ad/miner)",
     )
     
     parser.add_argument(
@@ -1127,13 +1127,13 @@ actionable recommendations with evidence.
 
 
 def _cmd_recommend(args):
-    """Handle recommend command for ad recommender."""
+    """Handle recommend command for ad miner."""
     logger.info("=" * 70)
     logger.info("RECOMMEND: Creative Recommendations")
     logger.info("=" * 70)
     
     try:
-        from src.meta.ad.recommender.recommendations import RuleEngine
+        from src.meta.ad.miner.recommendations import RuleEngine
         import pandas as pd
         from pathlib import Path
         
@@ -1149,11 +1149,11 @@ def _cmd_recommend(args):
         recommendations = rule_engine.generate_recommendations(df)
         
         # Save recommendations (MD format only)
-        # Output to config/ad/recommender/{customer}/{platform}
+        # Output to config/ad/miner/{customer}/{platform}
         output_dir = Path(args.output_dir) / args.customer / args.platform
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        from src.meta.ad.recommender.recommendations.md_io import (
+        from src.meta.ad.miner.recommendations.md_io import (
             export_recommendations_md,
         )
 
@@ -1227,7 +1227,7 @@ Modes:
         "--recommendations-file",
         type=str,
         default=None,
-        help="Path to recommendations file (.md from ad/recommender)",
+        help="Path to recommendations file (.md from ad/miner)",
     )
     
     parser.set_defaults(func=_cmd_prompt)
@@ -1242,23 +1242,23 @@ def _cmd_prompt(args):
     try:
         from pathlib import Path
 
-        # Load recommendations (.json or .md from ad/recommender)
-        from src.meta.ad.recommender.recommendations.md_io import (
+        # Load recommendations (.json or .md from ad/miner)
+        from src.meta.ad.miner.recommendations.md_io import (
             load_recommendations_file,
         )
 
         if args.recommendations_file:
             recs_path = Path(args.recommendations_file)
         else:
-            # Look in config/ad/recommender/{customer}/{platform}
+            # Look in config/ad/miner/{customer}/{platform}
             base = Path(
-                f"config/ad/recommender/{args.customer}/{args.platform}"
+                f"config/ad/miner/{args.customer}/{args.platform}"
             )
             recs_path = base / "recommendations.md"
         recommendations = load_recommendations_file(recs_path)
 
         if args.mode == "structured":
-            from src.meta.ad.recommender.recommendations.prompt_formatter import (
+            from src.meta.ad.miner.recommendations.prompt_formatter import (
                 format_recs_as_prompts,
             )
 
@@ -1278,7 +1278,7 @@ def _cmd_prompt(args):
             from src.meta.ad.generator.core.generation.prompt_converter import (
                 PromptConverter,
             )
-            from src.meta.ad.recommender.utils.api_keys import get_openai_api_key
+            from src.meta.ad.miner.utils.api_keys import get_openai_api_key
 
             api_key = get_openai_api_key()
             converter = PromptConverter(api_key=api_key)
@@ -1467,10 +1467,10 @@ def _cmd_run(args):
         )
         from pathlib import Path
         
-        # Determine recommendation path (ad/recommender format)
-        # Look in config/ad/recommender/{customer}/{platform}
+        # Determine recommendation path (ad/miner format)
+        # Look in config/ad/miner/{customer}/{platform}
         rec_path = Path(
-            f"config/ad/recommender/{args.customer}/{args.platform}/recommendations.md"
+            f"config/ad/miner/{args.customer}/{args.platform}/recommendations.md"
         )
         
         # Build config with recommendation path

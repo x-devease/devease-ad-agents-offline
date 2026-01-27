@@ -6,12 +6,12 @@ recommendation_generator.py module.
 
 Note:
     This loader is for the creative scorer offline repository JSON format.
-    For ad/recommender markdown format (primary), use the ad_recommender_adapter
+    For ad/miner markdown format (primary), use the ad_miner_adapter
     which handles the conversion from MD to visual formula format.
 
 Path formats:
     - Scorer repo: devease-creative-scorer-offline/data/headroom_analysis/visual_recommendation.json
-    - Ad/recommender (primary): config/ad/recommender/{customer}/{platform}/{date}/recommendations.md
+    - Ad/miner (primary): config/ad/miner/{customer}/{platform}/{date}/recommendations.md
 
 Key improvements:
 - Filters out low-penetration outliers using configurable thresholds

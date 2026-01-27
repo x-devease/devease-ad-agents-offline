@@ -349,7 +349,7 @@ class PromptConverter:
         temperature: float = 0.7,
         product_context: Optional[str] = None,
     ) -> Dict[str, str]:
-        """Build feature instructions from ad/recommender output and convert to Nano Banana prompt.
+        """Build feature instructions from ad/miner output and convert to Nano Banana prompt.
 
         Args:
             base_prompt: Base product description.

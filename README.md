@@ -156,7 +156,10 @@ python3 run.py {command} --help
 │       ├── extract_workflow.py  # Feature extraction workflow
 │       ├── tuning_workflow.py   # Tuning workflow
 │       └── allocation_workflow.py # Allocation workflow
-├── config/                      # Configuration files (mirrors src/ structure)
+├── config/                      # Configuration files (shared across miner, generator, reviewer)
+│   ├── {customer}/{platform}/   # Shared customer/platform config
+│   │   ├── config.yaml          # SHARED config (miner + generator + reviewer)
+│   │   └── patterns.yaml        # Ad miner output patterns
 │   ├── adset/                   # Adset module configs
 │   │   ├── allocator/          # Budget allocation configs
 │   │   │   ├── rules.yaml      # Default allocator rules
@@ -178,14 +181,14 @@ python3 run.py {command} --help
 │       │   └── recommendations/ # Recommendation outputs
 │       │       └── {customer}/{platform}/{date}/
 │       └── generator/          # Creative generator configs
+│           ├── psychology_catalog.yaml # System: 14 psychology types
+│           ├── text_templates.yaml     # System: Text overlay templates
 │           ├── templates/      # Generation templates
 │           │   └── {customer}/{platform}/
-│           ├── prompts/        # Generated prompts
+│           ├── prompts/        # Generated prompts (output)
 │           │   └── {customer}/{platform}/{date}/{type}/
-│           ├── generated/      # Generated images
-│           │   └── {customer}/{platform}/{date}/{model}/
-│           └── {customer}/{platform}/ # Customer/platform configs
-│               └── generation_config.yaml # Generation config
+│           └── generated/      # Generated images (output)
+│               └── {customer}/{platform}/{date}/{model}/
 ├── datasets/                    # Input data (ad, adset, campaign insights)
 │   └── {customer}/{platform}/   # Customer and platform-specific data
 │       ├── raw/                 # Raw API responses
@@ -194,11 +197,13 @@ python3 run.py {command} --help
 │   └── {customer}/{platform}/   # Customer and platform-specific results
 │       ├── rules/               # Rules-based allocation results
 │       └── recommendations/      # Audience recommendations
-└── tests/                       # Unit & integration tests
-    ├── unit/                    # Unit tests
+└── tests/                       # Unit & integration tests (all at root level)
+    ├── unit/                    # Unit tests (44 test files)
+    │   ├── ad/                  # Ad-level module tests
+    │   │   └── miner/           # Ad miner tests
     │   ├── adset/               # Adset module tests
     │   │   ├── allocator/       # Budget allocator tests
-    │   │   ├── generator/        # Audience generator tests
+    │   │   ├── generator/       # Audience generator tests
     │   │   ├── lib/             # Decision rules tests
     │   │   ├── features/        # Feature extraction tests
     │   │   ├── optimizer/       # Tuning tests
@@ -206,10 +211,18 @@ python3 run.py {command} --help
     │   │   ├── budget/          # Budget tracking tests
     │   │   └── integrations/    # Integration tests
     │   │       └── shopify/     # Shopify integration tests
-    │   └── ad/                  # Ad-level module tests
-    │       ├── recommender/     # Creative recommender tests
-    │       └── generator/        # Creative generator tests
-    └── integration/             # Integration tests
+    │   ├── budget/              # Budget tracking tests
+    │   ├── config/              # Config management tests
+    │   ├── features_store/      # Feature store tests
+    │   ├── integrations/        # Third-party integrations
+    │   ├── recommendations/     # Recommendation engine tests
+    │   ├── tools/               # Tool tests
+    │   ├── utils_auto/          # Auto-parameter utility tests
+    │   └── workflows/           # Workflow tests
+    └── integration/             # Integration tests (12 test files)
+        ├── ad/                  # Ad module integration tests
+        │   └── miner/           # Ad miner integration tests
+        ├── adset/               # Adset integration tests
         ├── features/            # Feature extraction end-to-end tests
         └── workflows/           # Workflow end-to-end tests
 ```

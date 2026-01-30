@@ -79,6 +79,11 @@ htmlcov/
 .tox/
 .pytest_cache/
 
-# Config - ad generator configuration
-config/ad/generator/
+# Config - shared customer configs (not the structure, but actual customer data if needed)
+# config/*/ is tracked, but specific customer data can be ignored if needed
 
+
+# Documentation & Examples
+# Note: Only root README.md should be tracked, all other docs should be external
+docs/
+examples/

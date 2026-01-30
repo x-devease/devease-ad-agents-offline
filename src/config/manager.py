@@ -1,13 +1,9 @@
-"""Configuration manager with layered loading support.
+"""Configuration manager with consolidated config loading.
 
-Implements a priority-based configuration loading system:
-1. System defaults (hardcoded)
-2. System config (config/default/system.yaml)
-3. Environment config (config/default/{environment}.yaml)
-4. Customer config (config/adset/allocator/{customer}/default.yaml)
-5. Platform config (config/adset/allocator/{customer}/{platform}/rules.yaml)
-6. Environment variables
-7. CLI/runtime overrides
+Loads configuration from the consolidated customer config:
+- Single file: config/{customer}/{platform}/config.yaml
+- Contains all settings: miner, generator, allocator, reviewer
+- Priority system: defaults → customer config → environment overrides → CLI/runtime
 """
 
 import os
@@ -73,54 +69,54 @@ class ConfigManager:
         return self._path_manager
 
     def _load_config(self) -> None:
-        """Load configuration with layered overrides."""
+        """Load configuration from consolidated customer config file."""
         # Start with system defaults
         config_dict = self._get_system_defaults()
 
-        # Layer 1: Default config file
-        default_config_path = Path("config/adset/allocator/system.yaml")
-        if default_config_path.exists():
-            config_dict = self._deep_merge(
-                config_dict, self._load_yaml(default_config_path)
-            )
-
-        # Layer 2: Environment config
-        env_config_path = Path(f"config/adset/allocator/{self.environment}.yaml")
-        if env_config_path.exists():
-            config_dict = self._deep_merge(
-                config_dict, self._load_yaml(env_config_path)
-            )
-
-        # Layer 3: Customer base config
-        customer_base_path = Path(f"config/adset/allocator/{self.customer}/default.yaml")
-        if customer_base_path.exists():
-            config_dict = self._deep_merge(
-                config_dict, self._load_yaml(customer_base_path)
-            )
-
-        # Layer 4: Platform-specific rules
+        # Load consolidated customer config
+        # Single file contains all settings: miner, generator, allocator, reviewer
         if self.config_path_override:
-            rules_dict = self._load_yaml(self.config_path_override)
+            consolidated_config = self._load_yaml(self.config_path_override)
         else:
-            platform_rules_path = Path(
-                f"config/adset/allocator/{self.customer}/{self.platform}/rules.yaml"
+            consolidated_path = Path(
+                f"config/{self.customer}/{self.platform}/config.yaml"
             )
-            if platform_rules_path.exists():
-                rules_dict = self._load_yaml(platform_rules_path)
+            if consolidated_path.exists():
+                consolidated_config = self._load_yaml(consolidated_path)
             else:
-                rules_dict = {}
+                raise FileNotFoundError(
+                    f"Consolidated config not found: {consolidated_path}\n"
+                    f"Expected config at: config/{self.customer}/{self.platform}/config.yaml"
+                )
 
-        # Layer 5: Environment variable overrides
+        # Extract allocator_rules from consolidated config
+        rules_dict = consolidated_config.pop("allocator_rules", {})
+
+        # Extract allocator_objectives from consolidated config
+        objectives_dict = consolidated_config.pop("allocator_objectives", {})
+
+        # Extract generator parameters
+        generator_params = consolidated_config.pop("generator_parameters", {})
+
+        # Merge all config into main config dict
+        config_dict = self._deep_merge(config_dict, consolidated_config)
+
+        # Apply environment variable overrides
         config_dict = self._apply_env_overrides(config_dict)
 
         # Transform rolling_windows from dict to list if needed
         if "rolling_windows" in rules_dict and isinstance(rules_dict["rolling_windows"], dict):
-            # Convert dict format {short_window_days: 7, long_window_days: 14} to list [7, 14]
             rolling_windows_dict = rules_dict["rolling_windows"]
             rules_dict["rolling_windows"] = [
                 rolling_windows_dict.get("short_window_days", 7),
                 rolling_windows_dict.get("long_window_days", 14),
             ]
+
+        # Merge objectives and generator params into config_dict for access
+        if objectives_dict:
+            config_dict["objectives"] = objectives_dict
+        if generator_params:
+            config_dict["generator_parameters"] = generator_params
 
         # Create config objects
         self._config = SystemConfig(**config_dict)

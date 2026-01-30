@@ -1,38 +1,26 @@
 """
 Path utilities for creative generation.
 
-Provides centralized path management following the daily budget allocation
-repo structure with customer/platform organization:
+Provides centralized path management following the shared config structure:
 
 config/
-  ad/
-    recommender/
-      {customer}/
-        {platform}/
-          {date}/
-            recommendations.md
-      gpt4/
-        features.yaml
-        prompts.yaml
-    generator/
-      prompts/
-        {customer}/
-          {platform}/
-            {date}/
-              {prompt_type}/
-      generated/
-        {customer}/
-          {platform}/
-            {date}/
-              {model}/
-      templates/
-        {customer}/
-          {platform}/
-            generation_config.yaml
-      {customer}/
-        {platform}/
-          generation_config.yaml
-          prompt_templates.yaml
+  {customer}/{platform}/         # Shared customer config
+    ├── config.yaml              # SHARED config (miner + generator + allocator + reviewer)
+    ├── patterns.yaml            # Ad miner output patterns
+
+    generator/                    # Generator output (not source config)
+      ├── prompts/               # Generated prompts
+        ├── {date}/
+          ├── {prompt_type}/
+      ├── generated/             # Generated images
+        ├── {date}/
+          ├── {model}/
+
+Path Examples:
+  - Customer config: config/moprobo/meta/config.yaml (shared, contains psychology_catalog)
+  - Patterns output: config/moprobo/meta/patterns.yaml (miner output)
+  - Generated prompts: config/moprobo/meta/generator/prompts/{date}/{type}/
+  - Generated images: config/moprobo/meta/generator/generated/{date}/{model}/
 """
 
 from __future__ import annotations
@@ -218,21 +206,26 @@ class Paths:
 
         return self.output_dir / "ad" / "generator" / "generated" / cust / plat / d
 
-    def config_file(self, config_name: str = "generation_config.yaml") -> Path:
+    def config_file(self, config_name: str = "config.yaml") -> Path:
         """
-        Get path to config file.
+        Get path to shared config file.
 
         Args:
-            config_name: Config filename
+            config_name: Config filename (default: config.yaml for shared config)
 
         Returns:
-            Path to config file
+            Path to shared config file (shared across miner, generator, reviewer)
 
         Example:
             paths.config_file()
-            # → config/moprobo/taboola/generation_config.yaml
+            # → config/moprobo/meta/config.yaml
+
+        Note:
+            This uses the SHARED config location at config/{customer}/{platform}/config.yaml.
+            For system-wide generator configs (psychology_catalog, text_templates), use
+            get_psychology_catalog_path() and get_text_templates_path() instead.
         """
-        return self.config_dir / "ad" / "generator" / self.customer / self.platform / config_name
+        return self.config_dir / self.customer / self.platform / config_name
 
     def templates_dir(self) -> Path:
         """

@@ -62,6 +62,11 @@ Ensure any changes made align with the core goals and constraints of the **budge
 - **Use creative patterns with lift < 1.5x**
 - **Ignore feature recommendations from creative scorer in generator**
 - **Skip feature validation after image generation**
+- **Generate example code or example files (creates maintenance burden)**
+- **Leave temporary scripts in working directory when pushing**
+- **Create markdown files outside /docs/ directory (only root README.md in git)**
+- **Place test files in src/ directories (all tests must be in tests/unit/ or tests/integration/)**
+- **Change README.md formatting/style for minor updates (preserve existing style)**
 
 ---
 
@@ -77,12 +82,17 @@ Ensure any changes made align with the core goals and constraints of the **budge
 | Creative Features | `src/meta/ad/miner/features/` | `src/meta/ad/miner/features/extract.py` |
 | Creative Recommendations | `src/meta/ad/miner/recommendations/` | `src/meta/ad/miner/recommendations/rule_engine.py` |
 | Recommender Output | `config/ad/miner/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
-| Generator Config | `config/ad/generator/{customer}/{platform}/` | `config/ad/generator/moprobo/taboola/generation_config.yaml` |
-| Generator Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
-| Generator Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
-| Generator Output | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../moprobo/taboola/2026-01-23/nano-banana-pro/` |
+| Generator Config | `config/{customer}/{platform}/config.yaml` | `config/moprobo/meta/config.yaml` (SHARED) |
+| Generator Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/meta/` |
+| Generator Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/meta/2026-01-23/structured/` |
+| Generator Output | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../moprobo/meta/2026-01-23/nano-banana-pro/` |
+| System Generator Configs | `config/ad/generator/` | `psychology_catalog.yaml`, `text_templates.yaml` |
+| Unit Tests | `tests/unit/` | `tests/unit/ad/miner/test_psych_composer.py` |
+| Integration Tests | `tests/integration/` | `tests/integration/ad/miner/test_pipeline_v2_integration.py` |
 
-**Rule**: Allocator/adset generator use `src/utils/customer_paths.py`. Ad miner uses `src/meta/ad/miner/utils/paths.py` and `config_manager.py`. Ad generator uses `src/meta/ad/generator/core/paths.py`. Never hard-code paths.
+**Rule**: Allocator/adset generator use `src/utils/customer_paths.py`. Ad miner uses `src/meta/ad/miner/utils/paths.py` and `config_manager.py`. Ad generator uses `src/meta/ad/generator/core/paths.py` and `src/meta/ad/generator/template_system/paths.py`. Never hard-code paths.
+
+**Test Rule**: All tests must be under `tests/unit/` or `tests/integration/` at the root level. NO test files in `src/` directories.
 
 ---
 
@@ -977,21 +987,25 @@ Before making any code change, Claude must verify:
 41. Missing confidence scores (generator)
 42. Missing evidence dictionaries (generator)
 43. Over-claiming without segment data (generator)
+44. **Generating example code or files** - Creates `examples/` directories or demo files that become stale and create maintenance burden
+45. **Creating markdown files outside /docs/** - Only root README.md should be in git; all other .md files should be in /docs/ (gitignored)
+46. **Placing test files in src/ directories** - All tests must be in tests/unit/ or tests/integration/ at root level
+47. **Changing README.md formatting/style unnecessarily** - Preserve existing README style; only update content, not formatting
 
 ### 🚩 CI/CD Violations (CRITICAL)
-44. **Coverage regression** - Code coverage drops below baseline (e.g., from 49% to 47%)
-45. **Test failures in CI** - Any unit tests failing in CI pipeline
-46. **Lint failures in CI** - pylint or other linting tools reporting errors
-47. **Skipping CI checks to bypass failures** - Using workarounds to pass CI instead of fixing root causes
-48. **Increasing test skip count without justification** - Adding CI skips to hide test failures rather than fixing them
-49. **Type checking failures** - mypy or other type checkers reporting errors that are ignored
+48. **Coverage regression** - Code coverage drops below baseline (e.g., from 49% to 47%)
+49. **Test failures in CI** - Any unit tests failing in CI pipeline
+50. **Lint failures in CI** - pylint or other linting tools reporting errors
+51. **Skipping CI checks to bypass failures** - Using workarounds to pass CI instead of fixing root causes
+52. **Increasing test skip count without justification** - Adding CI skips to hide test failures rather than fixing them
+53. **Type checking failures** - mypy or other type checkers reporting errors that are ignored
 
 ### 🚩 Design Violations (Both)
-44. Ignore historical baseline comparison
-45. Break daily re-optimization pipeline
-46. Output actions without confidence scores
-47. Output actions without supporting evidence
-48. Use non-YAML format for actions
+54. Ignore historical baseline comparison
+55. Break daily re-optimization pipeline
+56. Output actions without confidence scores
+57. Output actions without supporting evidence
+58. Use non-YAML format for actions
 
 ---
 
@@ -1403,11 +1417,12 @@ Before making any code change to creative recommender, Claude must verify:
 
 | Type | Location | Example |
 |------|----------|---------|
-| Config | `config/ad/generator/{customer}/{platform}/` | `config/ad/generator/moprobo/taboola/generation_config.yaml` |
-| Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/taboola/` |
-| Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/taboola/2026-01-23/structured/` |
+| Config | `config/{customer}/{platform}/config.yaml` | `config/moprobo/meta/config.yaml` (SHARED) |
+| Templates | `config/ad/generator/templates/{customer}/{platform}/` | `config/ad/generator/templates/moprobo/meta/` |
+| Prompts | `config/ad/generator/prompts/{customer}/{platform}/{date}/{type}/` | `.../moprobo/meta/2026-01-23/structured/` |
 | Generated | `config/ad/generator/generated/{customer}/{platform}/{date}/{model}/` | `.../nano-banana-pro/` |
-| Recommendations | `config/ad/miner/{customer}/{platform}/{date}/` | `.../moprobo/meta/2026-01-26/recommendations.md` |
+| System Configs | `config/ad/generator/` | `psychology_catalog.yaml`, `text_templates.yaml` |
+| Patterns | `config/{customer}/{platform}/patterns.yaml` | `config/moprobo/meta/patterns.yaml` |
 
 **Rule**: Use `src/meta/ad/generator/core/paths.py` (`Paths`) for all config/output paths. Never hard-code paths.
 

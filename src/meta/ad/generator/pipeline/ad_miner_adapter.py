@@ -1,19 +1,20 @@
 """
-Adapter to convert ad/miner recommendations to visual formula format.
+Adapter to convert ad/miner patterns to visual formula format.
 
 The ad generator expects recommendations in the creative scorer format:
 - entrance_features: High-performance baseline features
 - headroom_features: High ROAS, low penetration features
 
 The ad miner outputs:
-- recommendations: List with "feature", "recommended", "type" (improvement/anti_pattern)
+- patterns.yaml with positive_patterns and negative_patterns
 
-This adapter bridges the gap by converting ad/miner format to visual formula format.
+This adapter bridges the gap by converting ad/miner YAML format to visual formula format.
 """
 
 from __future__ import annotations
 
 import logging
+import yaml
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -26,43 +27,56 @@ from src.meta.ad.generator.orchestrator.recommendation_mapping import (
 logger = logging.getLogger(__name__)
 
 
-def convert_recommendations_to_visual_formula(
-    recommendations_data: Dict[str, Any],
+def convert_patterns_to_visual_formula(
+    patterns_data: Dict[str, Any],
     min_confidence: str = "medium",
     min_high_performer_pct: float = 0.25,
 ) -> Dict[str, Any]:
     """
-    Convert ad/miner recommendations to visual formula format.
+    Convert ad/miner patterns to visual formula format.
 
     Args:
-        recommendations_data: Dict from ad/miner with "recommendations" list
+        patterns_data: Dict from patterns.yaml with "positive_patterns" and "negative_patterns"
         min_confidence: Minimum confidence level ("high", "medium", "low")
         min_high_performer_pct: Minimum high_performer_pct to include
 
     Returns:
         Visual formula dict with entrance_features and headroom_features
     """
-    recs = recommendations_data.get("recommendations", [])
-    
-    # Separate DOs (improvements) and DON'Ts (anti_patterns)
-    # Note: ad/miner uses "improvement" type for DOs
-    improvements = [
-        r for r in recs 
-        if r.get("type") == "improvement" 
-        and r.get("confidence", "medium") in _get_confidence_levels(min_confidence)
-    ]
-    # Also check for recommendation_type == "DO" (alternative format)
-    improvements.extend([
-        r for r in recs 
-        if r.get("recommendation_type") == "DO"
-        and r.get("type") != "anti_pattern"
-        and r.get("confidence", "medium") in _get_confidence_levels(min_confidence)
-    ])
-    anti_patterns = [
-        r for r in recs 
-        if r.get("type") == "anti_pattern"
-    ]
-    
+    # Process positive patterns
+    positive_patterns = patterns_data.get("positive_patterns", {})
+    negative_patterns = patterns_data.get("negative_patterns", {})
+
+    # Flatten positive patterns into a list
+    improvements = []
+    for feature_name, patterns in positive_patterns.items():
+        if isinstance(patterns, list):
+            for pattern in patterns:
+                if pattern.get("confidence", "medium") in _get_confidence_levels(min_confidence):
+                    improvements.append({
+                        "feature": feature_name,
+                        "recommended": pattern.get("value"),
+                        "confidence": pattern.get("confidence"),
+                        "opportunity_size": pattern.get("opportunity_size", 0),
+                        "suggestion": pattern.get("suggestion"),
+                        "type": "improvement"
+                    })
+
+    # Flatten negative patterns
+    anti_patterns = []
+    for feature_name, patterns in negative_patterns.items():
+        if isinstance(patterns, list):
+            for pattern in patterns:
+                if pattern.get("confidence", "medium") in _get_confidence_levels(min_confidence):
+                    anti_patterns.append({
+                        "feature": feature_name,
+                        "recommended": pattern.get("value"),
+                        "confidence": pattern.get("confidence"),
+                        "opportunity_size": pattern.get("opportunity_size", 0),
+                        "suggestion": pattern.get("suggestion"),
+                        "type": "anti_pattern"
+                    })
+
     # Convert improvements to entrance_features (high confidence, high prevalence)
     # and headroom_features (lower prevalence but high ROAS potential)
     entrance_features = []
@@ -207,43 +221,44 @@ def _extract_pct_from_reason(reason: str) -> float:
     return 0.0
 
 
-def load_recommendations_as_visual_formula(
-    recommendations_path: Path | str,
+def load_patterns_as_visual_formula(
+    patterns_path: Path | str,
     min_confidence: str = "medium",
     min_high_performer_pct: float = 0.25,
 ) -> Dict[str, Any]:
     """
-    Load recommendations from ad/miner and convert to visual formula format.
+    Load patterns from ad/miner and convert to visual formula format.
 
     Args:
-        recommendations_path: Path to recommendations.md (primary) or recommendations.json (fallback)
+        patterns_path: Path to patterns.yaml
         min_confidence: Minimum confidence level
         min_high_performer_pct: Minimum high_performer_pct to include
 
     Returns:
         Visual formula dict compatible with PromptBuilder
     """
-    from src.meta.ad.miner.recommendations.md_io import load_recommendations_file
-    
-    path = Path(recommendations_path)
+    path = Path(patterns_path)
     if not path.exists():
-        raise FileNotFoundError(f"Recommendations file not found: {path}")
-    
-    # Prefer MD over JSON if both exist (MD is the primary format now)
-    if path.suffix == ".json":
-        md_path = path.with_suffix(".md")
-        if md_path.exists():
-            logger.info("Found both .json and .md, using .md as primary format")
-            path = md_path
-    
-    # Load recommendations (handles both .json and .md, but MD is preferred)
-    recommendations_data = load_recommendations_file(path)
-    
+        raise FileNotFoundError(f"Patterns file not found: {path}")
+
+    # Load YAML patterns file
+    with open(path) as f:
+        patterns_data = yaml.safe_load(f)
+
+    logger.info(f"Loaded patterns from {path}")
+    logger.info(f"  Positive patterns: {sum(len(v) if isinstance(v, list) else 1 for v in patterns_data.get('positive_patterns', {}).values())}")
+    logger.info(f"  Negative patterns: {sum(len(v) if isinstance(v, list) else 1 for v in patterns_data.get('negative_patterns', {}).values())}")
+
     # Convert to visual formula format
-    visual_formula = convert_recommendations_to_visual_formula(
-        recommendations_data,
+    visual_formula = convert_patterns_to_visual_formula(
+        patterns_data,
         min_confidence=min_confidence,
         min_high_performer_pct=min_high_performer_pct,
     )
-    
+
     return visual_formula
+
+
+# Backward compatibility aliases
+load_recommendations_as_visual_formula = load_patterns_as_visual_formula
+convert_recommendations_to_visual_formula = convert_patterns_to_visual_formula

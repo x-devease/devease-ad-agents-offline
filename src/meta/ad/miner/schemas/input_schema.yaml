@@ -1,0 +1,623 @@
+schema:
+  version: "1.0"
+  name: "creative_features_with_metadata"
+  format: "CSV"
+  encoding: "utf-8"
+
+metadata:
+  author: "Ad Miner Team"
+  created_date: "2026-01-27"
+  description: "Creative features + campaign metadata for pattern mining"
+
+columns:
+  # === IDENTIFIER COLUMNS ===
+  - name: "creative_id"
+    type: "string"
+    required: true
+    unique: true
+    description: "Unique creative identifier from ad platform"
+    example: "moprobo_meta_20250115_001234"
+    validation:
+      pattern: "^[a-z_]+_[0-9]+$"
+
+  - name: "filename"
+    type: "string"
+    required: true
+    description: "Image filename"
+    example: "moprobo_meta_001.jpg"
+    validation:
+      pattern: "^.+\\.(jpg|jpeg|png)$"
+
+  # === PERFORMANCE METRICS ===
+  - name: "roas"
+    type: "float"
+    required: true
+    description: "Return on ad spend (revenue / spend)"
+    range: [0.0, null]
+    example: 2.45
+    validation:
+      min: 0.0
+      allow_null: false
+
+  - name: "spend"
+    type: "float"
+    required: false
+    description: "Amount spent on this creative"
+    range: [0.0, null]
+    example: 150.50
+
+  - name: "impressions"
+    type: "integer"
+    required: false
+    description: "Number of impressions"
+    range: [0, null]
+    example: 15000
+
+  - name: "clicks"
+    type: "integer"
+    required: false
+    description: "Number of clicks"
+    range: [0, null]
+    example: 450
+
+  # === CONTEXT METADATA (SEGMENTATION KEYS) ===
+  - name: "campaign_goal"
+    type: "enum"
+    required: true
+    description: "Primary campaign objective"
+    values:
+      - "awareness"
+      - "conversion"
+      - "traffic"
+      - "lead_generation"
+      - "app_installs"
+      - "engagement"
+      - "sales"
+      - "unknown"
+    default: "unknown"
+    example: "conversion"
+
+  - name: "product"
+    type: "string"
+    required: true
+    description: "Product being advertised"
+    example: "Power Station"
+    default: "unknown"
+    validation:
+      max_length: 100
+
+  - name: "branch"
+    type: "enum"
+    required: true
+    description: "Regional or organizational branch"
+    values:
+      - "US"
+      - "EU"
+      - "UK"
+      - "APAC"
+      - "LATAM"
+      - "Global"
+      - "unknown"
+    default: "unknown"
+    example: "US"
+
+  - name: "campaign_id"
+    type: "string"
+    required: false
+    description: "Campaign identifier for grouping"
+    example: "moprobo_conversion_2025_01"
+    validation:
+      max_length: 100
+
+  - name: "adset_id"
+    type: "string"
+    required: false
+    description: "Adset identifier for grouping"
+    example: "moprobo_conversion_25-34_us"
+    validation:
+      max_length: 100
+
+  # === VISUAL FEATURES (29 features) ===
+  - name: "direction"
+    type: "enum"
+    required: false
+    description: "Camera angle relative to product"
+    values:
+      - "front"
+      - "side"
+      - "overhead"
+      - "45-degree"
+      - "low_angle"
+      - "dutch_angle"
+      - "unknown"
+    example: "overhead"
+
+  - name: "lighting_style"
+    type: "enum"
+    required: false
+    description: "Lighting setup style"
+    values:
+      - "studio"
+      - "natural"
+      - "artificial"
+      - "mixed"
+      - "unknown"
+    example: "studio"
+
+  - name: "lighting_type"
+    type: "enum"
+    required: false
+    description: "Type of lighting source"
+    values:
+      - "Artificial"
+      - "Natural"
+      - "Mixed"
+      - "unknown"
+    example: "Artificial"
+
+  - name: "mood_lighting"
+    type: "enum"
+    required: false
+    description: "Mood or atmosphere created by lighting"
+    values:
+      - "clinical"
+      - "energetic"
+      - "natural"
+      - "dramatic"
+      - "romantic"
+      - "mysterious"
+      - "unknown"
+    example: "energetic"
+
+  - name: "primary_colors"
+    type: "list"
+    item_type: "string"
+    required: false
+    description: "Primary colors present in image (comma-separated)"
+    example: "green, white, gray"
+    delimiter: ", "
+
+  - name: "color_balance"
+    type: "enum"
+    required: false
+    description: "Overall color temperature balance"
+    values:
+      - "cool-dominant"
+      - "warm-dominant"
+      - "neutral"
+      - "balanced"
+      - "unknown"
+    example: "cool-dominant"
+
+  - name: "temperature"
+    type: "enum"
+    required: false
+    description: "Color temperature"
+    values:
+      - "Cool"
+      - "Warm"
+      - "Neutral"
+      - "unknown"
+    example: "Cool"
+
+  - name: "color_saturation"
+    type: "enum"
+    required: false
+    description: "Color intensity"
+    values:
+      - "high"
+      - "medium"
+      - "low"
+      - "unknown"
+    example: "high"
+
+  - name: "color_vibrancy"
+    type: "enum"
+    required: false
+    description: "Color vibrancy"
+    values:
+      - "vibrant"
+      - "moderate"
+      - "muted"
+      - "unknown"
+    example: "vibrant"
+
+  - name: "product_position"
+    type: "enum"
+    required: false
+    description: "Product position in frame"
+    values:
+      - "left"
+      - "center"
+      - "right"
+      - "top-left"
+      - "top-right"
+      - "bottom-left"
+      - "bottom-right"
+      - "unknown"
+    example: "bottom-right"
+
+  - name: "product_placement"
+    type: "enum"
+    required: false
+    description: "Where product is placed"
+    values:
+      - "left"
+      - "right"
+      - "center"
+      - "unknown"
+    example: "right"
+
+  - name: "product_visibility"
+    type: "enum"
+    required: false
+    description: "How much of product is visible"
+    values:
+      - "full"
+      - "partial"
+      - "minimal"
+      - "obscured"
+      - "unknown"
+    example: "partial"
+
+  - name: "visual_prominence"
+    type: "enum"
+    required: false
+    description: "Visual dominance of product"
+    values:
+      - "dominant"
+      - "prominent"
+      - "subdued"
+      - "unknown"
+    example: "dominant"
+
+  - name: "human_elements"
+    type: "enum"
+    required: false
+    description: "Presence of humans"
+    values:
+      - "Lifestyle context"
+      - "Face visible"
+      - "Body visible"
+      - "None"
+      - "unknown"
+    example: "Lifestyle context"
+
+  - name: "product_context"
+    type: "enum"
+    required: false
+    description: "Product usage context"
+    values:
+      - "isolated"
+      - "in-use"
+      - "lifestyle"
+      - "unknown"
+    example: "isolated"
+
+  - name: "context_richness"
+    type: "enum"
+    required: false
+    description: "Background detail level"
+    values:
+      - "rich"
+      - "moderate"
+      - "minimal"
+      - "unknown"
+    example: "moderate"
+
+  - name: "background_content_type"
+    type: "enum"
+    required: false
+    description: "Type of background"
+    values:
+      - "solid-color"
+      - "textured"
+      - "environment"
+      - "blurred"
+      - "unknown"
+    example: "solid-color"
+
+  - name: "relationship_depiction"
+    type: "enum"
+    required: false
+    description: "Product-people relationship"
+    values:
+      - "product-alone"
+      - "product-with-people"
+      - "product-in-environment"
+      - "unknown"
+    example: "product-in-environment"
+
+  - name: "visual_flow"
+    type: "enum"
+    required: false
+    description: "Eye movement pattern"
+    values:
+      - "forced"
+      - "natural"
+      - "z-pattern"
+      - "f-pattern"
+      - "circular"
+      - "unknown"
+    example: "forced"
+
+  - name: "composition_style"
+    type: "enum"
+    required: false
+    description: "Overall composition approach"
+    values:
+      - "balanced"
+      - "asymmetrical"
+      - "minimal"
+      - "complex"
+      - "unknown"
+    example: "balanced"
+
+  - name: "depth_layers"
+    type: "enum"
+    required: false
+    description: "Number of visual depth layers"
+    values:
+      - "shallow"
+      - "moderate"
+      - "deep"
+      - "unknown"
+    example: "shallow"
+
+  - name: "contrast_level"
+    type: "enum"
+    required: false
+    description: "Contrast between light and dark"
+    values:
+      - "high"
+      - "medium"
+      - "low"
+      - "unknown"
+    example: "high"
+
+  - name: "background_tone_contrast"
+    type: "enum"
+    required: false
+    description: "Product vs background contrast"
+    values:
+      - "high"
+      - "medium"
+      - "low"
+      - "unknown"
+    example: "high"
+
+  - name: "local_contrast"
+    type: "enum"
+    required: false
+    description: "Contrast within product"
+    values:
+      - "high"
+      - "medium"
+      - "low"
+      - "unknown"
+    example: "high"
+
+  - name: "image_style"
+    type: "enum"
+    required: false
+    description: "Overall image aesthetic"
+    values:
+      - "professional"
+      - "casual"
+      - "lifestyle"
+      - "editorial"
+      - "unknown"
+    example: "professional"
+
+  - name: "visual_complexity"
+    type: "enum"
+    required: false
+    description: "Visual complexity"
+    values:
+      - "simple"
+      - "moderate"
+      - "complex"
+      - "unknown"
+    example: "simple"
+
+  - name: "product_angle"
+    type: "enum"
+    required: false
+    description: "Product camera angle"
+    values:
+      - "front"
+      - "45-degree"
+      - "side"
+      - "back"
+      - "top-down"
+      - "unknown"
+    example: "45-degree"
+
+  - name: "product_presentation"
+    type: "enum"
+    required: false
+    description: "How product is presented"
+    values:
+      - "Full product"
+      - "Partial"
+      - "Close-up"
+      - "Multiple views"
+      - "unknown"
+    example: "Full product"
+
+  - name: "framing"
+    type: "enum"
+    required: false
+    description: "Camera framing"
+    values:
+      - "Close-up"
+      - "Medium shot"
+      - "Wide shot"
+      - "Extreme close-up"
+      - "unknown"
+    example: "Medium shot"
+
+  - name: "architectural_elements_presence"
+    type: "enum"
+    required: false
+    description: "Presence of architectural elements"
+    values:
+      - "yes"
+      - "no"
+      - "unknown"
+    example: "no"
+
+  - name: "primary_focal_point"
+    type: "enum"
+    required: false
+    description: "Primary visual focus"
+    values:
+      - "product"
+      - "person"
+      - "text"
+      - "background"
+      - "unknown"
+    example: "product"
+
+  # === HUMAN SUBJECT FEATURES ===
+  - name: "person_count"
+    type: "enum"
+    required: false
+    description: "Number of people in image"
+    values:
+      - "single"
+      - "couple"
+      - "multiple"
+      - "crowd"
+      - "none"
+      - "unknown"
+    example: "single"
+
+  - name: "person_relationship_type"
+    type: "enum"
+    required: false
+    description: "Relationship between people"
+    values:
+      - "individual"
+      - "couple"
+      - "family"
+      - "friends"
+      - "colleagues"
+      - "unknown"
+    example: "individual"
+
+  - name: "person_gender"
+    type: "enum"
+    required: false
+    description: "Gender of primary person"
+    values:
+      - "male"
+      - "female"
+      - "multiple"
+      - "unknown"
+    example: "male"
+
+  - name: "person_age_group"
+    type: "enum"
+    required: false
+    description: "Age group of primary person"
+    values:
+      - "child"
+      - "teen"
+      - "young_adult"
+      - "adult"
+      - "senior"
+      - "mixed"
+      - "unknown"
+    example: "adult"
+
+  - name: "person_activity"
+    type: "enum"
+    required: false
+    description: "What person is doing"
+    values:
+      - "posing"
+      - "using_product"
+      - "interacting"
+      - "observing"
+      - "working"
+      - "playing"
+      - "unknown"
+    example: "posing"
+
+  # === TEXT & CTA FEATURES ===
+  - name: "text_elements"
+    type: "list"
+    item_type: "string"
+    required: false
+    description: "Text elements present (comma-separated)"
+    example: "Headline, Subheadline, Feature Icons"
+    delimiter: ", "
+
+  - name: "cta_visuals"
+    type: "list"
+    item_type: "string"
+    required: false
+    description: "Call-to-action visual elements (comma-separated)"
+    example: "Highlighting, Button"
+    delimiter: ", "
+
+  - name: "problem_solution_narrative"
+    type: "enum"
+    required: false
+    description: "Narrative structure"
+    values:
+      - "problem"
+      - "solution"
+      - "both"
+      - "neither"
+      - "unknown"
+    example: "both"
+
+  - name: "emotional_tone"
+    type: "enum"
+    required: false
+    description: "Emotional tone of image"
+    values:
+      - "Exciting"
+      - "Calm"
+      - "Urgent"
+      - "Trustworthy"
+      - "Professional"
+      - "Playful"
+      - "unknown"
+    example: "Exciting"
+
+  - name: "activity_level"
+    type: "enum"
+    required: false
+    description: "Activity level in image"
+    values:
+      - "active"
+      - "passive"
+      - "neutral"
+      - "unknown"
+    example: "active"
+
+# Validation rules
+validation:
+  - rule: "creative_id is unique"
+    message: "Duplicate creative_id found"
+
+  - rule: "roas >= 0"
+    message: "ROAS cannot be negative"
+
+  - rule: "campaign_goal in valid_goals"
+    message: "Invalid campaign_goal value"
+
+  - rule: "branch in valid_branches"
+    message: "Invalid branch value"
+
+  - rule: "filename matches image pattern"
+    message: "Filename must be an image file"
+
+  - rule: "If spend is present, spend >= 0"
+    message: "Spend cannot be negative"
+
+  - rule: "If impressions is present, impressions >= 0"
+    message: "Impressions cannot be negative"

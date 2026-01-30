@@ -1,0 +1,508 @@
+schema:
+  version: "2.0"
+  name: "mined_patterns"
+  format: "JSON"
+  encoding: "utf-8"
+
+metadata:
+  author: "Ad Miner Team"
+  created_date: "2026-01-27"
+  description: "Mined creative patterns with context metadata"
+
+root:
+  type: "object"
+  required:
+    - "metadata"
+    - "patterns"
+    - "anti_patterns"
+
+  properties:
+    # === METADATA SECTION ===
+    metadata:
+      type: "object"
+      required: true
+      description: "Information about the pattern mining analysis"
+
+      properties:
+        schema_version:
+          type: "string"
+          required: true
+          description: "Schema version"
+          example: "2.0"
+
+        customer:
+          type: "string"
+          required: true
+          description: "Customer/account name"
+          example: "moprobo"
+
+        product:
+          type: "string"
+          required: true
+          description: "Product name (or 'all' for generic)"
+          example: "Power Station"
+
+        branch:
+          type: "string"
+          required: true
+          description: "Branch/region (or 'all' for generic)"
+          example: "US"
+
+        campaign_goal:
+          type: "string"
+          required: true
+          description: "Campaign objective (or 'all' for generic)"
+          example: "conversion"
+
+        granularity_level:
+          type: "integer"
+          required: true
+          description: "Granularity level (1-4)"
+          range: [1, 4]
+          example: 1
+
+        sample_size:
+          type: "integer"
+          required: true
+          description: "Number of creatives analyzed"
+          range: [1, null]
+          example: 342
+
+        min_threshold:
+          type: "integer"
+          required: true
+          description: "Minimum sample size for this granularity level"
+          example: 200
+
+        analysis_date:
+          type: "string"
+          format: "date"
+          required: true
+          description: "When analysis was run (YYYY-MM-DD)"
+          example: "2026-01-27"
+
+        fallback_used:
+          type: "boolean"
+          required: true
+          description: "Whether fallback to broader level was used"
+          example: false
+
+        fallback_level:
+          type: "integer"
+          required: false
+          description: "If fallback used, which level was returned"
+          range: [2, 4]
+          example: 3
+
+        data_quality:
+          type: "object"
+          required: false
+          description: "Data quality metrics"
+
+          properties:
+            completeness_score:
+              type: "float"
+              range: [0.0, 1.0]
+              description: "Completeness of feature data"
+              example: 0.95
+
+            avg_roas:
+              type: "float"
+              description: "Average ROAS in this segment"
+              example: 2.34
+
+            top_quartile_roas:
+              type: "float"
+              description: "Average ROAS in top quartile"
+              example: 4.56
+
+            bottom_quartile_roas:
+              type: "float"
+              description: "Average ROAS in bottom quartile"
+              example: 0.98
+
+            roas_range:
+              type: "float"
+              description: "Top quartile ROAS / bottom quartile ROAS"
+              example: 4.65
+
+            top_quartile_size:
+              type: "integer"
+              description: "Number of creatives in top quartile"
+              example: 85
+
+            bottom_quartile_size:
+              type: "integer"
+              description: "Number of creatives in bottom quartile"
+              example: 85
+
+    # === POSITIVE PATTERNS SECTION ===
+    patterns:
+      type: "array"
+      required: true
+      description: "Positive patterns (DOs) ranked by priority_score"
+      min_items: 0
+
+      items:
+        type: "object"
+        required:
+          - "feature"
+          - "value"
+          - "pattern_type"
+          - "confidence"
+          - "roas_lift_multiple"
+          - "roas_lift_pct"
+          - "top_quartile_prevalence"
+          - "priority_score"
+
+        properties:
+          feature:
+            type: "string"
+            required: true
+            description: "Feature name (from input schema)"
+            example: "product_position"
+
+          current_value:
+            type: "string"
+            required: false
+            description: "Current value in underperforming creatives"
+            example: "center"
+
+          value:
+            type: "string"
+            required: true
+            description: "Recommended value (pattern to implement)"
+            example: "bottom-right"
+
+          pattern_type:
+            type: "enum"
+            required: true
+            values: ["DO", "DO_CONVERSION", "DO_AWARENESS", "DO_TRAFFIC"]
+            description: "Type of positive pattern"
+
+          confidence:
+            type: "enum"
+            required: true
+            values: ["high", "medium", "low"]
+            description: "Confidence level based on statistical significance"
+
+          roas_lift_multiple:
+            type: "float"
+            required: true
+            range: [1.0, null]
+            description: "ROAS multiple when using this value"
+            example: 2.8
+
+          roas_lift_pct:
+            type: "float"
+            required: true
+            description: "Percentage ROAS lift (roas_lift_multiple - 1) * 100"
+            example: 180.0
+
+          top_quartile_prevalence:
+            type: "float"
+            required: true
+            range: [0.0, 1.0]
+            description: "Prevalence in top performers (0-1)"
+            example: 0.67
+
+          bottom_quartile_prevalence:
+            type: "float"
+            required: false
+            range: [0.0, 1.0]
+            description: "Prevalence in bottom performers (0-1)"
+            example: 0.12
+
+          prevalence_lift:
+            type: "float"
+            required: false
+            description: "Prevalence difference (top - bottom)"
+            example: 0.55
+
+          goal_specific:
+            type: "boolean"
+            required: true
+            description: "Whether this pattern is specific to campaign_goal"
+            example: true
+
+          product_specific:
+            type: "boolean"
+            required: true
+            description: "Whether this pattern is specific to product"
+            example: true
+
+          branch_specific:
+            type: "boolean"
+            required: true
+            description: "Whether this pattern is specific to branch"
+            example: false
+
+          reason:
+            type: "string"
+            required: true
+            description: "Human-readable explanation"
+            example: "For conversion campaigns with Power Station in US, products positioned bottom-right show 2.8x higher ROAS. Present in 67% of top performers vs 12% in bottom quartile."
+
+          maps_to_template:
+            type: "string"
+            required: true
+            description: "Template placeholder this maps to"
+            example: "product_position"
+
+          priority_score:
+            type: "float"
+            required: true
+            range: [0.0, 10.0]
+            description: "Priority score for ranking (higher = more important)"
+            example: 9.5
+
+          sample_count:
+            type: "integer"
+            required: false
+            description: "Number of creatives with this value"
+            example: 89
+
+          statistical_significance:
+            type: "object"
+            required: false
+            description: "Statistical test results"
+
+            properties:
+              chi_square_stat:
+                type: "float"
+                description: "Chi-square test statistic"
+                example: 45.23
+
+              p_value:
+                type: "float"
+                range: [0.0, 1.0]
+                description: "P-value from chi-square test"
+                example: 0.00001
+
+              significant:
+                type: "boolean"
+                description: "Whether result is statistically significant (p < 0.05)"
+                example: true
+
+              confidence_interval:
+                type: "object"
+                description: "95% confidence interval for ROAS lift"
+
+                properties:
+                  lower:
+                    type: "float"
+                    example: 2.2
+
+                  upper:
+                    type: "float"
+                    example: 3.4
+
+          supporting_evidence:
+            type: "array"
+            required: false
+            description: "Additional evidence for this pattern"
+
+            items:
+              type: "object"
+              properties:
+                type:
+                  type: "enum"
+                  values: ["example_creative", "statistical", "expert_review"]
+                  example: "example_creative"
+
+                description:
+                  type: "string"
+                  example: "Creative moprobo_meta_001 shows this pattern with ROAS 4.5"
+
+                creative_id:
+                  type: "string"
+                  example: "moprobo_meta_20250115_001234"
+
+                roas:
+                  type: "float"
+                  example: 4.5
+
+    # === NEGATIVE PATTERNS SECTION ===
+    anti_patterns:
+      type: "array"
+      required: true
+      description: "Negative patterns (DON'Ts) to avoid"
+      min_items: 0
+
+      items:
+        type: "object"
+        required:
+          - "feature"
+          - "avoid_value"
+          - "pattern_type"
+          - "confidence"
+          - "roas_penalty_multiple"
+          - "roas_penalty_pct"
+          - "bottom_quartile_prevalence"
+
+        properties:
+          feature:
+            type: "string"
+            required: true
+            description: "Feature name"
+            example: "product_position"
+
+          avoid_value:
+            type: "string"
+            required: true
+            description: "Value to avoid"
+            example: "top-left"
+
+          pattern_type:
+            type: "enum"
+            required: true
+            values: ["DON'T", "ANTI_PATTERN"]
+            description: "Type of negative pattern"
+
+          confidence:
+            type: "enum"
+            required: true
+            values: ["high", "medium", "low"]
+            description: "Confidence level"
+
+          roas_penalty_multiple:
+            type: "float"
+            required: true
+            range: [0.0, 1.0]
+            description: "ROAS multiple when using this value"
+            example: 0.6
+
+          roas_penalty_pct:
+            type: "float"
+            required: true
+            description: "Percentage ROAS penalty (roas_penalty_multiple - 1) * 100"
+            example: -40.0
+
+          bottom_quartile_prevalence:
+            type: "float"
+            required: true
+            range: [0.0, 1.0]
+            description: "Prevalence in bottom performers"
+            example: 0.65
+
+          top_quartile_prevalence:
+            type: "float"
+            required: false
+            range: [0.0, 1.0]
+            description: "Prevalence in top performers"
+            example: 0.15
+
+          reason:
+            type: "string"
+            required: true
+            description: "Explanation"
+            example: "Used in 65% of worst performers, 40% lower ROAS than average"
+
+          maps_to_template:
+            type: "string"
+            required: true
+            description: "Template placeholder"
+            example: "product_position"
+
+          sample_count:
+            type: "integer"
+            required: false
+            description: "Number of creatives with this value"
+            example: 65
+
+          statistical_significance:
+            type: "object"
+            required: false
+            description: "Statistical test results"
+
+    # === LOW-PRIORITY INSIGHTS SECTION ===
+    low_priority_insights:
+      type: "array"
+      required: true
+      description: "Minor trends worth watching but not acting on"
+      min_items: 0
+
+      items:
+        type: "object"
+        required:
+          - "feature"
+          - "value"
+          - "confidence"
+          - "roas_lift_multiple"
+          - "reason"
+
+        properties:
+          feature:
+            type: "string"
+            required: true
+            example: "contrast_level"
+
+          value:
+            type: "string"
+            required: true
+            example: "high"
+
+          roas_lift_multiple:
+            type: "float"
+            required: true
+            example: 1.05
+
+          roas_lift_pct:
+            type: "float"
+            required: true
+            example: 5.0
+
+          confidence:
+            type: "enum"
+            required: true
+            values: ["low"]
+            example: "low"
+
+          reason:
+            type: "string"
+            required: true
+            example: "Slight positive trend (5% lift), but not statistically significant (p=0.15)"
+
+          trend_direction:
+            type: "enum"
+            values: ["positive", "negative", "neutral"]
+            example: "positive"
+
+    # === GENERATION INSTRUCTIONS SECTION ===
+    generation_instructions:
+      type: "object"
+      required: false
+      description: "Instructions for ad generator"
+
+      properties:
+        must_include:
+          type: "array"
+          description: "Feature names that must be included"
+          items:
+            type: "string"
+          example: ["product_position", "lighting_style"]
+
+        prioritize:
+          type: "array"
+          description: "Feature names to prioritize"
+          items:
+            type: "string"
+          example: ["visual_prominence", "color_balance"]
+
+        avoid:
+          type: "array"
+          description: "Feature names to avoid (can use feature:value format)"
+          items:
+            type: "string"
+          example: ["product_position:top-left", "lighting_style:natural"]
+
+        min_coverage:
+          type: "float"
+          range: [0.0, 1.0]
+          description: "Minimum feature coverage required"
+          example: 0.8
+
+        max_features:
+          type: "integer"
+          description: "Maximum number of features to include"
+          example: 15

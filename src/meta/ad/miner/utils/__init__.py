@@ -22,6 +22,15 @@ from .statistics import (
     chi_square_test,
     cramers_v,
 )
+from .paths import (
+    MinerPaths,
+    find_repo_root,
+    get_data_dir,
+    resolve_features_csv,
+    resolve_and_validate_input_csv,
+    get_default_paths,
+    get_segment_paths,
+)
 
 # Note: Remaining modules are planned for future implementation
 # from .visualization import plot_feature_importance, plot_feature_values
@@ -42,6 +51,14 @@ __all__ = [
     "EnvironmentConstants",
     "APIConstants",
     "OutputConstants",
+    # Path utilities
+    "MinerPaths",
+    "find_repo_root",
+    "get_data_dir",
+    "resolve_features_csv",
+    "resolve_and_validate_input_csv",
+    "get_default_paths",
+    "get_segment_paths",
     # "plot_feature_importance",
     # "plot_feature_values",
     # "save_json",

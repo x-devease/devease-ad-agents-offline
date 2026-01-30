@@ -147,3 +147,303 @@ def resolve_and_validate_input_csv(
         return None
 
     return input_csv
+
+
+# === AD MINER PATH MANAGEMENT ===
+
+
+class MinerPaths:
+    """
+    Centralized path management for ad miner.
+
+    Hierarchical structure based on granularity levels:
+    - Level 1: config/ad/miner/mined_patterns/{customer}/{product}/{branch}/{goal}/
+    - Level 2: config/ad/miner/mined_patterns/{customer}/{product}/{goal}/
+    - Level 3: config/ad/miner/mined_patterns/{customer}/{goal}/
+    - Level 4: config/ad/miner/mined_patterns/{customer}/
+    """
+
+    def __init__(
+        self,
+        customer: str,
+        product: str = "all",
+        branch: str = "all",
+        goal: str = "all",
+        granularity_level: int = 1,
+        base_dir: Optional[Path | str] = None,
+    ):
+        """
+        Initialize path manager.
+
+        Args:
+            customer: Customer/account name
+            product: Product name (default: "all")
+            branch: Branch/region (default: "all")
+            goal: Campaign goal (default: "all")
+            granularity_level: Granularity level 1-4 (default: 1)
+            base_dir: Base directory (default: config/ad/miner/)
+        """
+        self.customer = customer
+        self.product = product
+        self.branch = branch
+        self.goal = goal
+        self.granularity_level = granularity_level
+
+        if base_dir is None:
+            # Default to config/ad/miner/
+            self.base_dir = Path("config") / "ad" / "miner"
+        else:
+            self.base_dir = Path(base_dir)
+
+    # === ROOT DIRECTORIES ===
+
+    @property
+    def mined_patterns_dir(self) -> Path:
+        """Get root mined patterns directory."""
+        return self.base_dir / "mined_patterns"
+
+    @property
+    def input_dir(self) -> Path:
+        """Get input data directory."""
+        return self.base_dir / "input"
+
+    @property
+    def cache_dir(self) -> Path:
+        """Get cache directory."""
+        return self.base_dir / "cache"
+
+    @property
+    def results_dir(self) -> Path:
+        """Get analysis results directory."""
+        return self.base_dir / "results"
+
+    @property
+    def schemas_dir(self) -> Path:
+        """Get schemas directory."""
+        return self.base_dir / "schemas"
+
+    # === SEGMENT-SPECIFIC PATHS ===
+
+    def segment_patterns_dir(self) -> Path:
+        """
+        Get patterns directory for current segment.
+
+        Constructs path based on granularity_level:
+        - Level 1: {customer}/{product}/{branch}/{goal}/
+        - Level 2: {customer}/{product}/{goal}/
+        - Level 3: {customer}/{goal}/
+        - Level 4: {customer}/
+
+        Returns:
+            Path to segment patterns directory
+        """
+        base = self.mined_patterns_dir / self.customer
+
+        if self.granularity_level == 1:
+            return base / self.product / self.branch / self.goal
+        elif self.granularity_level == 2:
+            return base / self.product / self.goal
+        elif self.granularity_level == 3:
+            return base / self.goal
+        else:  # Level 4
+            return base
+
+    def patterns_json(self) -> Path:
+        """
+        Get path to patterns JSON file.
+
+        Returns:
+            Path to patterns.json
+        """
+        return self.segment_patterns_dir() / "patterns.json"
+
+    def patterns_md(self) -> Path:
+        """
+        Get path to patterns Markdown file.
+
+        Returns:
+            Path to patterns.md
+        """
+        return self.segment_patterns_dir() / "patterns.md"
+
+    def segment_index(self) -> Path:
+        """
+        Get path to segment index JSON.
+
+        Returns:
+            Path to index.json
+        """
+        return self.segment_patterns_dir() / "index.json"
+
+    # === CACHE PATHS ===
+
+    def extracted_features_cache(self) -> Path:
+        """
+        Get path to extracted features cache.
+
+        Returns:
+            Path to features_cache.pkl
+        """
+        return self.cache_dir / f"{self.customer}_features_cache.pkl"
+
+    def checkpoint_path(self, checkpoint_name: str) -> Path:
+        """
+        Get path to checkpoint file.
+
+        Args:
+            checkpoint_name: Name of checkpoint
+
+        Returns:
+            Path to checkpoint file
+        """
+        return self.cache_dir / f"{self.customer}_{checkpoint_name}.ckpt"
+
+    # === INPUT PATHS ===
+
+    def input_csv(self, filename: str = "creative_features.csv") -> Path:
+        """
+        Get path to input CSV file.
+
+        Args:
+            filename: CSV filename (default: creative_features.csv)
+
+        Returns:
+            Path to input CSV
+        """
+        return self.input_dir / self.customer / filename
+
+    def validation_report(self, filename: str = "validation_report.json") -> Path:
+        """
+        Get path to validation report.
+
+        Args:
+            filename: Report filename
+
+        Returns:
+            Path to validation report
+        """
+        return self.input_dir / self.customer / filename
+
+    # === ANALYSIS RESULTS PATHS ===
+
+    def analysis_results_dir(self) -> Path:
+        """
+        Get directory for analysis results.
+
+        Returns:
+            Path to analysis results directory
+        """
+        return self.results_dir / self.customer
+
+    def statistical_test_results(self) -> Path:
+        """
+        Get path to statistical test results.
+
+        Returns:
+            Path to statistical_tests.json
+        """
+        return self.analysis_results_dir() / "statistical_tests.json"
+
+    def feature_importance_plot(self) -> Path:
+        """
+        Get path to feature importance plot.
+
+        Returns:
+            Path to feature_importance.png
+        """
+        return self.analysis_results_dir() / "feature_importance.png"
+
+    def quartile_comparison_plot(self) -> Path:
+        """
+        Get path to quartile comparison plot.
+
+        Returns:
+            Path to quartile_comparison.png
+        """
+        return self.analysis_results_dir() / "quartile_comparison.png"
+
+    # === UTILITY METHODS ===
+
+    def ensure_directories(self) -> None:
+        """Create all necessary directories if they don't exist."""
+        directories = [
+            self.segment_patterns_dir(),
+            self.input_dir / self.customer,
+            self.cache_dir,
+            self.analysis_results_dir(),
+        ]
+
+        for directory in directories:
+            directory.mkdir(parents=True, exist_ok=True)
+
+    def get_segment_key(self) -> str:
+        """
+        Get unique segment key for caching/indexing.
+
+        Returns:
+            String key representing this segment
+        """
+        if self.granularity_level == 1:
+            return f"{self.customer}:{self.product}:{self.branch}:{self.goal}"
+        elif self.granularity_level == 2:
+            return f"{self.customer}:{self.product}:{self.goal}"
+        elif self.granularity_level == 3:
+            return f"{self.customer}:{self.goal}"
+        else:  # Level 4
+            return self.customer
+
+    def __repr__(self) -> str:
+        """String representation of paths."""
+        return (
+            f"MinerPaths(customer={self.customer}, product={self.product}, "
+            f"branch={self.branch}, goal={self.goal}, level={self.granularity_level})"
+        )
+
+
+# === AD MINER UTILITY FUNCTIONS ===
+
+
+def get_default_paths(customer: str) -> MinerPaths:
+    """
+    Get default paths for a customer.
+
+    Args:
+        customer: Customer name
+
+    Returns:
+        MinerPaths instance with default settings
+    """
+    return MinerPaths(
+        customer=customer,
+        product="all",
+        branch="all",
+        goal="all",
+        granularity_level=1,
+    )
+
+
+def get_segment_paths(
+    customer: str,
+    product: str,
+    branch: str,
+    goal: str,
+) -> MinerPaths:
+    """
+    Get paths for a specific segment.
+
+    Args:
+        customer: Customer name
+        product: Product name
+        branch: Branch/region
+        goal: Campaign goal
+
+    Returns:
+        MinerPaths instance for segment
+    """
+    return MinerPaths(
+        customer=customer,
+        product=product,
+        branch=branch,
+        goal=goal,
+        granularity_level=1,
+    )

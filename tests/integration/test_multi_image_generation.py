@@ -181,7 +181,7 @@ class TestMultiImageGeneration:
             ("Eye-Level Shot", ["正面.png"]),
             ("High-Angle Shot", ["俯视"]),
             ("Top-Down", ["俯视"]),
-            ("Side View", ["侧俯.png"]),  # Only one per category, 侧俯.png has priority 6
+            ("Side View", ["侧仰.png"]),  # 侧仰.png has priority 5 (higher than 侧俯.png at 6)
             (None, ["正面.png"]),  # Default
         ]
 

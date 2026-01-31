@@ -168,6 +168,21 @@ class ImageGenerator:
             if ENV_FILE.exists():
                 dotenv.load_dotenv(ENV_FILE, override=False)
 
+        # Load from ~/.devease/keys if not already set (skip in CI)
+        import os
+        is_ci = os.getenv("CI") or os.getenv("GITHUB_ACTIONS") or os.getenv("GITLAB_CI")
+        if not is_ci and not os.getenv("FAL_KEY"):
+            keys_file = Path.home() / ".devease" / "keys"
+            if keys_file.exists():
+                logger.info(f"Loading API keys from {keys_file}")
+                with open(keys_file) as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            key, value = line.split("=", 1)
+                            if key.strip() == "FAL_KEY" and not os.getenv("FAL_KEY"):
+                                os.environ["FAL_KEY"] = value.strip()
+
         # Preflight: normalize fal credentials (common failure is whitespace)
         def _clean_env(name: str) -> Optional[str]:
             val = os.getenv(name)

@@ -101,15 +101,26 @@ class ReferenceImageManager:
             )
             return
 
+        # Group files by category and track highest priority (lowest number)
+        category_candidates: Dict[str, ReferenceImage] = {}
+
         for filename in self.reference_images_dir.glob("*.png"):
             if filename.name in self.FILENAME_MAPPINGS:
                 angle_category, priority = self.FILENAME_MAPPINGS[filename.name]
-                self.reference_images[angle_category] = ReferenceImage(
+                candidate = ReferenceImage(
                     path=filename,
                     angle_category=angle_category,
                     filename=filename.name,
                     priority=priority,
                 )
+
+                # Keep only the highest priority (lowest number) image for each category
+                if angle_category not in category_candidates:
+                    category_candidates[angle_category] = candidate
+                elif priority < category_candidates[angle_category].priority:
+                    category_candidates[angle_category] = candidate
+
+        self.reference_images = category_candidates
 
         logger.info(
             f"Loaded {len(self.reference_images)} reference images "

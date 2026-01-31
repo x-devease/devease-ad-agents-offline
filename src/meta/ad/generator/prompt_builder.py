@@ -89,6 +89,47 @@ class PromptBuilder:
         """
         return self.max_prompts_config.get(category, default if default is not None else 5)
 
+    def _check_anti_patterns(self, features: Dict[str, str]) -> List[str]:
+        """
+        Check if features match any anti-patterns.
+
+        Args:
+            features: Dict of feature_name → value
+
+        Returns:
+            List of anti-pattern violations (empty if none)
+        """
+        anti_patterns = self.patterns.get("anti_patterns", [])
+        violations = []
+
+        for anti_pattern in anti_patterns:
+            avoid_features = anti_pattern.get("avoid_features", {})
+            # Check if all avoid features are present in the given features
+            matches = all(
+                features.get(k) == v
+                for k, v in avoid_features.items()
+            )
+
+            if matches:
+                violation = f"Anti-pattern: {avoid_features}"
+                violations.append(violation)
+                logger.warning(f"{violation} - {anti_pattern.get('reason', 'Reason not provided')}")
+
+        return violations
+
+    def _get_confidence_threshold(self, category: str) -> float:
+        """
+        Get confidence threshold for a category from config.
+
+        Args:
+            category: Category name (individual_features, etc.)
+
+        Returns:
+            Confidence threshold (0.0 to 1.0)
+        """
+        thresholds = self.config.get('prompt_building', {}).get('confidence_thresholds', {})
+        return thresholds.get(category, 0.0)  # Default: no threshold (include all)
+
     def _default_config(self) -> Dict:
         """Default generation config from moprobo config."""
         return {
@@ -169,6 +210,9 @@ class PromptBuilder:
             features = pattern.get("features", {})
             prompt_text = self._build_natural_prompt(features)
 
+            # Check for anti-pattern violations
+            anti_pattern_violations = self._check_anti_patterns(features)
+
             psychology = self._extract_psychology_overlay(
                 self.patterns.get("psychology_patterns", [])
             )
@@ -177,12 +221,15 @@ class PromptBuilder:
                 "prompt_id": f"supporting_combo_{len(prompts)+1}",
                 "prompt_name": pattern.get("combination", "Unknown").title(),
                 "strategy": "supporting_combination",
+                "category": "supporting_combinations",  # Category metadata for A/B testing
                 "confidence": pattern.get("confidence", 0.0),
                 "roas_lift": pattern.get("roas_lift_multiple", 0.0),
                 "nano_prompt": prompt_text,
                 "features_used": features,
                 "psychology_overlay": psychology,
-                "generation_config": self.config
+                "generation_config": self.config,
+                "anti_pattern_violations": anti_pattern_violations,  # Anti-pattern validation
+                "passed_anti_pattern_check": len(anti_pattern_violations) == 0
             })
 
         return prompts
@@ -190,6 +237,8 @@ class PromptBuilder:
     def build_individual_feature_prompts(self, max_prompts: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Build prompts from top individual features.
+
+        Applies anti-pattern validation and confidence threshold filtering.
 
         Args:
             max_prompts: Maximum number of individual feature prompts (overrides config)
@@ -201,7 +250,21 @@ class PromptBuilder:
         if max_prompts is None:
             max_prompts = self._get_max_prompts('individual_features', default=5)
 
-        ind_features = self.patterns.get("individual_features", [])[:max_prompts]
+        # Get confidence threshold for filtering
+        confidence_threshold = self._get_confidence_threshold('individual_features')
+
+        ind_features = self.patterns.get("individual_features", [])
+
+        # Filter by confidence threshold if configured
+        if confidence_threshold > 0:
+            ind_features = [
+                f for f in ind_features
+                if f.get('confidence', 0.0) >= confidence_threshold
+            ]
+            logger.info(f"Filtered individual features by confidence >= {confidence_threshold}: {len(ind_features)} remaining")
+
+        # Apply max_prompts limit
+        ind_features = ind_features[:max_prompts]
 
         prompts = []
         for feature in ind_features:
@@ -223,22 +286,28 @@ class PromptBuilder:
 
             prompt_text = self._build_natural_prompt(features_used)
 
+            # Check for anti-pattern violations
+            anti_pattern_violations = self._check_anti_patterns(features_used)
+
             prompts.append({
                 "prompt_id": f"individual_{feature_name}_{len(prompts)+1}",
                 "prompt_name": f"{feature_value} ({feature_name})",
                 "strategy": "individual_feature",
+                "category": "individual_features",  # Category metadata for A/B testing
                 "confidence": feature.get("confidence", 0.0),
                 "roas_lift": feature.get("individual_roas_lift", 0.0),
                 "nano_prompt": prompt_text,
                 "features_used": features_used,
                 "psychology_overlay": {},
                 "generation_config": self.config,
-                "note": feature.get("reason", "")
+                "note": feature.get("reason", ""),
+                "anti_pattern_violations": anti_pattern_violations,  # Anti-pattern validation
+                "passed_anti_pattern_check": len(anti_pattern_violations) == 0
             })
 
         return prompts
 
-    def build_psychology_prompts(self, max_prompts: int = 2) -> List[Dict[str, Any]]:
+    def build_psychology_prompts(self, max_prompts: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Build prompts emphasizing psychology patterns.
 
@@ -246,11 +315,15 @@ class PromptBuilder:
         combine the psychology pattern with the top visual combination.
 
         Args:
-            max_prompts: Maximum number of psychology prompts
+            max_prompts: Maximum number of psychology prompts (overrides config)
 
         Returns:
             List of prompt dicts
         """
+        # Use config value if not overridden
+        if max_prompts is None:
+            max_prompts = self._get_max_prompts('psychology_patterns', default=2)
+
         psych_patterns = self.patterns.get("psychology_patterns", [])
         if not psych_patterns:
             logger.warning("No psychology_patterns found in patterns.yaml")
@@ -314,6 +387,9 @@ class PromptBuilder:
         """
         Build all prompts from patterns.
 
+        Uses max_prompts values from config to determine how many prompts
+        to generate for each category.
+
         Returns:
             Dict with prompt categories:
             - top_combination: [primary top prompt]
@@ -325,9 +401,9 @@ class PromptBuilder:
 
         all_prompts = {
             "top_combination": [self.build_top_combination_prompt()],
-            "supporting_combinations": self.build_supporting_combination_prompts(max_prompts=3),
-            "individual_features": self.build_individual_feature_prompts(max_prompts=5),
-            "psychology": self.build_psychology_prompts(max_prompts=2)
+            "supporting_combinations": self.build_supporting_combination_prompts(),  # Uses config
+            "individual_features": self.build_individual_feature_prompts(),  # Uses config
+            "psychology": self.build_psychology_prompts()  # Uses config
         }
 
         total_prompts = sum(len(v) for v in all_prompts.values())

@@ -139,14 +139,15 @@ class TestAllocationWorkflow:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
-        # Use __getitem__ to properly mock dict access
-        mock_state.budget.__getitem__.return_value = 10000.0
-        mock_state.tracking.__getitem__.side_effect = lambda key: {
+        mock_state.budget = {
+            "monthly_budget_cap": 10000.0,
+        }
+        mock_state.tracking = {
             "total_spent": 0.0,
             "total_allocated": 0.0,
             "remaining_budget": 10000.0,
             "days_active": 0,
-        }.get(key)
+        }
         mock_state.state_path = tmp_path / "state.json"
         mock_state_class.load_or_create.return_value = mock_state
 
@@ -160,12 +161,17 @@ class TestAllocationWorkflow:
             budget=1000.0,
         )
 
-        result = workflow._process_customer(
-            customer="test_customer",
-            platform="meta",
-            input_file=str(sample_adset_features),
-            output_file=str(output_file),
-        )
+        # Mock get_customer_config to return a config with get_monthly_setting method
+        mock_config = MagicMock()
+        mock_config.get_monthly_setting.return_value = 0.8
+
+        with patch.object(workflow, 'get_customer_config', return_value=mock_config):
+            result = workflow._process_customer(
+                customer="test_customer",
+                platform="meta",
+                input_file=str(sample_adset_features),
+                output_file=str(output_file),
+            )
 
         # Check result
         assert isinstance(result, WorkflowResult)

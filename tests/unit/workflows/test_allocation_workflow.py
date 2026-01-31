@@ -293,7 +293,16 @@ class TestAllocationWorkflowProcessCustomer:
 
         # Mock config and allocator
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = True
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])
@@ -301,6 +310,7 @@ class TestAllocationWorkflowProcessCustomer:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -380,7 +390,9 @@ class TestAllocationWorkflowProcessCustomer:
         workflow = AllocationWorkflow(budget=10000.0)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = False  # Disable monthly tracking for this test
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
         with patch.object(workflow, "get_customer_config", return_value=mock_config):
             with patch.object(
                 workflow, "_initialize_allocator", return_value=MagicMock()
@@ -419,7 +431,16 @@ class TestAllocationWorkflowProcessCustomer:
         workflow = AllocationWorkflow(budget=10000.0)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = True
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])
@@ -427,6 +448,7 @@ class TestAllocationWorkflowProcessCustomer:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -484,7 +506,16 @@ class TestAllocationWorkflowProcessCustomer:
         workflow = AllocationWorkflow(budget=10000.0)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = True
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])
@@ -492,6 +523,7 @@ class TestAllocationWorkflowProcessCustomer:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -548,6 +580,7 @@ class TestAllocationWorkflowIntegration:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -594,8 +627,16 @@ class TestAllocationWorkflowIntegration:
         workflow = AllocationWorkflow(budget=10000.0, verbose=False)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = 0.8
-        mock_config.get_safety_rule.return_value = 1.0
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])
@@ -631,6 +672,7 @@ class TestAllocationWorkflowIntegration:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -658,8 +700,16 @@ class TestAllocationWorkflowIntegration:
         workflow = AllocationWorkflow(budget=10000.0, verbose=False)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = 0.8
-        mock_config.get_safety_rule.return_value = 1.0
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])

@@ -81,8 +81,8 @@ class TestReferenceImageManager:
         """Test loading reference images from directory."""
         manager = ReferenceImageManager(reference_images_dir=temp_reference_dir)
 
-        # Should load 8 images
-        assert len(manager.reference_images) == 8
+        # Should load 6 unique categories (8 files but some map to same category)
+        assert len(manager.reference_images) == 6
         assert manager.has_images()
 
         # Check specific categories
@@ -214,7 +214,7 @@ class TestReferenceImageManager:
 
         all_paths = manager.get_all_image_paths()
 
-        assert len(all_paths) == 8
+        assert len(all_paths) == 6
         assert all(isinstance(p, Path) for p in all_paths)
 
     def test_get_available_categories(self, temp_reference_dir):

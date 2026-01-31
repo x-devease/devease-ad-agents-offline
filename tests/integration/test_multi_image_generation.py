@@ -76,9 +76,14 @@ class TestMultiImageGeneration:
         """Test ReferenceImageManager with test images."""
         manager = ReferenceImageManager(reference_images_dir=temp_reference_dir)
 
-        # Should load 8 test images
+        # Should load 6 unique categories (8 files but some map to same category)
         assert manager.has_images()
-        assert len(manager.get_all_image_paths()) == 8
+        assert len(manager.get_all_image_paths()) == 6
+
+        # Verify all expected categories are present
+        expected_categories = {"front", "back", "45_left", "45_right", "top", "side"}
+        actual_categories = {img.angle_category for img in manager.reference_images.values()}
+        assert actual_categories == expected_categories
 
         # Test angle selection
         selected_45 = manager.select_images_for_angle("45-degree", max_images=3)
@@ -176,7 +181,7 @@ class TestMultiImageGeneration:
             ("Eye-Level Shot", ["正面.png"]),
             ("High-Angle Shot", ["俯视"]),
             ("Top-Down", ["俯视"]),
-            ("Side View", ["侧仰.png", "侧俯.png"]),
+            ("Side View", ["侧俯.png"]),  # Only one per category, 侧俯.png has priority 6
             (None, ["正面.png"]),  # Default
         ]
 

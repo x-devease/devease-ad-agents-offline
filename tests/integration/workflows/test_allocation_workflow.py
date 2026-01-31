@@ -97,13 +97,64 @@ def sample_config(tmp_path):
             "freeze_health_threshold": 0.2,
         },
         "decision_rules": {
-            "low_roas_threshold": 2.0,
-            "medium_roas_threshold": 2.5,
+            "very_low_roas_threshold": 1.0,
+            "low_roas_threshold": 1.5,
+            "medium_roas_threshold": 2.0,
+            "medium_high_roas_threshold": 2.5,
             "high_roas_threshold": 3.0,
-            "aggressive_increase_pct": 0.20,
+            "very_high_roas_threshold": 3.5,
+            "excellent_roas_threshold": 3.5,
+            "high_vs_adset_threshold": 1.2,
+            "high_vs_campaign_threshold": 1.15,
+            "high_vs_account_threshold": 1.10,
+            "low_vs_adset_threshold": 0.8,
+            "strong_rising_trend": 0.10,
+            "strong_falling_trend": -0.10,
+            "moderate_rising_trend": 0.05,
+            "moderate_falling_trend": -0.05,
+            "high_revenue_per_impression": 0.08,
+            "low_revenue_per_impression": 0.02,
+            "high_revenue_per_click": 2.5,
+            "low_revenue_per_click": 1.0,
+            "high_efficiency_threshold": 0.10,
+            "low_efficiency_threshold": 0.02,
+            "healthy_threshold": 0.7,
+            "unhealthy_threshold": 0.3,
+            "excellent_health_threshold": 0.85,
+            "cold_start_days": 3,
+            "learning_phase_days_early": 7,
+            "learning_phase_days_mid": 14,
+            "learning_phase_days_late": 21,
+            "learning_phase_days": 14,
+            "established_days": 21,
+            "high_spend_threshold": 100,
+            "low_spend_threshold": 10,
+            "high_impressions_threshold": 5000,
+            "spend_trend_rising": 0.15,
+            "spend_trend_falling": -0.20,
+            "high_clicks_threshold": 50,
+            "high_reach_threshold": 1000,
+            "aggressive_increase_pct": 0.15,
             "moderate_increase_pct": 0.10,
-            "aggressive_decrease_pct": 0.20,
+            "conservative_increase_pct": 0.05,
             "moderate_decrease_pct": 0.10,
+            "aggressive_decrease_pct": 0.20,
+            "maintenance_pct": 0.0,
+            "gradient_enabled": True,
+            "trend_scaling_enabled": True,
+            "default_health_score": 0.5,
+            "default_efficiency": 0.05,
+            "health_score_multiplier_enabled": True,
+            "budget_relative_scaling_enabled": True,
+            "large_budget_threshold": 100,
+            "medium_budget_threshold": 20,
+            "small_budget_max_increase": 0.20,
+            "medium_budget_max_increase": 0.15,
+            "large_budget_max_increase": 0.10,
+            "low_clicks_threshold": 20,
+            "medium_clicks_threshold": 100,
+            "low_clicks_multiplier": 0.8,
+            "medium_clicks_multiplier": 0.9,
         },
         "monthly_budget": {
             "monthly_budget_cap": 10000.0,
@@ -123,8 +174,8 @@ def sample_config(tmp_path):
 class TestAllocationWorkflow:
     """Test AllocationWorkflow end-to-end."""
 
-    @patch("src.meta.adset.allocator.budget.MonthlyBudgetState")
-    @patch("src.meta.adset.allocator.budget.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_rules_based_allocation(
         self,
         mock_tracker_class,
@@ -140,6 +191,10 @@ class TestAllocationWorkflow:
         mock_state = MagicMock()
         mock_state.month = "2026-01"
         mock_state.state_path = tmp_path / "state.json"
+        mock_state.is_first_execution = True
+        from datetime import date
+        mock_state.month_start_date = date(2026, 1, 30)
+        mock_state.days_since_budget_start = 1
 
         # Use configure_mock to properly set up dict-like access
         mock_budget_dict = {"monthly_budget_cap": 10000.0}
@@ -158,7 +213,9 @@ class TestAllocationWorkflow:
         mock_state_class.load_or_create.return_value = mock_state
 
         mock_tracker = MagicMock()
+        # Always return False for budget exhausted check
         mock_tracker.is_budget_exhausted.return_value = False
+        mock_tracker.is_budget_exhausted.__bool__ = False
         mock_tracker.calculate_daily_budget.return_value = 333.33
 
         # Patch MonthlyBudgetTracker to return our mock
@@ -170,26 +227,12 @@ class TestAllocationWorkflow:
             budget=1000.0,
         )
 
-        # Mock get_customer_config to return a config with get method
-        mock_config = MagicMock()
-        mock_config.get.side_effect = lambda key, default=None: {
-            "monthly_budget.day1_budget_multiplier": 0.8,
-            "monthly_budget.monthly_budget_cap": 10000.0,
-        }.get(key, default)
-        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
-            "max_daily_increase_pct": 0.15,
-        }.get(key, default)
-        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
-            "day1_budget_multiplier": 0.8,
-        }.get(key, default)
-
-        with patch.object(workflow, 'get_customer_config', return_value=mock_config):
-            result = workflow._process_customer(
-                customer="test_customer",
-                platform="meta",
-                input_file=str(sample_adset_features),
-                output_file=str(output_file),
-            )
+        result = workflow._process_customer(
+            customer="test_customer",
+            platform="meta",
+            input_file=str(sample_adset_features),
+            output_file=str(output_file),
+        )
 
         # Check result
         assert isinstance(result, WorkflowResult)

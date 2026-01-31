@@ -60,6 +60,13 @@ prompt_building:
     individual_features: 6  # Number of individual feature prompts (use all available)
     psychology_patterns: 2  # Number of psychology pattern prompts
 
+  # Confidence thresholds: Only include patterns with confidence >= threshold
+  # Set to 0.0 to include all patterns (no filtering)
+  confidence_thresholds:
+    individual_features: 0.70  # Only include individual features with 70%+ confidence
+    supporting_combinations: 0.0  # Include all supporting combinations
+    psychology_patterns: 0.0  # Include all psychology patterns
+
   # Whether to use nano agent for prompt enhancement
   enable_nano_enhancement: true
 compositing:

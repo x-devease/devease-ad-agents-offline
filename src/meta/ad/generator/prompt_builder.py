@@ -169,6 +169,9 @@ class PromptBuilder:
         # Build natural language prompt
         prompt = self._build_natural_prompt(features_used)
 
+        # Check for anti-pattern violations
+        anti_pattern_violations = self._check_anti_patterns(features_used)
+
         # Add psychology overlay if available
         psych_patterns = self.patterns.get("psychology_patterns", [])
         psychology = self._extract_psychology_overlay(psych_patterns)
@@ -180,12 +183,15 @@ class PromptBuilder:
             "prompt_id": "top_combination_primary",
             "prompt_name": f"{top_pattern.get('combination', feature_names)} (Top)",
             "strategy": "top_combination",
+            "category": "top_combination",  # Category metadata for A/B testing
             "confidence": top_pattern.get("confidence", 0.92),
             "roas_lift": roas_lift,
             "nano_prompt": prompt,
             "features_used": features_used,
             "psychology_overlay": psychology,
-            "generation_config": self.config
+            "generation_config": self.config,
+            "anti_pattern_violations": anti_pattern_violations,  # Anti-pattern validation
+            "passed_anti_pattern_check": len(anti_pattern_violations) == 0
         }
 
     def build_supporting_combination_prompts(self, max_prompts: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -357,6 +363,9 @@ class PromptBuilder:
             # Build prompt
             prompt_text = self._build_natural_prompt(features_used)
 
+            # Check for anti-pattern violations
+            anti_pattern_violations = self._check_anti_patterns(features_used)
+
             # Extract full psychology components from mined pattern
             psych_components = psych.get("components", {})
             psychology = {
@@ -372,13 +381,16 @@ class PromptBuilder:
                 "prompt_id": f"psychology_{psych.get('pattern', 'unknown')}",
                 "prompt_name": psych.get("display_name", "Psychology Pattern"),
                 "strategy": "psychology_pattern",
+                "category": "psychology_patterns",  # Category metadata for A/B testing
                 "confidence": psych.get("confidence", 0.0),
                 "roas_lift": psych.get("individual_roas_lift", 0.0),
                 "nano_prompt": prompt_text,
                 "features_used": features_used,
                 "psychology_overlay": psychology,
                 "generation_config": self.config,
-                "note": f"Psychology overlay enhances base creative by {psych.get('individual_roas_pct', 0)}%"
+                "note": f"Psychology overlay enhances base creative by {psych.get('individual_roas_pct', 0)}%",
+                "anti_pattern_violations": anti_pattern_violations,  # Anti-pattern validation
+                "passed_anti_pattern_check": len(anti_pattern_violations) == 0
             })
 
         return prompts

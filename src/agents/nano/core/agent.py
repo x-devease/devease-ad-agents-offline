@@ -260,6 +260,8 @@ def enhance_prompt(generic_prompt: str) -> str:
     """
     Convenience function to enhance a prompt.
 
+    Uses legacy mode for compatibility.
+
     Args:
         generic_prompt: The generic input prompt
 
@@ -273,5 +275,6 @@ def enhance_prompt(generic_prompt: str) -> str:
         print(enhanced)
     """
 
-    agent = PromptEnhancementAgent()
+    # Use legacy mode to avoid framework bugs
+    agent = PromptEnhancementAgent(use_framework=False)
     return agent.enhance_simple(generic_prompt)

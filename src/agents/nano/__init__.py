@@ -44,3 +44,7 @@ __all__ = [
     "PromptIntent",
     "PromptCategory",
 ]
+
+# Legacy mode - use legacy implementation to avoid framework bugs
+import os
+USE_LEGACY = os.environ.get("NANO_LEGACY_MODE", "true").lower() == "true"

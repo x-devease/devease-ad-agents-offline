@@ -42,19 +42,14 @@ class BaseAdapter(ABC):
             config: Adapter configuration
         """
         self.config = config
-        self.domain = config.domain
-        logger.info(f"Initialized {self.domain} adapter")
+        # Don't set self.domain here - it's an abstract property that subclasses implement
+        logger.info(f"Initialized {config.domain} adapter")
 
     @property
     @abstractmethod
     def domain(self) -> str:
         """Domain identifier (e.g., 'nano')."""
         pass
-
-    @domain.setter
-    def domain(self, value: str):
-        """Set domain identifier."""
-        self._domain = value
 
     @abstractmethod
     def parse_input(self, generic_prompt: str) -> Tuple[str, str]:

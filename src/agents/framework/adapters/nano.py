@@ -38,6 +38,9 @@ class NanoAdapter(BaseAdapter):
         """
         super().__init__(config)
 
+        # Set domain identifier
+        self._domain = "nano"
+
         # Initialize Nano components
         self.parser = InputParser()
         self.intent_analyzer = IntentAnalyzer()
@@ -57,11 +60,6 @@ class NanoAdapter(BaseAdapter):
     def domain(self) -> str:
         """Domain identifier."""
         return self._domain
-
-    @domain.setter
-    def domain(self, value: str):
-        """Set domain identifier."""
-        self._domain = value
 
     def parse_input(self, generic_prompt: str) -> Tuple[str, str]:
         """

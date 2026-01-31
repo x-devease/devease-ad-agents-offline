@@ -139,31 +139,49 @@ class TestAllocationWorkflow:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
-        mock_state.budget = {
-            "monthly_budget_cap": 10000.0,
-        }
-        mock_state.tracking = {
+        mock_state.state_path = tmp_path / "state.json"
+
+        # Use configure_mock to properly set up dict-like access
+        mock_budget_dict = {"monthly_budget_cap": 10000.0}
+        mock_tracking_dict = {
             "total_spent": 0.0,
             "total_allocated": 0.0,
             "remaining_budget": 10000.0,
             "days_active": 0,
         }
-        mock_state.state_path = tmp_path / "state.json"
+        # Configure __getitem__ to return actual dict values
+        mock_state.budget.__getitem__.side_effect = mock_budget_dict.__getitem__
+        mock_state.budget.get.side_effect = mock_budget_dict.get
+        mock_state.tracking.__getitem__.side_effect = mock_tracking_dict.__getitem__
+        mock_state.tracking.get.side_effect = mock_tracking_dict.get
+
         mock_state_class.load_or_create.return_value = mock_state
 
         mock_tracker = MagicMock()
         mock_tracker.is_budget_exhausted.return_value = False
         mock_tracker.calculate_daily_budget.return_value = 333.33
+
+        # Patch MonthlyBudgetTracker to return our mock
         mock_tracker_class.return_value = mock_tracker
+        mock_tracker_class.side_effect = lambda state: mock_tracker
 
         workflow = AllocationWorkflow(
             config_path=str(sample_config),
             budget=1000.0,
         )
 
-        # Mock get_customer_config to return a config with get_monthly_setting method
+        # Mock get_customer_config to return a config with get method
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = 0.8
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
 
         with patch.object(workflow, 'get_customer_config', return_value=mock_config):
             result = workflow._process_customer(

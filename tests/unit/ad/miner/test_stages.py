@@ -47,7 +47,8 @@ mining_profiles:
     def test_determine_winner_quantile_product_override(self, tmp_path):
         """Test product-level override (Priority 3)."""
         # Create test customer config with product override
-        config_dir = tmp_path / "config" / "ad" / "miner" / "test_customer"
+        # MiningStrategySelector looks for config_root / customer_id / "config.yaml"
+        config_dir = tmp_path / "test_customer"
         config_dir.mkdir(parents=True)
 
         config_file = config_dir / "config.yaml"
@@ -63,7 +64,7 @@ product_overrides:
         winner_quantile: 0.97
 """)
 
-        selector = MiningStrategySelector(config_dir.parent.parent.parent.parent)
+        selector = MiningStrategySelector(tmp_path)
 
         # Test product override
         quantile = selector.determine_winner_quantile(

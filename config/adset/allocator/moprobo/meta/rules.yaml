@@ -1,0 +1,13 @@
+# Allocator rules for moprobo (test config)
+allocator_config:
+  budget_caps:
+    min_budget: 10
+    max_budget: 10000
+  min_spend_threshold: 10
+  min_impressions: 100
+  quality_threshold: 0.5
+  rolling_windows:
+    short_window_days: 7
+    long_window_days: 14
+  performance_quartile_method: loser
+  loser_quantile_threshold: 0.25

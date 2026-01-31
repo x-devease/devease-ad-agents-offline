@@ -19,16 +19,18 @@ from src.meta.adset.allocator.features import Aggregator, Extractor, Joiner, Loa
 def create_sample_account_data():
     """Create sample account data."""
     return pd.DataFrame({
-        "account_id": ["123"],
+        "account_id": ["acc1"],
         "account_name": ["Test Account"],
+        "date_start": ["2024-01-01"],
     })
 
 def create_sample_campaign_data():
     """Create sample campaign data."""
     return pd.DataFrame({
-        "campaign_id": ["456"],
-        "campaign_name": ["Test Campaign"],
-        "account_id": ["123"],
+        "campaign_id": ["camp1", "camp2"],
+        "campaign_name": ["Test Campaign 1", "Test Campaign 2"],
+        "account_id": ["acc1", "acc1"],
+        "date_start": ["2024-01-01", "2024-01-01"],
     })
 from tests.integration.utils.subprocess import run_script, run_script_and_verify_output
 
@@ -124,6 +126,19 @@ def cleanup_output_file():
     output_file = Path.cwd() / "datasets" / "ad_features.csv"
     if output_file.exists():
         output_file.unlink()
+
+
+@pytest.fixture
+def sample_minimal_ad_data():
+    """Create minimal ad data with required columns only"""
+    return pd.DataFrame({
+        "ad_id": ["ad1", "ad2", "ad3"],
+        "adset_id": ["adset1", "adset1", "adset2"],
+        "date_start": ["2024-01-01", "2024-01-01", "2024-01-01"],
+        "spend": [10.0, 15.0, 20.0],
+        "impressions": [100, 150, 200],
+        "clicks": [5, 7, 10],
+    })
 
 
 class TestExtractComponents:

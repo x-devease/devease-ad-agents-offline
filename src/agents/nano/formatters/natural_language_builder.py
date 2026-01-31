@@ -266,18 +266,32 @@ class NaturalLanguagePromptBuilder:
 
         env_parts = []
 
-        # Setting
+        # Setting with rich background details
         if intent == PromptIntent.LIFESTYLE_ADVERTISEMENT:
             env_parts.append(
                 "The setting is a modern, clean home environment that feels authentic and lived-in."
             )
-
-        elif intent == PromptIntent.PRODUCT_PHOTOGRAPHY:
+            # Add more lifestyle background details
             env_parts.append(
-                "The background is clean and neutral, allowing the product to be the clear focus."
+                "Soft natural light creates gentle shadows, adding depth and dimensionality."
             )
 
-        # Lighting
+        elif intent == PromptIntent.PRODUCT_PHOTOGRAPHY:
+            # Enhanced background for product photography
+            env_parts.append(
+                "The background features a polished white marble surface with subtle grey veining patterns."
+            )
+            env_parts.append(
+                "Luxurious marble backdrop extends seamlessly to edges, creating an elegant setting."
+            )
+            env_parts.append(
+                "Soft reflections are visible on the marble surface, adding sophistication."
+            )
+            env_parts.append(
+                "A soft contact shadow grounds the product, while gentle vignette at edges frames the composition."
+            )
+
+        # Lighting with details
         lighting = self.VOCABULARY["lighting"].get("natural", "soft, natural light")
         env_parts.append(f"Lighting is {lighting}.")
 

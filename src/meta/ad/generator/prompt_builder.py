@@ -508,6 +508,39 @@ class PromptBuilder:
         prompt_parts.append("sharp focus")
         prompt_parts.append("fine details visible")
 
+        # BACKGROUND DESCRIPTION - Use surface_material for rich background details
+        if "surface_material" in features:
+            material = features["surface_material"]
+            if material == "Marble":
+                prompt_parts.append("on polished white marble surface with subtle grey veining")
+                prompt_parts.append("luxurious marble backdrop with natural texture")
+                prompt_parts.append("soft reflections on marble surface")
+                prompt_parts.append("seamless marble background extending to edges")
+            elif material == "Wood":
+                prompt_parts.append("on natural wood surface with visible grain")
+                prompt_parts.append("warm wood backdrop with organic texture")
+                prompt_parts.append("home environment background with wood accents")
+            elif material == "Glass":
+                prompt_parts.append("on glossy glass surface with subtle reflections")
+                prompt_parts.append("transparent background element with light refraction")
+                prompt_parts.append("sleek modern glass backdrop")
+            else:
+                prompt_parts.append(f"on premium {material.lower()} surface")
+                prompt_parts.append(f"{material.lower()} texture background with detail")
+        else:
+            # Default studio background
+            prompt_parts.append("on pure white seamless background")
+            prompt_parts.append("studio infinity curve backdrop")
+            prompt_parts.append("clean white background with soft grey vignette at edges")
+
+        # Add shadow/reflection details
+        prompt_parts.append("soft contact shadow grounding product")
+        prompt_parts.append("natural product shadow cast by lighting")
+
+        # Add negative space for text overlay
+        prompt_parts.append("generous negative space in upper regions for text overlay")
+        prompt_parts.append("balanced composition with breathing room")
+
         # Add purpose/context for quality
         prompt_parts.append("for commercial advertising")
         prompt_parts.append("premium brand presentation")

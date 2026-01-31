@@ -109,6 +109,7 @@ def sample_config(tmp_path):
             "monthly_budget_cap": 10000.0,
             "conservative_factor": 0.95,
             "archive_daily_allocations": True,
+            "day1_budget_multiplier": 0.8,
         },
     }
 
@@ -122,8 +123,8 @@ def sample_config(tmp_path):
 class TestAllocationWorkflow:
     """Test AllocationWorkflow end-to-end."""
 
-    @patch("src.meta.adset.allocator.budget.state_manager.MonthlyBudgetState")
-    @patch("src.meta.adset.allocator.budget.monthly_tracker.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.budget.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.budget.MonthlyBudgetTracker")
     def test_rules_based_allocation(
         self,
         mock_tracker_class,
@@ -138,12 +139,14 @@ class TestAllocationWorkflow:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
-        mock_state.tracking = {
+        # Use __getitem__ to properly mock dict access
+        mock_state.budget.__getitem__.return_value = 10000.0
+        mock_state.tracking.__getitem__.side_effect = lambda key: {
             "total_spent": 0.0,
             "total_allocated": 0.0,
             "remaining_budget": 10000.0,
             "days_active": 0,
-        }
+        }.get(key)
         mock_state.state_path = tmp_path / "state.json"
         mock_state_class.load_or_create.return_value = mock_state
 

@@ -81,6 +81,10 @@ htmlcov/
 
 # Config - shared customer configs (not the structure, but actual customer data if needed)
 # config/*/ is tracked, but specific customer data can be ignored if needed
+config/*/product/
+config/*/assets/
+config/*/images/
+config/*/reference_images/
 
 
 # Documentation & Examples

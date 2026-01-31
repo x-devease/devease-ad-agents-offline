@@ -176,6 +176,7 @@ class NanoBackgroundGenerator:
         perspective: PerspectiveType,
         output_dir: Optional[Path] = None,
         save_images: bool = True,
+        camera_angle: Optional[str] = None,
     ) -> List[GeneratedBackground]:
         """
         Generate backgrounds from master blueprint configuration.
@@ -186,6 +187,7 @@ class NanoBackgroundGenerator:
             perspective: Product camera perspective (from ProductPreprocessor)
             output_dir: Optional output directory for generated images
             save_images: Whether to save images to disk
+            camera_angle: Optional camera angle for angle-aware reference image selection
 
         Returns:
             List of GeneratedBackground objects
@@ -215,6 +217,7 @@ class NanoBackgroundGenerator:
             config=config,
             output_dir=output_dir,
             save_images=save_images,
+            camera_angle=camera_angle,
         )
 
         # Get perspective value safely
@@ -256,6 +259,7 @@ class NanoBackgroundGenerator:
         config: Optional[GenerationConfig] = None,
         output_dir: Optional[Path] = None,
         save_images: bool = True,
+        camera_angle: Optional[str] = None,
     ) -> List[GeneratedBackground]:
         """
         Generate a batch of background images using FAL API.
@@ -265,6 +269,8 @@ class NanoBackgroundGenerator:
             config: Optional generation config (uses instance config if None)
             output_dir: Optional output directory
             save_images: Whether to save images to disk
+            camera_angle: Optional camera angle for angle-aware reference image selection
+                (e.g., "45-degree", "Eye-Level Shot")
 
         Returns:
             List of GeneratedBackground objects
@@ -327,6 +333,7 @@ class NanoBackgroundGenerator:
                     prompt=final_prompt,
                     source_image_path=source_image_path,
                     output_filename=output_filename,
+                    camera_angle=camera_angle,
                 )
 
                 # Clean up temp file
@@ -421,6 +428,7 @@ def generate_backgrounds_from_blueprint(
     output_dir: Optional[Path] = None,
     api_key: Optional[str] = None,
     save_images: bool = True,
+    camera_angle: Optional[str] = None,
 ) -> List[GeneratedBackground]:
     """
     Convenience function for quick background generation from blueprint.
@@ -431,6 +439,7 @@ def generate_backgrounds_from_blueprint(
         output_dir: Optional output directory
         api_key: Optional API key
         save_images: Whether to save images to disk
+        camera_angle: Optional camera angle for angle-aware reference image selection
 
     Returns:
         List of GeneratedBackground objects
@@ -448,4 +457,5 @@ def generate_backgrounds_from_blueprint(
         perspective=perspective,
         output_dir=output_dir,
         save_images=save_images,
+        camera_angle=camera_angle,
     )

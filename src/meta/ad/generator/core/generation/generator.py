@@ -107,6 +107,9 @@ class ImageGenerator:
         strength: float = 0.85,
         guidance_scale: float = 8.0,
         num_inference_steps: int = 30,
+        # Multi-image reference support
+        reference_images_dir: Optional[str] = None,
+        enable_multi_image: bool = False,
     ):
         """
         Initialize image generator.
@@ -136,6 +139,9 @@ class ImageGenerator:
                 Higher = more prompt adherence. Default 8.0.
             num_inference_steps: Quality vs speed tradeoff (10-50).
                 More steps = better quality but slower. Default 30.
+            reference_images_dir: Directory containing product reference images
+                for angle-aware multi-image generation (optional)
+            enable_multi_image: Whether to use multiple reference images (default False)
 
         Path Organization:
             If customer/platform/date provided:
@@ -231,13 +237,34 @@ class ImageGenerator:
             self.text_overlay = TextOverlay(text_overlay_config)
         else:
             self.text_overlay = None
+        # Initialize reference image manager if multi-image enabled
+        self.enable_multi_image = enable_multi_image
+        if enable_multi_image and reference_images_dir:
+            from .reference_image_manager import ReferenceImageManager
+
+            self.reference_manager = ReferenceImageManager(
+                reference_images_dir=Path(reference_images_dir),
+                fallback_image_path=None,  # Will use source_image_path as fallback
+            )
+            logger.info(
+                "Multi-image generation enabled: %s reference images loaded from %s",
+                len(self.reference_manager.get_all_image_paths()),
+                reference_images_dir,
+            )
+        else:
+            self.reference_manager = None
+            if enable_multi_image:
+                logger.warning(
+                    "Multi-image generation enabled but no reference_images_dir provided"
+                )
 
         logger.info(
             "ImageGenerator initialized: model=%s, endpoint=%s, "
-            "gpt4o_conversion=%s",
+            "gpt4o_conversion=%s, multi_image=%s",
             model,
             self.api_endpoint,
             self.use_gpt4o_conversion,
+            enable_multi_image and self.reference_manager is not None,
         )
 
     def _encode_image_to_base64(self, image_path: str) -> str:
@@ -318,6 +345,7 @@ class ImageGenerator:
         feature_instructions: Optional[str] = None,
         feature_values: Optional[Dict[str, str]] = None,
         product_context: Optional[str] = None,
+        camera_angle: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Generate image from prompt.
@@ -333,6 +361,8 @@ class ImageGenerator:
                 (used with GPT-4o conversion)
             feature_values: Optional dict mapping feature names to values
                 (used to provide detailed descriptions to GPT-4o)
+            camera_angle: Optional camera angle for angle-aware reference image selection
+                (e.g., "45-degree", "Eye-Level Shot"). Used with multi-image generation.
 
         Returns:
             Dict with 'success', 'image_path', 'upscaled_path' (if upscaled),
@@ -407,9 +437,35 @@ class ImageGenerator:
             }
 
         # source_image_path is guaranteed to exist here (validated above)
-        img_data_uri = self._encode_image_to_base64(source_image_path)
-        # Nano Banana schema (expects a list)
-        args["image_urls"] = [img_data_uri]
+        # Multi-image selection: use angle-aware reference images if enabled
+        if self.enable_multi_image and self.reference_manager:
+            selected_images = self.reference_manager.select_images_for_angle(
+                camera_angle=camera_angle,
+                max_images=3,
+            )
+
+            if selected_images:
+                # Encode all selected images to base64
+                image_data_uris = [
+                    self._encode_image_to_base64(str(img_path))
+                    for img_path in selected_images
+                ]
+                args["image_urls"] = image_data_uris
+                logger.info(
+                    f"   Using {len(image_data_uris)} reference images for angle '{camera_angle}'"
+                )
+            else:
+                # Fallback to single image if no images selected
+                logger.warning(
+                    f"   No reference images selected for angle '{camera_angle}', "
+                    "falling back to single source image"
+                )
+                img_data_uri = self._encode_image_to_base64(source_image_path)
+                args["image_urls"] = [img_data_uri]
+        else:
+            # Single image mode (existing behavior)
+            img_data_uri = self._encode_image_to_base64(source_image_path)
+            args["image_urls"] = [img_data_uri]
         if resolved_ar != "original":
             args["aspect_ratio"] = resolved_ar
         # Nano Banana Pro supports explicit resolution (1K/2K/4K). Only send this

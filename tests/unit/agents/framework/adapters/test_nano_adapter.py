@@ -28,11 +28,13 @@ class TestNanoAdapter:
 
     def test_parse_input_ultra_simple(self):
         """Test parsing an ultra-simple prompt."""
+        from src.agents.nano.core.types import PromptCategory, PromptIntent
+
         category, intent = self.adapter.parse_input("Create an ad for our mop")
 
         # Parser returns basic_direction for simple prompts
-        assert category in ["ultra_simple", "basic_direction"]
-        assert intent in ["product_photography", "lifestyle_advertisement"]
+        assert category in [PromptCategory.ULTRA_SIMPLE, PromptCategory.BASIC_DIRECTION]
+        assert intent in [PromptIntent.PRODUCT_PHOTOGRAPHY, PromptIntent.LIFESTYLE_ADVERTISEMENT]
 
     def test_enrich_context(self):
         """Test context enrichment."""

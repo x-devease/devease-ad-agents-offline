@@ -21,7 +21,8 @@ class TestV20PipelineIntegration:
     @pytest.fixture
     def sample_config_dir(self, tmp_path):
         """Create sample customer config."""
-        config_dir = tmp_path / "config" / "ad" / "miner" / "test_customer"
+        # Create platform subdirectory (meta)
+        config_dir = tmp_path / "config" / "ad" / "miner" / "test_customer" / "meta"
         config_dir.mkdir(parents=True)
 
         config = {

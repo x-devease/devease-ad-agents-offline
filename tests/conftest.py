@@ -3,26 +3,16 @@ Pytest configuration and fixtures for tests.
 """
 
 import os
-import shutil
-import tempfile
 from pathlib import Path
 
 
 def pytest_configure(config):
-    """
-    Ensure test configuration files exist before running tests.
-    This is called once at the start of the test session.
-    """
-    # Ensure test customer config files exist
+    """Ensure test configuration files exist before running tests."""
     _ensure_test_configs()
 
 
 def pytest_runtest_setup(item):
-    """
-    Called before each test.
-    Ensure test configs exist before each config test.
-    """
-    # If this is a config manager test, ensure configs exist
+    """Ensure test configs exist before each config test."""
     if "test_manager.py" in str(item.fspath):
         _ensure_test_configs()
 

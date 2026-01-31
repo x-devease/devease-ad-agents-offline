@@ -69,6 +69,21 @@ prompt_building:
 
   # Whether to use nano agent for prompt enhancement
   enable_nano_enhancement: true
+
+# Reference Images: Multi-image product reference configuration
+reference_images:
+  # Enable multi-image generation (up to 3 images per request)
+  enabled: true
+
+  # Directory containing product reference images (shared across platforms)
+  directory: config/moprobo/product
+
+  # Maximum number of reference images to use per generation (1-3 recommended)
+  max_images: 3
+
+  # Fallback to single image if reference directory doesn't exist
+  fallback_to_single_image: true
+
 compositing:
   light_match_mode: soft_light
   light_match_opacity: 0.25

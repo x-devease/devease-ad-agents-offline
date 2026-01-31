@@ -119,7 +119,7 @@ class TemplatePipeline:
     Usage:
         pipeline = TemplatePipeline(
             customer="moprobo",
-            platform="facebook",
+            platform="meta",
             product="Power Station"
         )
         results = pipeline.run(
@@ -182,7 +182,23 @@ class TemplatePipeline:
     def template_selector(self) -> PsychologyTemplateSelector:
         """Lazy initialization of template selector."""
         if self._template_selector is None:
-            self._template_selector = PsychologyTemplateSelector()
+            # Create loader with correct config path
+            from .template_selector import TemplateLoader
+
+            # Construct full config path using config_dir
+            config_path = (
+                self.paths.config_dir /
+                self.config.customer /
+                self.config.platform /
+                "config.yaml"
+            )
+
+            loader = TemplateLoader(
+                customer=self.config.customer,
+                platform=self.config.platform,
+                config_path=config_path
+            )
+            self._template_selector = PsychologyTemplateSelector(loader=loader)
         return self._template_selector
 
     @property
@@ -468,7 +484,7 @@ def generate_ads(
     Example:
         results = generate_ads(
             customer="moprobo",
-            platform="facebook",
+            platform="meta",
             product="Power Station",
             num_variants=3
         )

@@ -165,6 +165,119 @@ class CombinatorialSynthesizer:
 
         return locked
 
+    def extract_individual_features(
+        self,
+        winners_df: pd.DataFrame,
+        losers_df: pd.DataFrame,
+        roas_col: str = "roas",
+        min_confidence: float = 0.70,
+        min_roas_lift: float = 1.3
+    ) -> List[Dict]:
+        """
+        Extract individual feature performance for ALL features.
+
+        Analyzes each feature value to calculate standalone ROAS lift, prevalence,
+        and confidence. This replaces hardcoded individual features with
+        data-driven extraction.
+
+        Args:
+            winners_df: Winner creatives DataFrame
+            losers_df: Loser creatives DataFrame
+            roas_col: Column name for ROAS metric
+            min_confidence: Minimum confidence threshold (0-1)
+            min_roas_lift: Minimum ROAS lift threshold
+
+        Returns:
+            List of individual feature patterns sorted by ROAS lift (descending)
+        """
+        individual_features = []
+
+        # Get all feature columns (exclude metadata columns)
+        exclude_cols = {
+            'ad_id', 'ad_name', 'adset_id', 'campaign_id', 'account_id',
+            'date_start', 'date_stop', 'export_date', 'filename', 'roas',
+            'purchase_roas', 'website_purchase_roas', 'mobile_app_purchase_roas',
+            'spend', 'impressions', 'clicks', 'reach', 'frequency'
+        }
+
+        feature_cols = [col for col in winners_df.columns
+                       if col not in exclude_cols
+                       and winners_df[col].dtype == 'object']
+
+        logger.info(f"Analyzing {len(feature_cols)} feature columns for individual performance")
+
+        total_winners = len(winners_df)
+        total_losers = len(losers_df)
+        avg_winner_roas = winners_df[roas_col].mean()
+        avg_loser_roas = losers_df[roas_col].mean()
+
+        for feature in feature_cols:
+            # Get unique values (categorical)
+            unique_values = winners_df[feature].dropna().unique()
+
+            if len(unique_values) == 0:
+                continue
+
+            for value in unique_values:
+                # Calculate prevalence in winners
+                winners_with_value = winners_df[winners_df[feature] == value]
+                winner_prevalence = len(winners_with_value) / total_winners if total_winners > 0 else 0
+
+                # Calculate prevalence in losers
+                losers_with_value = losers_df[losers_df[feature] == value]
+                loser_prevalence = len(losers_with_value) / total_losers if total_losers > 0 else 0
+
+                # Skip if not enough samples
+                if len(winners_with_value) < 10:
+                    continue
+
+                # Calculate ROAS lift for this feature value
+                value_avg_roas = winners_with_value[roas_col].mean()
+                roas_lift = value_avg_roas / avg_winner_roas if avg_winner_roas > 0 else 1.0
+
+                # Calculate confidence based on prevalence difference
+                prevalence_lift = winner_prevalence - loser_prevalence
+                confidence = min(0.95, 0.5 + prevalence_lift)  # Scale to 0-1
+
+                # Skip if below thresholds
+                if confidence < min_confidence or roas_lift < min_roas_lift:
+                    continue
+
+                # Calculate sample count
+                sample_count = len(winners_with_value)
+
+                # Build individual feature pattern
+                individual_feature = {
+                    "feature": feature,
+                    "value": value,
+                    "pattern_type": "DO",
+                    "individual_roas_lift": round(roas_lift, 2),
+                    "individual_roas_pct": round((roas_lift - 1) * 100, 1),
+                    "winner_prevalence": round(winner_prevalence, 3),
+                    "loser_prevalence": round(loser_prevalence, 3),
+                    "prevalence_lift": round(prevalence_lift, 3),
+                    "confidence": round(confidence, 2),
+                    "reason": (
+                        f"{value} appears in {winner_prevalence*100:.1f}% of winners vs "
+                        f"{loser_prevalence*100:.1f}% of losers. "
+                        f"{roas_lift:.1f}x ROAS lift when used standalone."
+                    ),
+                    "priority_score": round(roas_lift * 5, 1),
+                    "sample_count": sample_count
+                }
+
+                individual_features.append(individual_feature)
+
+        # Sort by ROAS lift (descending)
+        individual_features.sort(key=lambda x: x["individual_roas_lift"], reverse=True)
+
+        logger.info(
+            f"Extracted {len(individual_features)} individual feature patterns "
+            f"(confidence >= {min_confidence}, ROAS lift >= {min_roas_lift})"
+        )
+
+        return individual_features
+
     def generate_locked_combinations(
         self,
         winners_df: pd.DataFrame,

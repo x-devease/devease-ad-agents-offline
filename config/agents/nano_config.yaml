@@ -1,0 +1,69 @@
+# Nano Banana Pro Prompt Enhancement Agent Configuration
+
+# Agent settings
+agent:
+  enable_thinking: true  # Generate thinking blocks by default
+  default_resolution: "2K"  # Default output resolution
+  quality_threshold: 0.6  # Minimum confidence score to accept output
+
+# Product database (mock - in production this would be a real database)
+products:
+  moprobo mop:
+    name: "moprobo mop"
+    category: "cleaning_tools"
+    key_features:
+      - "360° rotating head"
+      - "Built-in spray mechanism"
+      - "Microfiber bristles"
+      - "Ergonomic handle"
+      - "Lightweight design"
+    materials:
+      - "microfiber"
+      - "plastic"
+      - "metal"
+    colors:
+      - "red"
+      - "black"
+      - "white"
+    brand_colors:
+      - "#FF0000"
+      - "#000000"
+      - "#FFFFFF"
+
+# Brand guidelines database
+brands:
+  moprobo:
+    brand_name: "moprobo"
+    primary_colors:
+      - "#FF0000"
+      - "#000000"
+    secondary_colors:
+      - "#FFFFFF"
+      - "#333333"
+    typography_system: "Clean, modern sans-serif (Inter, Roboto, or Arial)"
+    visual_language: "Clean, modern, technical precision with professional photography style"
+    logo_requirements: "Logo should be clearly visible, top-right or top-left, 5-8% of image width"
+
+# Technique priorities (lower number = higher priority)
+technique_priority:
+  natural_language: 1
+  text_rendering: 2
+  character_consistency: 2
+  physics_understanding: 3
+  dimensional_translation: 3
+  search_grounding: 4
+  storyboarding: 4
+  structural_control: 5
+
+# Quality verification thresholds
+quality:
+  min_prompt_length: 100  # Minimum characters
+  min_techniques: 1      # Minimum number of techniques to apply
+  max_technical_keywords: 3  # Maximum technical keywords before flagged
+
+# Output formatting
+output:
+  include_thinking_block: true
+  include_technical_specs: true
+  include_constraints: true
+  include_metadata: true

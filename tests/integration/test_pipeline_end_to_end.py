@@ -9,6 +9,7 @@ from pathlib import Path
 import yaml
 from PIL import Image
 import shutil
+import uuid
 
 from src.meta.ad.generator.template_system.pipeline import (
     TemplatePipeline,
@@ -17,16 +18,36 @@ from src.meta.ad.generator.template_system.pipeline import (
 )
 
 
+@pytest.fixture(autouse=True)
+def cleanup_test_artifacts():
+    """Clean up any test artifacts before and after tests."""
+    # Cleanup before tests
+    config_dir = Path("config")
+    for item in config_dir.glob("test_*"):
+        if item.is_dir():
+            shutil.rmtree(item)
+
+    yield
+
+    # Cleanup after tests
+    for item in config_dir.glob("test_*"):
+        if item.is_dir():
+            shutil.rmtree(item)
+
+
 @pytest.fixture
 def full_test_environment(tmp_path):
     """Create complete test environment with all required files."""
-    # Create directory structure
-    config_base = tmp_path / "config"
-    config_base.mkdir(parents=True)
+    # Use UUID to ensure unique test customer name
+    test_customer_id = f"test_{uuid.uuid4().hex[:8]}"
 
-    # Customer config directory
-    customer_config = config_base / "test_customer" / "facebook"
-    customer_config.mkdir(parents=True)
+    # Create directory structure (use resolve() to get absolute path)
+    config_base = (tmp_path / "config").resolve()
+    config_base.mkdir(parents=True, exist_ok=True)
+
+    # Customer config directory (using unique ID)
+    customer_config = config_base / test_customer_id / "facebook"
+    customer_config.mkdir(parents=True, exist_ok=True)
 
     # Create products directory
     products_dir = customer_config / "products"
@@ -43,7 +64,7 @@ def full_test_environment(tmp_path):
     blueprint = {
         "metadata": {
             "schema_version": "2.0",
-            "customer": "test_customer",
+            "customer": test_customer_id,
             "product": "Test Product",
             "branch": "US",
             "campaign_goal": "conversion"
@@ -176,7 +197,7 @@ def full_test_environment(tmp_path):
         yaml.dump(blueprint, f)
 
     # Create results directory
-    results_dir = tmp_path / "results" / "test_customer" / "facebook"
+    results_dir = tmp_path / "results" / test_customer_id / "facebook"
     results_dir.mkdir(parents=True)
 
     return {
@@ -186,7 +207,8 @@ def full_test_environment(tmp_path):
         "blueprint_path": blueprint_path,
         "campaign_path": campaign_path,
         "results_dir": results_dir,
-        "tmp_path": tmp_path
+        "tmp_path": tmp_path,
+        "test_customer_id": test_customer_id  # For test assertions
     }
 
 
@@ -200,7 +222,7 @@ class TestPipelineEndToEnd:
 
         # Create pipeline config with custom paths
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             num_variants=1,
@@ -212,7 +234,7 @@ class TestPipelineEndToEnd:
 
         pipeline = TemplatePipeline(config)
 
-        assert pipeline.config.customer == "test_customer"
+        assert pipeline.config.customer == env["test_customer_id"]
         assert pipeline.config.platform == "facebook"
 
     def test_pipeline_loads_configs(self, full_test_environment):
@@ -220,7 +242,7 @@ class TestPipelineEndToEnd:
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             num_variants=1,
@@ -236,14 +258,14 @@ class TestPipelineEndToEnd:
 
         assert pipeline._master_blueprint is not None
         assert pipeline._campaign_content is not None
-        assert pipeline._master_blueprint["metadata"]["customer"] == "test_customer"
+        assert pipeline._master_blueprint["metadata"]["customer"] == env["test_customer_id"]
 
     def test_pipeline_selects_template(self, full_test_environment):
         """Test pipeline selects template based on psychology."""
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             num_variants=1,
@@ -266,7 +288,7 @@ class TestPipelineEndToEnd:
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             num_variants=1,
@@ -289,7 +311,7 @@ class TestPipelineEndToEnd:
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             num_variants=1,
@@ -338,7 +360,7 @@ class TestPipelineDataFlow:
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             config_dir=env["config_base"],
@@ -357,7 +379,7 @@ class TestPipelineDataFlow:
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             config_dir=env["config_base"],
@@ -381,7 +403,7 @@ class TestPipelinePerformance:
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             num_variants=5,
@@ -416,7 +438,7 @@ class TestPipelineWithBackgrounds:
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Test Product",
             num_variants=1,
@@ -436,7 +458,7 @@ class TestPipelineErrorHandling:
     def test_pipeline_handles_missing_blueprint(self, tmp_path):
         """Test pipeline handles missing blueprint gracefully."""
         config = PipelineConfig(
-            customer="nonexistent",
+            customer="missing_customer",
             platform="facebook",
             product="Nonexistent Product",
             config_dir=tmp_path / "config",
@@ -454,7 +476,7 @@ class TestPipelineErrorHandling:
         env = full_test_environment
 
         config = PipelineConfig(
-            customer="test_customer",
+            customer=env["test_customer_id"],
             platform="facebook",
             product="Missing Product",
             config_dir=env["config_base"],
@@ -492,7 +514,7 @@ class TestPipelineMetadata:
         result = PipelineResult(
             generated_images=[(image, metadata)],
             metadata={
-                "customer": "test_customer",
+                "customer": env["test_customer_id"],
                 "platform": "facebook",
                 "product": "Test Product",
                 "num_variants": 1
@@ -500,5 +522,5 @@ class TestPipelineMetadata:
         )
 
         assert len(result.generated_images) == 1
-        assert result.metadata["customer"] == "test_customer"
+        assert result.metadata["customer"] == env["test_customer_id"]
         assert result.metadata["num_variants"] == 1

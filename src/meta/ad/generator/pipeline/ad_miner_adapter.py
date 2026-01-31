@@ -172,11 +172,11 @@ def convert_patterns_to_visual_formula(
             "low_performer_pct": low_pct * 100,
             "reason": rec.get("reason", f"Present in {low_pct:.1%} of bottom performers"),
         })
-    
+
     # Build visual formula
-    current_roas = recommendations_data.get("current_roas", 0.0)
-    predicted_roas = recommendations_data.get("predicted_roas", current_roas)
-    
+    current_roas = patterns_data.get("current_roas", 0.0)
+    predicted_roas = patterns_data.get("predicted_roas", current_roas)
+
     visual_formula = {
         "entrance_features": entrance_features,
         "headroom_features": headroom_features,

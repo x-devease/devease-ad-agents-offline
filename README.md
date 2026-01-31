@@ -1,13 +1,14 @@
 # Ads Autopilot
 
-Comprehensive ad management system for Meta Ads with 4 major components:
+Comprehensive ad management system for Meta Ads with 5 major components:
 
 1. **Ad Miner** (`src/meta/ad/miner/`) - Creative recommendation engine using statistical pattern detection
 2. **Ad Generator** (`src/meta/ad/generator/`) - Creative image generation using FAL.ai
 3. **Adset Allocator** (`src/meta/adset/allocator/`) - Budget allocation engine with Bayesian-optimized parameters
 4. **Adset Generator** (`src/meta/adset/generator/`) - Audience configuration engine with historical validation
+5. **Nano Banana Pro Agent** (`src/agents/nano/`) - Prompt enhancement agent for high-fidelity creative generation
 
-The system uses rules-based approaches to analyze 21+ features across ad, adset, campaign, and account levels. Workflow: Extract Creative Features → Generate Recommendations → Generate Images → Generate Audience Configs → Allocate Budget.
+The system uses rules-based approaches to analyze 21+ features across ad, adset, campaign, and account levels. Workflow: Enhance Prompts → Extract Creative Features → Generate Recommendations → Generate Images → Generate Audience Configs → Allocate Budget.
 
 ## Prerequisites
 ```bash
@@ -25,7 +26,23 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-# Extract features
+# ===== Nano Banana Pro Agent - Prompt Enhancement =====
+
+# Transform generic prompt into high-fidelity NB Pro prompt (simple mode)
+python3 run.py nano enhance --prompt "Create an ad for our mop"
+
+# Full enhancement with metadata and thinking block
+python3 run.py nano full --prompt "Show our mop in action" --enable-thinking
+
+# Run predefined examples (1-5)
+python3 run.py nano example --example 1
+
+# Run unit tests
+python3 run.py nano test
+
+# ===== Adset Allocator - Budget Management =====
+
+# Extract features from raw Meta ads data
 python3 run.py extract --customer {customer}
 
 # Budget allocation (rules-based with Bayesian-tuned parameters)
@@ -37,14 +54,20 @@ python3 run.py tune --customer {customer} --iterations 100
 # Discover patterns from data (decision trees)
 python3 run.py discover --customer {customer}
 
+# ===== Adset Generator - Audience Configuration =====
+
 # Run rules-based audience configuration pipeline
 python3 run.py rules --customer {customer} --platform {platform}
+
+# ===== Ad Miner - Creative Intelligence =====
 
 # Extract features from images using GPT-4 Vision API
 python3 run.py extract-features --ad-data-csv data/ad_data.csv --output-csv data/features_with_roas.csv
 
 # Generate creative recommendations from feature data
 python3 run.py recommend --input-csv data/features_with_roas.csv --output-dir config/recommendations/{customer}/{platform}
+
+# ===== Ad Generator - Creative Production =====
 
 # Generate prompts from recommendations
 python3 run.py --customer {customer} --platform {platform} prompt structured --base-prompt "A professional product image"
@@ -54,6 +77,8 @@ python3 run.py --customer {customer} --platform {platform} generate --source-ima
 
 # Run end-to-end pipeline (recommendations → prompts → images)
 python3 run.py --customer {customer} --platform {platform} run --source-image product.jpg --base-prompt "A professional product image" --num-variations 3
+
+# ===== General =====
 
 # Get help
 python3 run.py --help
@@ -66,6 +91,25 @@ python3 run.py {command} --help
 .
 ├── run.py                       # Main entry point
 ├── src/
+│   ├── agents/                  # AI Agents
+│   │   └── nano/                # Nano Banana Pro Prompt Enhancement Agent
+│   │       ├── core/            # Core agent functionality
+│   │       │   ├── agent.py     # Main PromptEnhancementAgent class
+│   │       │   ├── types.py     # Data classes and types
+│   │       │   ├── context_enrichment.py # Product/brand context enrichment
+│   │       │   ├── thinking_engine.py # Strategic thinking & technique selection
+│   │       │   └── quality_verifier.py # Quality checks
+│   │       ├── parsers/         # Input parsing
+│   │       │   └── input_parser.py # Intent detection & categorization
+│   │       ├── techniques/      # NB Pro techniques
+│   │       │   └── orchestrator.py # Applies 8 NB Pro techniques
+│   │       ├── formatters/      # Output formatting
+│   │       │   ├── natural_language_builder.py # Conversational prompt building
+│   │       │   ├── technical_specs.py # Resolution, lighting, camera specs
+│   │       │   ├── guards.py    # Anti-hallucination constraints
+│   │       │   └── output_formatter.py # Final assembly
+│   │       ├── examples.py      # 5 usage examples
+│   │       └── __init__.py      # Public API exports
 │   ├── config/                  # Configuration management (shared)
 │   │   ├── path_manager.py      # Platform-aware path resolution
 │   │   ├── manager.py           # Configuration loading & validation
@@ -160,6 +204,9 @@ python3 run.py {command} --help
 │   ├── {customer}/{platform}/   # Shared customer/platform config
 │   │   ├── config.yaml          # SHARED config (miner + generator + reviewer)
 │   │   └── patterns.yaml        # Ad miner output patterns
+│   ├── agents/                  # Agent configurations
+│   │   └── nano/                # Nano Banana Pro Agent config
+│   │       └── nano_config.yaml # Agent configuration, product & brand databases
 │   ├── adset/                   # Adset module configs
 │   │   ├── allocator/          # Budget allocation configs
 │   │   │   ├── rules.yaml      # Default allocator rules
@@ -198,7 +245,9 @@ python3 run.py {command} --help
 │       ├── rules/               # Rules-based allocation results
 │       └── recommendations/      # Audience recommendations
 └── tests/                       # Unit & integration tests (all at root level)
-    ├── unit/                    # Unit tests (44 test files)
+    ├── unit/                    # Unit tests (44+ test files)
+    │   ├── agents/              # Agent tests
+    │   │   └── nano/            # Nano agent tests
     │   ├── ad/                  # Ad-level module tests
     │   │   └── miner/           # Ad miner tests
     │   ├── adset/               # Adset module tests

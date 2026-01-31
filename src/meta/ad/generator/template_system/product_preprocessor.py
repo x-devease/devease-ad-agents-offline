@@ -305,7 +305,7 @@ if __name__ == "__main__":
     # Print info
     print(f"\nPreprocessing Results:")
     print(f"  Original size: {result.original_size[0]}x{result.original_size[1]}")
-    print(f"  Trimmed size: {result.trimed_image.width}x{result.trimmed_image.height}")
+    print(f"  Trimmed size: {result.trimmed_image.width}x{result.trimmed_image.height}")
     print(f"  Bounding box: x={result.bbox[0]}, y={result.bbox[1]}, w={result.bbox[2]}, h={result.bbox[3]}")
     print(f"  Perspective: {result.perspective.value}")
 

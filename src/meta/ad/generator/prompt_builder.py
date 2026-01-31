@@ -293,8 +293,13 @@ class PromptBuilder:
         """
         prompt_parts = []
 
-        # Product context
-        product = "Professional power station"
+        # Product context - read from patterns metadata
+        metadata = self.patterns.get("metadata", {})
+        product_name = metadata.get("product", "product")
+        customer = metadata.get("customer", "")
+
+        # Format product name (capitalize first letter)
+        product = product_name.capitalize() if product_name else "Product"
 
         # Surface material
         if "surface_material" in features:

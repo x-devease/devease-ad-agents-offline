@@ -110,7 +110,8 @@ class AdMiner:
     def extract_winners_and_losers(
         self,
         df: pd.DataFrame,
-        winner_quantile: Optional[float] = None
+        winner_quantile: Optional[float] = None,
+        loser_quantile: Optional[float] = None
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Extract winner and loser creatives based on quantile.
@@ -118,6 +119,7 @@ class AdMiner:
         Args:
             df: Creative features DataFrame
             winner_quantile: Winner quantile threshold (uses determined if None)
+            loser_quantile: Loser quantile threshold (auto-calculated as 1-winner_quantile if None)
 
         Returns:
             (winners_df, losers_df)
@@ -125,12 +127,19 @@ class AdMiner:
         if winner_quantile is None:
             winner_quantile = self.determine_winner_quantile()
 
+        # Calculate loser quantile if not provided
+        if loser_quantile is None:
+            loser_quantile = 1 - winner_quantile
+            logger.info(f"Auto-calculated loser quantile: {loser_quantile:.2f} (from winner_quantile {winner_quantile:.2f})")
+        else:
+            logger.info(f"Using configured loser quantile: {loser_quantile:.2f}")
+
         # Calculate quantile threshold
         roas_threshold = df["roas"].quantile(winner_quantile)
 
         # Split into winners and losers
         winners = df[df["roas"] >= roas_threshold].copy()
-        losers = df[df["roas"] < df["roas"].quantile(1 - winner_quantile)].copy()
+        losers = df[df["roas"] < df["roas"].quantile(loser_quantile)].copy()
 
         # Validate sample size
         min_sample_size = self.strategy_selector.get_min_sample_size(
@@ -176,13 +185,17 @@ class AdMiner:
 
     def run(
         self,
-        df: pd.DataFrame
+        df: pd.DataFrame,
+        winner_quantile: Optional[float] = None,
+        loser_quantile: Optional[float] = None
     ) -> Tuple[float, pd.DataFrame, pd.DataFrame, Dict[str, List]]:
         """
         Run complete mining pipeline.
 
         Args:
             df: Creative features DataFrame
+            winner_quantile: Optional manual winner quantile override
+            loser_quantile: Optional manual loser quantile override (auto-calculated if None)
 
         Returns:
             (winner_quantile, winners_df, losers_df, raw_tags)
@@ -190,10 +203,11 @@ class AdMiner:
         logger.info("Starting Stage 1: The Miner")
 
         # Determine winner quantile
-        winner_quantile = self.determine_winner_quantile()
+        if winner_quantile is None:
+            winner_quantile = self.determine_winner_quantile()
 
         # Extract winners and losers
-        winners, losers = self.extract_winners_and_losers(df, winner_quantile)
+        winners, losers = self.extract_winners_and_losers(df, winner_quantile, loser_quantile)
 
         # Extract raw tags from winners
         raw_tags = self.extract_raw_tags(winners)

@@ -258,7 +258,7 @@ class NanoBackgroundGenerator:
         save_images: bool = True,
     ) -> List[GeneratedBackground]:
         """
-        Generate a batch of background images.
+        Generate a batch of background images using FAL API.
 
         Args:
             prompt: BackgroundPrompt with perspective injection
@@ -268,10 +268,6 @@ class NanoBackgroundGenerator:
 
         Returns:
             List of GeneratedBackground objects
-
-        Note:
-            This is a placeholder implementation. The actual image generation
-            API integration should be implemented based on your specific API.
         """
         gen_config = config or self.config
 
@@ -282,40 +278,105 @@ class NanoBackgroundGenerator:
         logger.debug(f"Prompt: {final_prompt[:200]}...")
         logger.debug(f"Config: model={gen_config.model}, steps={gen_config.steps}, cfg={gen_config.cfg_scale}")
 
-        # Placeholder: In actual implementation, call image generation API here
-        # Example API call structure:
-        # response = api.generate(
-        #     prompt=final_prompt,
-        #     negative_prompt=prompt.negative_prompt,
-        #     num_images=gen_config.batch_size,
-        #     steps=gen_config.steps,
-        #     cfg_scale=gen_config.cfg_scale,
-        #     aspect_ratio=gen_config.aspect_ratio,
-        # )
-
-        # For now, return empty list (implement actual API call)
-        logger.warning(
-            "Background generation is a placeholder. "
-            "Implement actual API integration with NanoBanana Pro."
-        )
-
         results: List[GeneratedBackground] = []
 
-        # TODO: Implement actual API call
-        # Pseudo-code:
-        # for i in range(gen_config.batch_size):
-        #     image = response.images[i]
-        #     result = GeneratedBackground(
-        #         image=image,
-        #         prompt=final_prompt,
-        #         index=i,
-        #         perspective=prompt.perspective,
-        #     )
-        #     results.append(result)
-        #
-        #     if save_images and output_dir:
-        #         image_path = output_dir / f"background_{i+1:03d}.png"
-        #         image.save(image_path)
+        try:
+            # Import ImageGenerator from core module
+            from ...core.generation.generator import ImageGenerator
+
+            # Create output directory if needed
+            if save_images and output_dir:
+                output_dir.mkdir(parents=True, exist_ok=True)
+
+            # For text-to-image background generation, we need a source image
+            # Use a blank/placeholder image since we're doing text-to-image
+            import tempfile
+            from PIL import Image
+
+            # Create a temporary blank image as source
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                blank_img = Image.new("RGB", (1024, 1024), (240, 240, 240))
+                blank_img.save(tmp.name)
+                source_image_path = tmp.name
+
+            # Initialize ImageGenerator
+            generator = ImageGenerator(
+                model=gen_config.model,
+                aspect_ratio=gen_config.aspect_ratio,
+                resolution="2K",  # Use 2K for good quality backgrounds
+                enable_upscaling=False,
+                enable_watermark=False,
+                enable_text_overlay=False,
+                output_dir=str(output_dir) if save_images else None,
+                # Map generation config
+                strength=0.95,  # Low strength since source is blank
+                guidance_scale=gen_config.cfg_scale,
+                num_inference_steps=gen_config.steps,
+            )
+
+            # Generate images - for each batch item
+            batch_size = min(gen_config.batch_size, 5)  # Limit to 5 for practical purposes
+
+            for i in range(batch_size):
+                output_filename = f"background_{i+1:03d}.jpg" if save_images else None
+
+                logger.info(f"Generating background {i+1}/{batch_size}...")
+
+                # Call ImageGenerator
+                result = generator.generate(
+                    prompt=final_prompt,
+                    source_image_path=source_image_path,
+                    output_filename=output_filename,
+                )
+
+                # Clean up temp file
+                import os
+                try:
+                    os.unlink(source_image_path)
+                except:
+                    pass
+
+                if result.get("success"):
+                    # Load generated image
+                    from PIL import Image as PILImage
+                    image_path = result.get("image_path")
+                    if image_path and Path(image_path).exists():
+                        image = PILImage.open(image_path)
+
+                        bg_result = GeneratedBackground(
+                            image=image,
+                            prompt=final_prompt,
+                            index=i,
+                            perspective=prompt.perspective,
+                            metadata={
+                                "model": gen_config.model,
+                                "steps": gen_config.steps,
+                                "cfg_scale": gen_config.cfg_scale,
+                                "aspect_ratio": gen_config.aspect_ratio,
+                            }
+                        )
+                        results.append(bg_result)
+                        logger.info(f"✓ Generated background {i+1}: {image_path}")
+                    else:
+                        logger.warning(f"Background {i+1} generation succeeded but no image path found")
+                else:
+                    error = result.get("error", "Unknown error")
+                    logger.error(f"Failed to generate background {i+1}: {error}")
+
+        except ImportError as e:
+            logger.error(
+                f"Failed to import ImageGenerator: {e}\n"
+                "Please ensure fal_client is installed: pip install fal-client"
+            )
+            logger.warning(
+                "Falling back to placeholder - no backgrounds will be generated"
+            )
+        except Exception as e:
+            logger.error(f"Error generating backgrounds: {e}")
+            import traceback
+            traceback.print_exc()
+
+        logger.info(f"Generated {len(results)} backgrounds (requested {gen_config.batch_size})")
 
         return results
 

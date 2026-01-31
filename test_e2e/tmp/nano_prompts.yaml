@@ -1,0 +1,13 @@
+composer_test:
+  eye_level_prompt: Product on table, luxury home environment, eye-level view, straight-on
+    angle, horizontal perspective
+  high_angle_prompt: Product on table, luxury home environment, top-down view, looking
+    down, 45-degree angle
+  negative_prompt: cartoon, illustration, text, watermark, distorted
+  generation_config:
+    model: nanobanana_pro
+    steps: 8
+    cfg_scale: 3.5
+    batch_size: 20
+    aspect_ratio: '3:4'
+    guidance: perspective_aware

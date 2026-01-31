@@ -21,6 +21,19 @@ def main():
     customer = "moprobo"
     platform = "meta"
 
+    # Load config to get product name
+    config_path = Path(f"config/{customer}/{platform}/config.yaml")
+    product_name = "product"  # Default fallback
+    if config_path.exists():
+        with open(config_path, 'r') as f:
+            config_data = yaml.safe_load(f)
+            product_name = config_data.get("metadata", {}).get("product", "product")
+        print(f"\n📋 Loaded config from: {config_path}")
+        print(f"   Product: {product_name}")
+    else:
+        print(f"\n⚠️  Config not found: {config_path}")
+        print(f"   Using generic product name")
+
     # Load real ad features data
     data_path = Path("datasets/moprobo/meta/features/ad_features.csv")
 
@@ -157,7 +170,7 @@ def main():
             "metadata": {
                 "schema_version": "2.0",
                 "customer": customer,
-                "product": "Power Station",
+                "product": product_name,  # Use product from config.yaml
                 "platform": platform,
                 "branch": "US",
                 "campaign_goal": "conversion",
@@ -572,7 +585,7 @@ def main():
             "metadata": {
                 "schema_version": "2.0",
                 "customer": customer,
-                "product": "Power Station",
+                "product": product_name,  # Use product from config.yaml
                 "platform": platform,
                 "branch": "US",
                 "campaign_goal": "conversion",

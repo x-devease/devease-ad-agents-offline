@@ -9,6 +9,7 @@ import yaml
 import hashlib
 import json
 import re
+import pandas as pd
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass

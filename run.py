@@ -2,7 +2,7 @@
 """
 DevEase Meta Autopilot - Unified CLI
 
-Main entry point for all 4 major components:
+Main entry point for all 5 major components:
 
 1. Adset Allocator (src/adset/allocator/):
    - extract: Feature extraction from raw Meta ads data
@@ -22,6 +22,12 @@ Main entry point for all 4 major components:
    - generate: Generate images with nano-banana models
    - run: End-to-end pipeline (recommendations → prompts → images)
 
+5. Nano Banana Pro Agent (src/agents/nano/):
+   - nano enhance: Transform generic prompts into high-fidelity NB Pro prompts
+   - nano full: Full enhancement with metadata output
+   - nano example: Run predefined examples (1-5)
+   - nano test: Run unit tests
+
 Default approach: Rules-only with Bayesian-optimized parameters from config/adset/allocator/rules.yaml
 
 Usage:
@@ -31,13 +37,19 @@ Usage:
     python run.py tune --customer moprobo --iterations 50
     python run.py discover --customer moprobo
     python run.py rules --customer moprobo --platform meta
-    
+
     # Creative operations
     python run.py extract-features --ad-data-csv data/ad_data.csv --output-csv data/features_with_roas.csv
     python run.py recommend --input-csv data/features_with_roas.csv --output-dir config/ad/miner
     python run.py prompt structured --base-prompt "A professional product image"
     python run.py generate --source-image product.jpg --prompt "Professional product image" --num-variations 3
     python run.py run --source-image product.jpg --base-prompt "A professional product image" --num-variations 3
+
+    # Nano agent operations
+    python run.py nano enhance --prompt "Create an ad for our mop"
+    python run.py nano full --prompt "Show our mop in action" --enable-thinking
+    python run.py nano example --example 1
+    python run.py nano test
 """
 
 import argparse
@@ -79,6 +91,12 @@ Examples:
   python run.py generate --source-image product.jpg --prompt "Professional product image" --num-variations 3
   python run.py run --source-image product.jpg --base-prompt "A professional product image" --num-variations 3
 
+  # Nano Banana Pro Agent
+  python run.py nano enhance --prompt "Create an ad for our mop"
+  python run.py nano full --prompt "Show our mop in action" --enable-thinking
+  python run.py nano example --example 1
+  python run.py nano test
+
 Environment Configuration:
   python run.py execute --customer moprobo --environment development
   python run.py execute --customer moprobo --base-dir /path/to/data
@@ -118,18 +136,21 @@ Environment Configuration:
     _add_execute_subcommand(subparsers)
     _add_tune_subcommand(subparsers)
     _add_discover_subcommand(subparsers)
-    
+
     # 2. Adset Generator
     _add_rules_subcommand(subparsers)
-    
+
     # 3. Ad Miner
     _add_extract_features_subcommand(subparsers)
     _add_recommend_subcommand(subparsers)
-    
+
     # 4. Ad Generator
     _add_prompt_subcommand(subparsers)
     _add_generate_subcommand(subparsers)
     _add_run_subcommand(subparsers)
+
+    # 5. Nano Banana Pro Agent
+    _add_nano_subcommand(subparsers)
 
     args = parser.parse_args()
 
@@ -1391,6 +1412,96 @@ def _cmd_generate(args):
         return 1
 
 
+def _add_nano_subcommand(subparsers):
+    """Add nano subcommand for prompt enhancement agent."""
+    parser = subparsers.add_parser(
+        "nano",
+        help="Nano Banana Pro prompt enhancement",
+        description="""
+Transform generic prompts into high-fidelity Nano Banana Pro prompts.
+
+Modes:
+- enhance: Simple prompt enhancement (returns just the enhanced prompt)
+- full: Full enhancement with all output metadata
+- example: Run predefined examples
+- test: Run unit tests
+
+Examples:
+  python run.py nano enhance --prompt "Create an ad for our mop"
+  python run.py nano full --prompt "Show our mop in action" --enable-thinking
+  python run.py nano example --example 1
+  python run.py nano test
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "mode",
+        choices=["enhance", "full", "example", "test"],
+        help="Nano agent mode",
+    )
+
+    # Shared arguments
+    parser.add_argument(
+        "--prompt",
+        type=str,
+        default=None,
+        help="Generic prompt to enhance",
+    )
+
+    parser.add_argument(
+        "--product-name",
+        type=str,
+        default=None,
+        help="Product name (for context enrichment)",
+    )
+
+    parser.add_argument(
+        "--product-category",
+        type=str,
+        default=None,
+        help="Product category (e.g., cleaning_tools)",
+    )
+
+    parser.add_argument(
+        "--key-features",
+        type=str,
+        nargs="*",
+        default=None,
+        help="Product key features (space-separated)",
+    )
+
+    parser.add_argument(
+        "--enable-thinking",
+        action="store_true",
+        help="Include thinking block in output",
+    )
+
+    parser.add_argument(
+        "--target-audience",
+        type=str,
+        default=None,
+        help="Target audience for the creative",
+    )
+
+    parser.add_argument(
+        "--emotion-goal",
+        type=str,
+        default=None,
+        help="Emotional goal for the creative",
+    )
+
+    parser.add_argument(
+        "--example",
+        type=int,
+        choices=[1, 2, 3, 4, 5],
+        default=None,
+        help="Example number to run (1-5)",
+    )
+
+    parser.set_defaults(func=_cmd_nano)
+
+
 def _add_run_subcommand(subparsers):
     """Add run subcommand for ad generator (end-to-end pipeline)."""
     parser = subparsers.add_parser(
@@ -1458,7 +1569,7 @@ def _cmd_run(args):
     logger.info("=" * 70)
     logger.info("RUN: End-to-End Creative Generation Pipeline")
     logger.info("=" * 70)
-    
+
     try:
         from src.meta.ad.generator.pipeline import CreativePipeline
         from src.meta.ad.generator.pipeline.pipeline import (
@@ -1466,13 +1577,13 @@ def _cmd_run(args):
             RecommendationPaths,
         )
         from pathlib import Path
-        
+
         # Determine recommendation path (ad/miner format)
         # Look in config/ad/miner/{customer}/{platform}
         rec_path = Path(
             f"config/ad/miner/{args.customer}/{args.platform}/recommendations.md"
         )
-        
+
         # Build config with recommendation path
         config = CreativePipelineConfig(
             product_name=args.product_name or args.customer,
@@ -1480,24 +1591,172 @@ def _cmd_run(args):
                 recommendation_path=rec_path if rec_path.exists() else None
             ),
         )
-        
+
         # Initialize pipeline
         pipeline = CreativePipeline(config)
-        
+
         # Run pipeline
         results = pipeline.run(
             source_image_path=args.source_image,
             num_variations=args.num_variations,
         )
-        
+
         logger.info("=" * 70)
         logger.info("SUCCESS: Pipeline complete!")
         logger.info("Generated %d variations", len(results))
         logger.info("=" * 70)
-        
+
         return 0
     except Exception as err:
         logger.exception("Pipeline failed: %s", err)
+        return 1
+
+
+def _cmd_nano(args):
+    """Handle nano command for prompt enhancement agent."""
+    try:
+        from src.agents.nano import PromptEnhancementAgent, enhance_prompt
+        from src.agents.nano.core.types import AgentInput, ProductContext
+
+        if args.mode == "test":
+            # Run unit tests
+            import subprocess
+            logger.info("=" * 70)
+            logger.info("NANO: Running Unit Tests")
+            logger.info("=" * 70)
+
+            result = subprocess.run(
+                ["pytest", "tests/unit/agents/nano/test_agent.py", "-v"],
+                cwd="/Users/anthony/coding/devease-ad-agents-offline"
+            )
+            return result.returncode
+
+        elif args.mode == "example":
+            # Run predefined example
+            from src.agents.nano import examples
+
+            logger.info("=" * 70)
+            logger.info("NANO: Running Example %d", args.example)
+            logger.info("=" * 70)
+
+            example_functions = {
+                1: examples.example_1_ultra_simple,
+                2: examples.example_2_lifestyle,
+                3: examples.example_3_comparative,
+                4: examples.example_4_with_thinking,
+                5: examples.example_5_simple_interface,
+            }
+
+            example_func = example_functions.get(args.example)
+            if example_func:
+                example_func()
+                logger.info("=" * 70)
+                logger.info("SUCCESS: Example %d complete!", args.example)
+                logger.info("=" * 70)
+                return 0
+            else:
+                logger.error("Invalid example number: %d", args.example)
+                return 1
+
+        elif args.mode == "enhance":
+            # Simple enhancement mode
+            if not args.prompt:
+                logger.error("--prompt is required for enhance mode")
+                return 1
+
+            logger.info("=" * 70)
+            logger.info("NANO: Prompt Enhancement (Simple Mode)")
+            logger.info("=" * 70)
+            logger.info("Input: %s", args.prompt)
+
+            enhanced = enhance_prompt(args.prompt)
+
+            logger.info("")
+            logger.info("Enhanced Prompt:")
+            logger.info("-" * 70)
+            logger.info(enhanced)
+            logger.info("-" * 70)
+            logger.info("=" * 70)
+            logger.info("SUCCESS: Enhancement complete!")
+            logger.info("=" * 70)
+
+            return 0
+
+        elif args.mode == "full":
+            # Full enhancement mode with all metadata
+            if not args.prompt:
+                logger.error("--prompt is required for full mode")
+                return 1
+
+            logger.info("=" * 70)
+            logger.info("NANO: Prompt Enhancement (Full Mode)")
+            logger.info("=" * 70)
+            logger.info("Input: %s", args.prompt)
+
+            # Build product context if provided
+            product_context = None
+            if args.product_name:
+                materials = []
+                colors = []
+                if args.key_features:
+                    features_list = list(args.key_features) if isinstance(args.key_features, list) else [args.key_features]
+                else:
+                    features_list = []
+
+                product_context = ProductContext(
+                    name=args.product_name,
+                    category=args.product_category or "product",
+                    key_features=features_list,
+                    materials=materials,
+                    colors=colors,
+                )
+
+            # Create agent input
+            agent_input = AgentInput(
+                generic_prompt=args.prompt,
+                product_context=product_context,
+                enable_thinking=args.enable_thinking,
+                target_audience=args.target_audience,
+                emotion_goal=args.emotion_goal,
+            )
+
+            # Run enhancement
+            agent = PromptEnhancementAgent()
+            output = agent.enhance(agent_input)
+
+            # Display results
+            logger.info("")
+            logger.info("Detected Category: %s", output.detected_category.value)
+            logger.info("Detected Intent: %s", output.detected_intent.value)
+            logger.info("Confidence: %.2f", output.confidence)
+            logger.info("Processing Time: %.2f ms", output.processing_time_ms)
+            logger.info("Techniques Used: %s", ", ".join(output.techniques_used))
+
+            if output.thinking_block and args.enable_thinking:
+                logger.info("")
+                logger.info("Thinking Block:")
+                logger.info("-" * 70)
+                logger.info("Analysis: %s", output.thinking_block.analysis)
+                logger.info("Techniques: %s", ", ".join(output.thinking_block.techniques))
+                logger.info("-" * 70)
+
+            logger.info("")
+            logger.info("Enhanced Prompt:")
+            logger.info("-" * 70)
+            logger.info(output.enhanced_prompt)
+            logger.info("-" * 70)
+            logger.info("=" * 70)
+            logger.info("SUCCESS: Enhancement complete!")
+            logger.info("=" * 70)
+
+            return 0
+
+        else:
+            logger.error("Unknown mode: %s", args.mode)
+            return 1
+
+    except Exception as err:
+        logger.exception("Nano agent failed: %s", err)
         return 1
 
 

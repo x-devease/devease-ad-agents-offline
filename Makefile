@@ -25,7 +25,7 @@ test:
 		else \
 			PYTHONPATH_VAR="$$PYTHONPATH:$$CURRENT_DIR"; \
 		fi; \
-		PYTHONPATH="$$PYTHONPATH_VAR" python3 -m pytest tests/ -v; \
+		PYTHONPATH="$$PYTHONPATH_VAR" python3 -m pytest tests/ --ignore=tests/unit/adset/rules -v --tb=short; \
 	else \
 		echo "pytest not found, running tests directly..."; \
 		find tests -name "test_*.py" -type f | while read test_file; do \

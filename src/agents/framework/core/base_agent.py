@@ -148,12 +148,16 @@ class BaseAgent:
         # Step 9: Store in memory (generic)
         if self.config.enable_memory and quality_check.confidence >= 0.7:
             logger.info("Step 9: Storing in memory...")
+            # Convert enums to strings for JSON serialization
+            category_str = str(category) if hasattr(category, 'value') else category
+            intent_str = str(intent) if hasattr(intent, 'value') else intent
+
             memory_entry = MemoryEntry(
                 input_prompt=agent_input.generic_prompt,
                 enhanced_prompt=final_prompt,
                 domain=self.adapter.domain,
-                detected_category=category,
-                detected_intent=intent,
+                detected_category=category_str,
+                detected_intent=intent_str,
                 confidence=quality_check.confidence,
                 techniques_used=self.adapter._extract_techniques_from_thinking(thinking)
                 if hasattr(self.adapter, "_extract_techniques_from_thinking")

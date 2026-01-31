@@ -269,6 +269,164 @@ class TestMemorySystem:
         stats = self.memory.get_stats()
         assert stats["total_entries"] == 0
 
+    def test_lru_eviction(self):
+        """Test that LRU eviction works when max_entries is exceeded."""
+        # Create memory system with small max
+        small_memory = MemorySystem(
+            memory_db_path=self.temp_db_path, max_entries=3
+        )
+
+        # Add 5 entries
+        for i in range(5):
+            entry = MemoryEntry(
+                input_prompt=f"test input {i}",
+                enhanced_prompt=f"enhanced output {i}",
+                domain="nano",
+                detected_category="ultra_simple",
+                detected_intent="product_photography",
+                confidence=0.8,
+                techniques_used=[],
+            )
+            small_memory.add_entry(entry)
+
+        # Should only have 3 entries (max)
+        stats = small_memory.get_stats()
+        assert stats["total_entries"] == 3
+        assert stats["max_entries"] == 3
+
+    def test_add_feedback(self):
+        """Test adding feedback to a memory entry."""
+        entry = MemoryEntry(
+            input_prompt="test input",
+            enhanced_prompt="enhanced output",
+            domain="nano",
+            detected_category="ultra_simple",
+            detected_intent="product_photography",
+            confidence=0.8,
+            techniques_used=[],
+        )
+        self.memory.add_entry(entry)
+
+        # Add feedback
+        self.memory.add_feedback(entry.entry_id, "This was helpful")
+
+        # Reload and check feedback
+        new_memory = MemorySystem(
+            memory_db_path=self.temp_db_path, max_entries=100
+        )
+        assert len(new_memory.memories) == 1
+        assert new_memory.memories[0].user_feedback == "This was helpful"
+
+    def test_find_similar_no_memories(self):
+        """Test find_similar when no memories exist."""
+        from src.agents.framework.adapters.base import BaseAdapter, AdapterConfig
+
+        class MockAdapter(BaseAdapter):
+            @property
+            def domain(self):
+                return "test"
+
+            def parse_input(self, generic_prompt: str):
+                return "test_category", "test_intent"
+
+            def enrich_context(self, agent_input):
+                return agent_input
+
+            def generate_thinking(self, agent_input, category, intent, examples):
+                return "thinking"
+
+            def build_prompt(self, agent_input, category, intent):
+                return "prompt"
+
+            def apply_techniques(self, prompt, thinking):
+                return prompt
+
+            def refine_prompt(self, prompt, critique, agent_input):
+                return prompt
+
+            def validate_domain_specific(self, prompt):
+                return []
+
+            def compute_similarity(self, prompt1: str, prompt2: str) -> float:
+                return 0.5
+
+        adapter = MockAdapter(AdapterConfig(domain="test"))
+        similar = self.memory.find_similar("test prompt", "nano", adapter, k=3)
+
+        assert similar == []
+
+    def test_find_similar_with_memories(self):
+        """Test find_similar with existing memories."""
+        from src.agents.framework.adapters.base import BaseAdapter, AdapterConfig
+
+        # Add some memories
+        for i in range(3):
+            entry = MemoryEntry(
+                input_prompt=f"test input {i}",
+                enhanced_prompt=f"enhanced output {i}",
+                domain="nano",
+                detected_category="ultra_simple",
+                detected_intent="product_photography",
+                confidence=0.8,  # High enough to be included
+                techniques_used=[],
+            )
+            self.memory.add_entry(entry)
+
+        # Add low confidence entry (should be filtered out)
+        low_entry = MemoryEntry(
+            input_prompt="low confidence input",
+            enhanced_prompt="low confidence output",
+            domain="nano",
+            detected_category="ultra_simple",
+            detected_intent="product_photography",
+            confidence=0.5,  # Too low
+            techniques_used=[],
+        )
+        self.memory.add_entry(low_entry)
+
+        class MockAdapter(BaseAdapter):
+            def __init__(self, compute_sim_func):
+                self.compute_sim_func = compute_sim_func
+                self._domain = "test"
+
+            @property
+            def domain(self):
+                return self._domain
+
+            def parse_input(self, generic_prompt: str):
+                return "test_category", "test_intent"
+
+            def enrich_context(self, agent_input):
+                return agent_input
+
+            def generate_thinking(self, agent_input, category, intent, examples):
+                return "thinking"
+
+            def build_prompt(self, agent_input, category, intent):
+                return "prompt"
+
+            def apply_techniques(self, prompt, thinking):
+                return prompt
+
+            def refine_prompt(self, prompt, critique, agent_input):
+                return prompt
+
+            def validate_domain_specific(self, prompt):
+                return []
+
+            def compute_similarity(self, prompt1: str, prompt2: str) -> float:
+                return self.compute_sim_func(prompt1, prompt2)
+
+        # Mock similarity function
+        def mock_similarity(p1, p2):
+            return 0.9 if "0" in p2 else 0.5
+
+        adapter = MockAdapter(mock_similarity)
+        similar = self.memory.find_similar("test", "nano", adapter, k=2)
+
+        # Should return 2 memories (k=2), filtered by confidence >= 0.7
+        assert len(similar) == 2
+
 
 class TestQualityVerifier:
     """Test QualityVerifier component."""

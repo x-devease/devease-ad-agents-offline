@@ -11,7 +11,8 @@ import os
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../.."))
 
-from src.agents.nano import PromptEnhancementAgent, AgentInput
+from src.agents.nano.core.agent import PromptEnhancementAgent
+from src.agents.nano.core.types import AgentInput
 
 
 def example_1_ultra_simple():
@@ -129,7 +130,7 @@ def example_5_simple_interface():
     print("EXAMPLE 5: Simple Interface")
     print("=" * 80)
 
-    from src.agents.nano import enhance_prompt
+    from src.agents.nano.core.agent import enhance_prompt
 
     enhanced = enhance_prompt("Create a product photo of our mop")
 

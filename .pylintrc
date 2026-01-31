@@ -86,7 +86,8 @@ method-rgx=[a-z_][a-z0-9_]{2,30}$
 ignore-mixin-members=yes
 
 # List of module names for which member attributes should not be checked
-ignored-modules=
+# cv2 (OpenCV) generates false positives - it's a C extension module
+ignored-modules=cv2
 
 # List of classes names for which member attributes should not be checked
 ignored-classes=optparse.Values,thread._local,_thread._local

@@ -36,14 +36,8 @@ def __getattr__(name: str):
     else:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-__all__ = [
-    "PromptEnhancementAgent",
-    "enhance_prompt",
-    "AgentInput",
-    "AgentOutput",
-    "PromptIntent",
-    "PromptCategory",
-]
+# Note: __all__ is not defined because we use lazy imports via __getattr__
+# This avoids circular dependencies with the framework module
 
 # Legacy mode - use legacy implementation to avoid framework bugs
 import os

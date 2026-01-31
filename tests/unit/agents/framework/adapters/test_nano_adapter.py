@@ -30,10 +30,8 @@ class TestNanoAdapter:
         """Test parsing an ultra-simple prompt."""
         category, intent = self.adapter.parse_input("Create an ad for our mop")
 
-        assert category == "ultra_simple" or category in [
-            "ultra_simple",
-            "basic_direction",
-        ]
+        # Parser returns basic_direction for simple prompts
+        assert category in ["ultra_simple", "basic_direction"]
         assert intent in ["product_photography", "lifestyle_advertisement"]
 
     def test_enrich_context(self):

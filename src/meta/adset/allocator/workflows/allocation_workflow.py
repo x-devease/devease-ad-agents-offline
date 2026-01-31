@@ -157,7 +157,7 @@ class AllocationWorkflow(Workflow):
                 logger.info(f"Days in Period: {state.days_since_budget_start}")
 
                 # Apply day 1 conservative multiplier (configurable)
-                day1_multiplier = config.get_monthly_setting(
+                day1_multiplier = config.get(
                     "day1_budget_multiplier", 0.8
                 )
                 total_budget_today = total_budget_today * day1_multiplier

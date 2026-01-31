@@ -265,9 +265,9 @@ class TestAllocationWorkflowAllocateBudget:
 class TestAllocationWorkflowProcessCustomer:
     """Test AllocationWorkflow._process_customer method."""
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_success(
@@ -333,9 +333,9 @@ class TestAllocationWorkflowProcessCustomer:
         assert "avg_roas" in result.data
         assert output_file.exists()
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     def test_process_customer_missing_adset_id(
         self, mock_get_allocations_path, mock_get_adset_path, mock_ensure_dirs, tmp_path
     ):
@@ -367,10 +367,12 @@ class TestAllocationWorkflowProcessCustomer:
         assert result.success is False
         assert "missing 'adset_id' column" in result.message
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
     def test_process_customer_file_not_found(
-        self, mock_get_adset_path, mock_ensure_dirs
+        self, mock_get_adset_path, mock_ensure_dirs, mock_tracker_class, mock_state_class
     ):
         """Test processing with FileNotFoundError."""
         mock_get_adset_path.return_value = Path("/nonexistent/file.csv")
@@ -378,6 +380,7 @@ class TestAllocationWorkflowProcessCustomer:
         workflow = AllocationWorkflow(budget=10000.0)
 
         mock_config = MagicMock()
+        mock_config.get_monthly_setting.return_value = False  # Disable monthly tracking for this test
         with patch.object(workflow, "get_customer_config", return_value=mock_config):
             with patch.object(
                 workflow, "_initialize_allocator", return_value=MagicMock()
@@ -390,9 +393,9 @@ class TestAllocationWorkflowProcessCustomer:
         assert "File not found" in result.message
         assert isinstance(result.error, FileNotFoundError)
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_with_explicit_paths(
@@ -455,9 +458,9 @@ class TestAllocationWorkflowProcessCustomer:
         assert result.success is True
         assert custom_output.exists()
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_calculates_statistics(
@@ -526,10 +529,10 @@ class TestAllocationWorkflowIntegration:
 
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
-    @patch("src.utils.customer_paths.get_all_customers")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     def test_workflow_run_multiple_customers(
         self,
         mock_get_allocations_path,
@@ -611,9 +614,9 @@ class TestAllocationWorkflowIntegration:
 
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     def test_workflow_run_single_customer(
         self,
         mock_get_allocations_path,

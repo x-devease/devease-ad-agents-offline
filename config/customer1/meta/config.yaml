@@ -1,0 +1,41 @@
+# Test customer 1 configuration
+environment: development
+customer: customer1
+platform: meta
+test_mode: false
+verbose: false
+
+# Allocator rules
+allocator_rules:
+  budget_caps:
+    min_budget: 10
+    max_budget: 10000
+  min_spend_threshold: 10
+  min_impressions: 100
+  quality_threshold: 0.5
+  rolling_windows:
+    short_window_days: 7
+    long_window_days: 14
+  performance_quartile_method: loser
+  loser_quantile_threshold: 0.25
+
+# Allocator objectives
+allocator_objectives:
+  optimization_target: purchase_roas
+  constraints:
+    - type: budget
+      value: 1000
+
+# Generator parameters
+generator_parameters:
+  temperature: 0.7
+  max_tokens: 1000
+
+# Paths configuration
+paths:
+  base_dir: .
+  data_dir: datasets
+  results_dir: results
+  logs_dir: logs
+  cache_dir: cache
+  config_dir: config

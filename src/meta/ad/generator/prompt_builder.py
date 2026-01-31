@@ -11,6 +11,14 @@ import logging
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
+# Try to import nano agent for prompt enhancement
+try:
+    from src.agents.nano import enhance_prompt
+    NANO_AGENT_AVAILABLE = True
+except ImportError:
+    NANO_AGENT_AVAILABLE = False
+    enhance_prompt = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,13 +30,14 @@ class PromptBuilder:
     based on combinatorial patterns, individual features, and psychology patterns.
     """
 
-    def __init__(self, patterns_path: Path, config: Optional[Dict] = None):
+    def __init__(self, patterns_path: Path, config: Optional[Dict] = None, use_enhancement: Optional[bool] = None):
         """
         Initialize prompt builder with mined patterns.
 
         Args:
             patterns_path: Path to patterns.yaml from ad miner
-            config: Optional generation config (aspect_ratio, cfg_scale, steps, etc.)
+            config: Optional generation config (aspect_ratio, cfg_scale, steps, etc.) and prompt_building limits
+            use_enhancement: Deprecated - use config['prompt_building']['enable_nano_enhancement'] instead
         """
         import yaml
 
@@ -38,10 +47,47 @@ class PromptBuilder:
 
         self.config = config or self._default_config()
 
+        # Extract prompt building limits from config
+        prompt_building_config = self.config.get('prompt_building', {})
+        self.max_prompts_config = prompt_building_config.get('max_prompts', {})
+
+        # Determine enhancement setting (prefer config, fallback to parameter, default True)
+        if use_enhancement is not None:
+            logger.warning("use_enhancement parameter is deprecated, use config['prompt_building']['enable_nano_enhancement'] instead")
+        enhancement_enabled = prompt_building_config.get('enable_nano_enhancement', True)
+        self.use_enhancement = enhancement_enabled and NANO_AGENT_AVAILABLE
+
+        if self.use_enhancement:
+            logger.info("Nano agent prompt enhancement: ENABLED")
+        elif not NANO_AGENT_AVAILABLE:
+            logger.warning("Nano agent not available, using basic prompts")
+        else:
+            logger.info("Nano agent prompt enhancement: DISABLED")
+
         logger.info(f"Loaded patterns from {patterns_path}")
         logger.info(f"  Combinatorial patterns: {len(self.patterns.get('combinatorial_patterns', []))}")
         logger.info(f"  Individual features: {len(self.patterns.get('individual_features', []))}")
         logger.info(f"  Psychology patterns: {len(self.patterns.get('psychology_patterns', []))}")
+
+        # Log prompt building limits
+        logger.info(f"Prompt building limits from config:")
+        logger.info(f"  Top combination: {self._get_max_prompts('top_combination', default=1)}")
+        logger.info(f"  Supporting combinations: {self._get_max_prompts('supporting_combinations', default=3)}")
+        logger.info(f"  Individual features: {self._get_max_prompts('individual_features', default=5)}")
+        logger.info(f"  Psychology patterns: {self._get_max_prompts('psychology_patterns', default=2)}")
+
+    def _get_max_prompts(self, category: str, default: int = None) -> int:
+        """
+        Get max prompts for a category from config.
+
+        Args:
+            category: Category name (top_combination, supporting_combinations, etc.)
+            default: Default value if not in config
+
+        Returns:
+            Max prompts value from config or default
+        """
+        return self.max_prompts_config.get(category, default if default is not None else 5)
 
     def _default_config(self) -> Dict:
         """Default generation config from moprobo config."""
@@ -101,16 +147,20 @@ class PromptBuilder:
             "generation_config": self.config
         }
 
-    def build_supporting_combination_prompts(self, max_prompts: int = 3) -> List[Dict[str, Any]]:
+    def build_supporting_combination_prompts(self, max_prompts: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Build prompts from supporting combinations.
 
         Args:
-            max_prompts: Maximum number of supporting prompts to generate
+            max_prompts: Maximum number of supporting prompts to generate (overrides config)
 
         Returns:
             List of prompt dicts
         """
+        # Use config value if not overridden
+        if max_prompts is None:
+            max_prompts = self._get_max_prompts('supporting_combinations', default=3)
+
         comb_patterns = self.patterns.get("combinatorial_patterns", [])
         supporting = comb_patterns[1:max_prompts+1]  # Skip first (locked)
 
@@ -137,16 +187,20 @@ class PromptBuilder:
 
         return prompts
 
-    def build_individual_feature_prompts(self, max_prompts: int = 5) -> List[Dict[str, Any]]:
+    def build_individual_feature_prompts(self, max_prompts: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Build prompts from top individual features.
 
         Args:
-            max_prompts: Maximum number of individual feature prompts
+            max_prompts: Maximum number of individual feature prompts (overrides config)
 
         Returns:
             List of prompt dicts
         """
+        # Use config value if not overridden
+        if max_prompts is None:
+            max_prompts = self._get_max_prompts('individual_features', default=5)
+
         ind_features = self.patterns.get("individual_features", [])[:max_prompts]
 
         prompts = []
@@ -338,9 +392,21 @@ class PromptBuilder:
         prompt_parts.append("depth of field")
 
         # Build final prompt
-        prompt = f"{product} " + ", ".join(prompt_parts)
+        base_prompt = f"{product} " + ", ".join(prompt_parts)
 
-        return prompt
+        # Apply nano agent enhancement if enabled
+        if self.use_enhancement:
+            try:
+                logger.debug(f"Enhancing prompt with nano agent...")
+                enhanced_prompt = enhance_prompt(base_prompt)
+                logger.debug(f"Enhancement complete")
+                return enhanced_prompt
+            except Exception as e:
+                logger.warning(f"Nano agent enhancement failed: {e}")
+                logger.warning(f"Falling back to basic prompt")
+                return base_prompt
+
+        return base_prompt
 
     def _extract_psychology_overlay(self, psych_patterns: List[Dict]) -> Dict:
         """

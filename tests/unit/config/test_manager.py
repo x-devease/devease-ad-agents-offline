@@ -213,12 +213,12 @@ class TestConfigManager(TestCase):
 
     def test_get_with_valid_key(self):
         """Test get method with valid key."""
-        manager = ConfigManager(customer=self.customer, platform=self.platform)
+        # Reset singleton to ensure clean state
+        reset_config()
+        manager = ConfigManager(customer=self.customer, platform=self.platform, environment=self.environment)
 
-        # Test top-level key
-        assert (
-            manager.get("environment") == "production"
-        )  # Uses default from _get_system_defaults
+        # Test top-level key - config file value overrides defaults
+        assert manager.get("environment") == "development"  # From config file
         assert manager.get("customer") == self.customer
 
         # Test nested key with dot notation

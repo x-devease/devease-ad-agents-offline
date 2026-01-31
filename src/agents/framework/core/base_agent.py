@@ -176,6 +176,56 @@ class BaseAgent:
             else []
         )
 
+        # Create thinking block object if thinking is available (for backward compatibility)
+        thinking_block_obj = None
+        if thinking and self.adapter.domain == "nano":
+            # Create a ThinkingBlock object from the thinking string
+            from src.agents.nano.core.types import ThinkingBlock
+            # Parse thinking string to extract components
+            lines = thinking.split('\n')
+            analysis = ""
+            techniques = []
+            risks = []
+            mitigation = []
+            context = ""
+            current_section = None
+
+            for line in lines:
+                line = line.strip()
+                if line.startswith("Analysis:"):
+                    current_section = "analysis"
+                    analysis = line.replace("Analysis:", "").strip()
+                elif line.startswith("Techniques to apply:"):
+                    current_section = "techniques"
+                elif line.startswith("Risks:"):
+                    current_section = "risks"
+                elif line.startswith("Mitigation:"):
+                    current_section = "mitigation"
+                elif line.startswith("Context:"):
+                    current_section = "context"
+                    context = line.replace("Context:", "").strip()
+                elif line.startswith("- ") and current_section:
+                    item = line[2:].strip()
+                    if current_section == "techniques":
+                        techniques.append(item)
+                    elif current_section == "risks":
+                        risks.append(item)
+                    elif current_section == "mitigation":
+                        mitigation.append(item)
+                elif current_section == "analysis" and line:
+                    analysis += " " + line
+
+            thinking_block_obj = ThinkingBlock(
+                analysis=analysis.strip(),
+                techniques=techniques,
+                risks=risks,
+                mitigation=mitigation,
+                context=context.strip(),
+            )
+        elif thinking:
+            # For non-nano domains, just store the thinking string
+            thinking_block_obj = thinking
+
         # Create output
         output = AgentOutput(
             enhanced_prompt=final_prompt,
@@ -184,7 +234,7 @@ class BaseAgent:
             confidence=quality_check.confidence,
             processing_time_ms=processing_time_ms,
             techniques_used=techniques_used,
-            thinking_block=None,  # Can be added if needed
+            thinking_block=thinking_block_obj,
         )
 
         logger.info("=" * 70)

@@ -49,6 +49,19 @@ nano_generation_rules:
     atmosphere: luxury home environment
     product_context: product  # Generic - should be configured per customer
   prompt_template_structure: Product on table, {atmosphere}
+
+# Prompt Building: Controls how many prompts to generate for each category
+prompt_building:
+  # Maximum prompts to generate for each pattern category
+  # Set to 0 to disable a category, -1 to use all available patterns
+  max_prompts:
+    top_combination: 1  # Always 1 (the top combination)
+    supporting_combinations: 3  # Number of backup combinations to generate
+    individual_features: 6  # Number of individual feature prompts (use all available)
+    psychology_patterns: 2  # Number of psychology pattern prompts
+
+  # Whether to use nano agent for prompt enhancement
+  enable_nano_enhancement: true
 compositing:
   light_match_mode: soft_light
   light_match_opacity: 0.25

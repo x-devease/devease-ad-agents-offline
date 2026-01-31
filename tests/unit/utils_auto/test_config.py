@@ -55,8 +55,8 @@ class TestConfig:
         assert Config.RANDOM_STATE() == 42
 
     def test_feature_lists_from_config(self):
-        """Test feature lists from YAML config."""
-        numerical = Config.get("features.numerical", [])
-        categorical = Config.get("features.categorical", [])
+        """Test feature lists from Config class methods."""
+        numerical = Config.NUMERICAL_FEATURES()
+        categorical = Config.CATEGORICAL_FEATURES()
         assert isinstance(numerical, list)
         assert isinstance(categorical, list)

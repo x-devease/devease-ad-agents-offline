@@ -193,33 +193,34 @@ class TestPathManager(TestCase):
         assert pm.config_base == expected
 
     def test_rules_config_path(self):
-        """Test rules_config_path method."""
+        """Test rules_config_path method (now uses consolidated config.yaml)."""
         pm = PathManager(customer=self.customer, platform=self.platform)
         result = pm.rules_config_path()
-        assert "rules.yaml" in str(result)
+        assert "config.yaml" in str(result)
         assert self.customer in str(result)
         assert self.platform in str(result)
 
     def test_rules_config_path_custom_filename(self):
         """Test rules_config_path with custom filename."""
         pm = PathManager(customer=self.customer, platform=self.platform)
-        custom_filename = "custom_rules.yaml"
+        custom_filename = "custom_config.yaml"
         result = pm.rules_config_path(filename=custom_filename)
         assert custom_filename in str(result)
 
     def test_system_config_path(self):
-        """Test system_config_path method."""
+        """Test system_config_path method (now uses consolidated config.yaml)."""
         pm = PathManager(customer=self.customer, platform=self.platform)
         result = pm.system_config_path()
-        # Default environment is "default", so returns "default.yaml"
-        assert ".yaml" in str(result)
+        # System config is now consolidated into customer config
+        assert "config.yaml" in str(result)
 
     def test_system_config_path_environment(self):
-        """Test system_config_path with environment."""
+        """Test system_config_path with environment (still uses consolidated config)."""
         pm = PathManager(customer=self.customer, platform=self.platform)
         environment = "development"
         result = pm.system_config_path(environment=environment)
-        assert environment in str(result)
+        # Still uses consolidated config, not environment-specific
+        assert "config.yaml" in str(result)
 
     # === Utility Methods ===
 

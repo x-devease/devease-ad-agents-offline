@@ -242,7 +242,7 @@ class TestWorkflow:
         assert workflow.metrics.successful_customers == 0
         assert workflow.metrics.failed_customers == 1
 
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     @patch("time.time")
     @pytest.mark.skipif(
         os.environ.get("CI") == "true",
@@ -268,7 +268,7 @@ class TestWorkflow:
         os.environ.get("CI") == "true",
         reason="Test mock setup issues in CI, skipped"
     )
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     @patch("time.time")
     def test_workflow_run_all_customers_mixed_results(
         self, mock_time, mock_get_customers
@@ -301,7 +301,7 @@ class TestWorkflow:
         assert workflow.metrics.successful_customers == 2
         assert workflow.metrics.failed_customers == 1
 
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     def test_workflow_run_all_customers_empty_list(self, mock_get_customers):
         """Test running workflow when no customers are found."""
         mock_get_customers.return_value = []
@@ -480,7 +480,7 @@ class TestWorkflow:
             # pylint: disable=abstract-class-instantiated
             Workflow()
 
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     def test_workflow_metrics_tracking_across_runs(self, mock_get_customers):
         """Test that metrics accumulate across multiple runs."""
         mock_get_customers.return_value = ["customer1", "customer2"]
@@ -505,7 +505,7 @@ class TestWorkflow:
         os.environ.get("CI") == "true",
         reason="Test mock setup issues in CI, skipped"
     )
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     def test_workflow_process_all_customers_continues_on_error(
         self, mock_get_customers
     ):

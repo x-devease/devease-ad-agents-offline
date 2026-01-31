@@ -250,6 +250,39 @@ class ConfigManager:
         Returns:
             Configuration value or default
         """
+        return self._get_instance_value(key, default)
+
+    @classmethod
+    def get_class(cls, key: str, default: Any = None) -> Any:
+        """Get a configuration value by key using singleton instance (class method).
+
+        This is a class method for backward compatibility with legacy code.
+        Uses the singleton instance if available, otherwise raises an error.
+
+        Args:
+            key: Configuration key (e.g., 'paths.data_dir')
+            default: Default value if key not found
+
+        Returns:
+            Configuration value or default
+        """
+        # For class-level access, use the singleton or return default
+        try:
+            instance = get_config()
+            return instance._get_instance_value(key, default)
+        except Exception:
+            return default
+
+    def _get_instance_value(self, key: str, default: Any = None) -> Any:
+        """Get a configuration value by key (dot notation supported).
+
+        Args:
+            key: Configuration key (e.g., 'paths.data_dir')
+            default: Default value if key not found
+
+        Returns:
+            Configuration value or default
+        """
         keys = key.split(".")
         value = self._config.model_dump()
 
@@ -312,6 +345,33 @@ class ConfigManager:
     def RANDOM_STATE(cls) -> int:
         """Get random state for reproducibility."""
         return 42
+
+    @classmethod
+    def NUMERICAL_FEATURES(cls) -> list[str]:
+        """Get numerical feature column names."""
+        return [
+            "spend",
+            "impressions",
+            "clicks",
+            "conversions",
+            "purchase_roas",
+            "frequency",
+            "reach",
+            "cost_per_conversion",
+            "cost_per_result",
+            "conversion_rate",
+            "click_through_rate",
+        ]
+
+    @classmethod
+    def CATEGORICAL_FEATURES(cls) -> list[str]:
+        """Get categorical feature column names."""
+        return [
+            "audience_id",
+            "campaign_id",
+            "customer_id",
+            "rfm_segment",
+        ]
 
     @classmethod
     def ensure_directories(cls) -> None:

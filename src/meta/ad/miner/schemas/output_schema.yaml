@@ -1,7 +1,7 @@
 schema:
   version: "2.0"
   name: "mined_patterns"
-  format: "JSON"
+  format: "YAML"
   encoding: "utf-8"
 
 metadata:
@@ -467,42 +467,3 @@ root:
             type: "enum"
             values: ["positive", "negative", "neutral"]
             example: "positive"
-
-    # === GENERATION INSTRUCTIONS SECTION ===
-    generation_instructions:
-      type: "object"
-      required: false
-      description: "Instructions for ad generator"
-
-      properties:
-        must_include:
-          type: "array"
-          description: "Feature names that must be included"
-          items:
-            type: "string"
-          example: ["product_position", "lighting_style"]
-
-        prioritize:
-          type: "array"
-          description: "Feature names to prioritize"
-          items:
-            type: "string"
-          example: ["visual_prominence", "color_balance"]
-
-        avoid:
-          type: "array"
-          description: "Feature names to avoid (can use feature:value format)"
-          items:
-            type: "string"
-          example: ["product_position:top-left", "lighting_style:natural"]
-
-        min_coverage:
-          type: "float"
-          range: [0.0, 1.0]
-          description: "Minimum feature coverage required"
-          example: 0.8
-
-        max_features:
-          type: "integer"
-          description: "Maximum number of features to include"
-          example: 15

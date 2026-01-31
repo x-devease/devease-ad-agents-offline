@@ -1,8 +1,8 @@
-"""JSON I/O and Markdown generator for mined patterns."""
+"""YAML I/O and Markdown generator for mined patterns."""
 
 from pathlib import Path
-from typing import Any, Dict
-import json
+from typing import Any, Dict, Union, List
+import yaml
 import logging
 from datetime import datetime
 
@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 
 class PatternsIO:
     """
-    Handle reading/writing patterns JSON and generating Markdown.
+    Handle reading/writing patterns YAML and generating Markdown.
 
     This class manages:
-    - Saving patterns to JSON with validation
-    - Loading patterns from JSON with validation
-    - Generating human-readable Markdown from JSON
+    - Saving patterns to YAML with validation
+    - Loading patterns from YAML with validation
+    - Generating human-readable Markdown from YAML
     """
 
     def __init__(self, schema_version: str = "2.0"):
@@ -33,31 +33,31 @@ class PatternsIO:
     def save_patterns(
         self,
         patterns_data: Dict[str, Any],
-        json_path: str | Path,
+        yaml_path: Union[str, Path],
         validate: bool = True,
     ) -> bool:
         """
-        Save patterns to JSON file with optional validation.
+        Save patterns to YAML file with optional validation.
 
         Args:
             patterns_data: Dictionary with patterns data
-            json_path: Path to save JSON file
+            yaml_path: Path to save YAML file
             validate: Whether to validate before saving (default: True)
 
         Returns:
             True if successful, False otherwise
         """
-        json_path = Path(json_path)
+        yaml_path = Path(yaml_path)
 
         # Validate if requested
         if validate:
             logger.info("Validating patterns data before saving...")
             # Save to temp file for validation
-            temp_path = json_path.with_suffix('.tmp.json')
+            temp_path = yaml_path.with_suffix('.tmp.yaml')
 
             try:
                 with open(temp_path, 'w') as f:
-                    json.dump(patterns_data, f, indent=2)
+                    yaml.dump(patterns_data, f, default_flow_style=False, sort_keys=False)
 
                 validator = OutputSchemaValidator(temp_path)
                 is_valid = validator.validate()
@@ -77,13 +77,13 @@ class PatternsIO:
                 return False
 
         # Ensure parent directory exists
-        json_path.parent.mkdir(parents=True, exist_ok=True)
+        yaml_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Save JSON
+        # Save YAML
         try:
-            with open(json_path, 'w') as f:
-                json.dump(patterns_data, f, indent=2)
-            logger.info(f"Saved patterns to {json_path}")
+            with open(yaml_path, 'w') as f:
+                yaml.dump(patterns_data, f, default_flow_style=False, sort_keys=False)
+            logger.info(f"Saved patterns to {yaml_path}")
             return True
         except Exception as e:
             logger.error(f"Failed to save patterns: {e}")
@@ -91,30 +91,30 @@ class PatternsIO:
 
     def load_patterns(
         self,
-        json_path: str | Path,
+        yaml_path: Union[str, Path],
         validate: bool = True,
-    ) -> Dict[str, Any] | None:
+    ) -> Union[Dict[str, Any], None]:
         """
-        Load patterns from JSON file with optional validation.
+        Load patterns from YAML file with optional validation.
 
         Args:
-            json_path: Path to JSON file
+            yaml_path: Path to YAML file
             validate: Whether to validate after loading (default: True)
 
         Returns:
             Dictionary with patterns data, or None if loading/validation fails
         """
-        json_path = Path(json_path)
+        yaml_path = Path(yaml_path)
 
-        if not json_path.exists():
-            logger.error(f"JSON file not found: {json_path}")
+        if not yaml_path.exists():
+            logger.error(f"YAML file not found: {yaml_path}")
             return None
 
-        # Load JSON
+        # Load YAML
         try:
-            with open(json_path) as f:
-                patterns_data = json.load(f)
-            logger.info(f"Loaded patterns from {json_path}")
+            with open(yaml_path) as f:
+                patterns_data = yaml.safe_load(f)
+            logger.info(f"Loaded patterns from {yaml_path}")
         except Exception as e:
             logger.error(f"Failed to load patterns: {e}")
             return None
@@ -122,7 +122,7 @@ class PatternsIO:
         # Validate if requested
         if validate:
             logger.info("Validating loaded patterns...")
-            validator = OutputSchemaValidator(json_path)
+            validator = OutputSchemaValidator(yaml_path)
             is_valid = validator.validate()
 
             if not is_valid:
@@ -145,7 +145,7 @@ class PatternsIO:
     def generate_markdown(
         self,
         patterns_data: Dict[str, Any],
-        md_path: str | Path | None = None,
+        md_path: Union[Union[str, Path], None] = None,
     ) -> str:
         """
         Generate human-readable Markdown from patterns JSON.
@@ -260,27 +260,6 @@ class PatternsIO:
                 md_lines.append(f"- **Reason:** {reason}")
                 md_lines.append("")
 
-        # Generation Instructions Section
-        gen_instructions = patterns_data.get('generation_instructions')
-        if gen_instructions:
-            md_lines.append("## Generation Instructions")
-            md_lines.append("")
-
-            must_include = gen_instructions.get('must_include')
-            if must_include:
-                md_lines.append(f"**Must Include:** {', '.join(must_include)}")
-                md_lines.append("")
-
-            prioritize = gen_instructions.get('prioritize')
-            if prioritize:
-                md_lines.append(f"**Prioritize:** {', '.join(prioritize)}")
-                md_lines.append("")
-
-            avoid = gen_instructions.get('avoid')
-            if avoid:
-                md_lines.append(f"**Avoid:** {', '.join(avoid)}")
-                md_lines.append("")
-
         # Footer
         md_lines.append("---")
         md_lines.append("")
@@ -307,7 +286,7 @@ class PatternsIO:
     def generate_and_save_markdown(
         self,
         patterns_data: Dict[str, Any],
-        md_path: str | Path,
+        md_path: Union[str, Path],
     ) -> bool:
         """
         Generate and save markdown in one step.
@@ -327,47 +306,47 @@ class PatternsIO:
             return False
 
 
-def load_patterns_json(
-    json_path: str | Path,
+def load_patterns_yaml(
+    yaml_path: Union[str, Path],
     validate: bool = True,
-) -> Dict[str, Any] | None:
+) -> Union[Dict[str, Any], None]:
     """
-    Convenience function to load patterns JSON.
+    Convenience function to load patterns YAML.
 
     Args:
-        json_path: Path to JSON file
+        yaml_path: Path to YAML file
         validate: Whether to validate
 
     Returns:
         Dictionary with patterns data or None
     """
     io = PatternsIO()
-    return io.load_patterns(json_path, validate=validate)
+    return io.load_patterns(yaml_path, validate=validate)
 
 
-def save_patterns_json(
+def save_patterns_yaml(
     patterns_data: Dict[str, Any],
-    json_path: str | Path,
+    yaml_path: Union[str, Path],
     validate: bool = True,
 ) -> bool:
     """
-    Convenience function to save patterns JSON.
+    Convenience function to save patterns YAML.
 
     Args:
         patterns_data: Dictionary with patterns data
-        json_path: Path to save JSON file
+        yaml_path: Path to save YAML file
         validate: Whether to validate before saving
 
     Returns:
         True if successful, False otherwise
     """
     io = PatternsIO()
-    return io.save_patterns(patterns_data, json_path, validate=validate)
+    return io.save_patterns(patterns_data, yaml_path, validate=validate)
 
 
 def generate_patterns_markdown(
     patterns_data: Dict[str, Any],
-    md_path: str | Path | None = None,
+    md_path: Union[Union[str, Path], None] = None,
 ) -> str:
     """
     Convenience function to generate markdown.

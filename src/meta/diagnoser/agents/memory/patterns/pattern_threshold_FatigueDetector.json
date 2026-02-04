@@ -1,0 +1,19 @@
+{
+  "pattern_id": "pattern_threshold_FatigueDetector",
+  "name": "\u6e10\u8fdb\u5f0f\u9608\u503c\u4f18\u5316",
+  "description": "\u8c03\u6574FatigueDetector\u7684\u9608\u503c\u53c2\u6570",
+  "applicable_detectors": [
+    "FatigueDetector"
+  ],
+  "success_rate": 1.0,
+  "steps": [
+    "1. \u8bc6\u522b\u9700\u8981\u8c03\u6574\u7684\u9608\u503c\u53c2\u6570",
+    "2. \u5c0f\u5e45\u8c03\u6574\uff085-10%\uff09",
+    "3. \u9a8c\u8bc1precision\u4e0d\u4e0b\u964d\u8d85\u8fc75%",
+    "4. \u5982\u679c\u6210\u529f\uff0c\u56fa\u5b9a\u8be5\u53c2\u6570"
+  ],
+  "examples": [
+    "exp_FatigueDetector_20260203_204218"
+  ],
+  "timestamp": "2026-02-03T20:42:18.736970"
+}

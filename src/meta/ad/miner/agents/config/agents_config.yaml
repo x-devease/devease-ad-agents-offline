@@ -1,0 +1,114 @@
+# Ad Miner Agents Configuration
+# Global settings for all agents
+
+system:
+  name: "ad_miner_agents"
+  version: "1.0.0"
+  environment: "development"  # development, staging, production
+
+# Orchestrator settings
+orchestrator:
+  max_iterations_per_cycle: 10
+  cycle_timeout_seconds: 3600  # 1 hour max per cycle
+  enable_auto_merge: false  # Auto-merge PRs if all agents approve
+  log_level: "INFO"
+
+# PM Agent settings
+pm_agent:
+  default_priority: "medium"
+  max_concurrent_experiments: 3
+  parameter_bounds:
+    winner_quantile: [0.70, 0.95]
+    loser_quantile: [0.05, 0.30]
+    confidence_threshold: [0.50, 0.90]
+    min_sample_size: [30, 200]
+
+# Memory Agent settings
+memory_agent:
+  vector_store:
+    type: "chromadb"  # chromadb, pinecone, weaviate
+    collection_name: "experiments"
+    persist_directory: "data/agent_memory"
+
+  search:
+    default_top_k: 5
+    semantic_similarity_threshold: 0.7
+    cache_ttl_seconds: 3600
+
+  retention:
+    max_experiments: 10000
+    archive_after_days: 365
+
+# Judge Agent settings
+judge_agent:
+  evaluation:
+    golden_set_path: "config/golden_set.json"
+    bad_cases_path: "data/bad_cases.json"
+
+  thresholds:
+    min_lift_score: 5.0  # 5% minimum improvement
+    max_regression_rate: 2.0  # Max 2% regression
+    statistical_significance: 0.05  # p < 0.05
+    max_complexity_increase: 0.20  # 20% max complexity increase
+    min_test_coverage: 0.80  # 80% min test coverage
+
+  backtesting:
+    test_size_ratio: 0.2  # 20% for testing
+    cross_validation_folds: 5
+    bootstrap_samples: 1000
+
+# Coder Agent settings (TODO)
+coder_agent:
+  max_files_per_pr: 5
+  require_tests: true
+  forbidden_patterns:
+    - "if id == 'x': return 'y'"  # No hardcoding
+    - "import pytest; pytest.skip()"  # No skipping tests
+
+# Reviewer Agent settings (TODO)
+reviewer_agent:
+  enable_security_scan: true
+  enable_bias_check: true
+  architecture_compliance: true
+
+# Monitor Agent settings (TODO)
+monitor_agent:
+  alert_channels:
+    - type: "log"
+      severity: "info"
+    - type: "slack"
+      severity: "critical"
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+
+  metrics:
+    check_interval_seconds: 60
+    anomaly_detection_window: 100
+    performance_baseline_percentile: 95
+
+# Communication settings
+communication:
+  message_format: "json"  # json, yaml, protobuf
+  max_message_size_mb: 10
+  enable_encryption: false
+
+# State management
+state:
+  backend: "redis"  # redis, postgres, file
+  connection_string: "${REDIS_URL}"
+  ttl_seconds: 86400  # 24 hours
+
+# Git integration
+git:
+  default_branch: "main"
+  pr_auto_merge: false
+  required_approvals: 1
+  allow_force_push: false
+
+# Logging
+logging:
+  level: "INFO"
+  format: "json"  # json, text
+  output: "stdout"  # stdout, file, both
+  file_path: "logs/agents.log"
+  rotation: "daily"
+  retention_days: 30

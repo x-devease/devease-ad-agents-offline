@@ -1,0 +1,173 @@
+# Text Overlay Templates Configuration
+# 文字叠加模板配置
+
+# Text extraction and overlay settings
+text_overlay:
+  # Enable automatic text overlay
+  enabled: true
+
+  # Extraction settings
+  extraction:
+    sources:
+      - from_prompt: true      # Extract from nano_prompt
+      - from_features: true    # Extract from features_used dict
+      - from_config: true      # Use predefined product info
+
+    extractable_fields:
+      - product_name
+      - key_features
+      - benefit_text
+      - cta_text
+
+  # Text templates for different layouts
+  templates:
+    minimal:
+      description: "Simple product name only"
+      fields:
+        - name: headline
+          position: "top_center"
+          font_size: 32
+          font_weight: "bold"
+          color: "#000000"
+          background: "none"
+          max_length: 30
+
+    detailed:
+      description: "Product name + features + CTA"
+      fields:
+        - name: headline
+          position: "top_third"
+          font_size: 28
+          font_weight: "bold"
+          color: "#000000"
+          background: "rgba(255,255,255,0.9)"
+
+        - name: features
+          position: "bottom_left"
+          font_size: 18
+          font_weight: "regular"
+          color: "#333333"
+          background: "rgba(255,255,255,0.8)"
+          max_items: 3
+
+        - name: cta
+          position: "bottom_right"
+          font_size: 20
+          font_weight: "bold"
+          color: "#FFFFFF"
+          background: "#FF0000"
+          max_length: 15
+
+    feature_focus:
+      description: "Focus on product features"
+      fields:
+        - name: headline
+          position: "top_center"
+          font_size: 24
+          font_weight: "bold"
+          color: "#000000"
+          background: "none"
+
+        - name: features
+          position: "left_side"
+          font_size: 16
+          font_weight: "regular"
+          color: "#333333"
+          background: "semi_transparent"
+          layout: "vertical"
+          max_items: 4
+
+  # Template selection logic
+  template_selection:
+    # Auto-select template based on features
+    rules:
+      - condition: "surface_material == 'Marble'"
+        template: "minimal"
+        reason: "Luxury marble looks best with minimal text"
+
+      - condition: "lighting_style == 'Window Light'"
+        template: "detailed"
+        reason: "Natural light allows for more text"
+
+      - condition: "camera_angle == '45-degree'"
+        template: "feature_focus"
+        reason: "45-degree angle benefits from feature description"
+
+    # Default template if no rules match
+    default_template: "minimal"
+
+  # Font definitions
+  fonts:
+    bold:
+      family: "Arial"
+      weight: "bold"
+      style: "normal"
+
+    regular:
+      family: "Arial"
+      weight: "normal"
+      style: "normal"
+
+    light:
+      family: "Helvetica"
+      weight: "light"
+      style: "normal"
+
+  # Color palettes
+  colors:
+    high_contrast:
+      text: "#000000"
+      background: "rgba(255,255,255,0.95)"
+      border: "none"
+
+    brand_colored:
+      text: "#FFFFFF"
+      background: "#FF0000"  # Red for moprobo
+      border: "white"
+
+    subtle:
+      text: "#333333"
+      background: "rgba(255,255,255,0.7)"
+      border: "none"
+
+  # Position presets
+  positions:
+    top_center:
+      x: "center"
+      y: "10%"
+      anchor: "top"
+
+    top_third:
+      x: "center"
+      y: "15%"
+      anchor: "top"
+
+    bottom_left:
+      x: "5%"
+      y: "85%"
+      anchor: "bottom_left"
+
+    bottom_right:
+      x: "95%"
+      y: "85%"
+      anchor: "bottom_right"
+
+    left_side:
+      x: "5%"
+      y: "center"
+      anchor: "left"
+
+    center:
+      x: "50%"
+      y: "50%"
+      anchor: "center"
+
+  # Collision detection settings
+  collision_detection:
+    enabled: true
+    avoid_regions:
+      - "product_center"
+      - "logo_area"
+
+    min_distance_from_edge: 20  # pixels
+    max_coverage: 0.15  # Max 15% of image area for text

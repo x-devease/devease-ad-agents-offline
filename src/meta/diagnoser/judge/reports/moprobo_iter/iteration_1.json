@@ -1,0 +1,42 @@
+{
+  "iteration": 1,
+  "detector": "LatencyDetector",
+  "total_windows": 3,
+  "aggregated_metrics": {
+    "precision": 0.90625,
+    "recall": 0.8285714285714286,
+    "f1_score": 0.8656716417910447,
+    "total_tp": 29,
+    "total_fp": 3,
+    "total_fn": 6,
+    "avg_score": 81.91182143744867,
+    "min_score": 75.5640303426868,
+    "max_score": 85.46086149746877
+  },
+  "window_results": [
+    {
+      "window_num": 0,
+      "score": 75.5640303426868,
+      "tp": 7,
+      "fp": 3,
+      "fn": 3,
+      "labels": 10
+    },
+    {
+      "window_num": 1,
+      "score": 84.7105724721904,
+      "tp": 13,
+      "fp": 0,
+      "fn": 2,
+      "labels": 15
+    },
+    {
+      "window_num": 2,
+      "score": 85.46086149746877,
+      "tp": 9,
+      "fp": 0,
+      "fn": 1,
+      "labels": 10
+    }
+  ]
+}

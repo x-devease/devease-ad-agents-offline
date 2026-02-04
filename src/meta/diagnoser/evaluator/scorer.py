@@ -130,6 +130,12 @@ class DiagnoserScorer:
             for dim, weight in self.WEIGHTS.items()
         )
 
+        # Round to 1 decimal place to avoid floating point precision issues
+        overall_score = round(overall_score, 1)
+
+        # Clamp to [0, 100] range
+        overall_score = max(0.0, min(100.0, overall_score))
+
         result.overall_score = overall_score
         result.grade = self.get_grade(overall_score)
 

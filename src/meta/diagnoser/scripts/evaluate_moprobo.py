@@ -25,7 +25,7 @@ from src.meta.diagnoser.detectors import (
     LatencyDetector,
     DarkHoursDetector,
 )
-from src.meta.diagnoser.judge import (
+from src.meta.diagnoser.evaluator import (
     DiagnoserEvaluator,
     ZeroCostLabelGenerator,
     EvaluationReporter,

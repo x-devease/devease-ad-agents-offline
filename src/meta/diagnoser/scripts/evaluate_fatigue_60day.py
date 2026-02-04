@@ -16,7 +16,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.meta.diagnoser.detectors import FatigueDetector
-from src.meta.diagnoser.judge import DiagnoserEvaluator, EvaluationReporter
+from src.meta.diagnoser.evaluator import DiagnoserEvaluator, EvaluationReporter
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

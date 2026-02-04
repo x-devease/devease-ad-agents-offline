@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from src.meta.diagnoser.detectors import FatigueDetector, DarkHoursDetector
 from src.meta.diagnoser.scripts.evaluate_fatigue import load_and_preprocess_data, generate_sliding_windows, evaluate_detector, aggregate_results
-from src.meta.diagnoser.judge.evaluator import Evaluator
+from src.meta.diagnoser.evaluator.evaluator import Evaluator
 import logging
 
 logging.basicConfig(level=logging.INFO)

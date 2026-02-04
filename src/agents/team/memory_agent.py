@@ -194,10 +194,10 @@ class HistoricalContext:
 
 
 # Import from other agents
-from agents.pm_agent import ExperimentSpec, Component
-from agents.coder_agent import PullRequest
-from agents.reviewer_agent import ReviewResult
-from agents.judge_agent import JudgeDecision, PerformanceReport
+from agents.team.pm_agent import ExperimentSpec, Component
+from agents.team.coder_agent import PullRequest
+from agents.team.reviewer_agent import ReviewResult
+from agents.team.judge_agent import JudgeDecision, PerformanceReport
 
 
 class MemoryAgent:

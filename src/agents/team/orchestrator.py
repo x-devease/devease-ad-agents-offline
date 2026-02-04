@@ -125,11 +125,11 @@ class ExperimentResult:
 
 
 # Import all agents
-from agents.pm_agent import PMAgent, ExperimentSpec, JudgeFindings, create_pm_agent
-from agents.coder_agent import CoderAgent, PullRequest, create_coder_agent
-from agents.reviewer_agent import ReviewerAgent, ReviewResult, create_reviewer_agent
-from agents.judge_agent import JudgeAgent, JudgeDecision, create_judge_agent
-from agents.memory_agent import MemoryAgent, HistoricalContext, create_memory_agent
+from agents.team.pm_agent import PMAgent, ExperimentSpec, JudgeFindings, create_pm_agent
+from agents.team.coder_agent import CoderAgent, PullRequest, create_coder_agent
+from agents.team.reviewer_agent import ReviewerAgent, ReviewResult, create_reviewer_agent
+from agents.team.judge_agent import JudgeAgent, JudgeDecision, create_judge_agent
+from agents.team.memory_agent import MemoryAgent, HistoricalContext, create_memory_agent
 
 
 class Orchestrator:
@@ -428,7 +428,7 @@ class Orchestrator:
         """Record experiment in Memory Agent."""
         # Create a mock judge decision if not provided
         if judge_decision is None:
-            from agents.judge_agent import PerformanceReport
+            from agents.team.judge_agent import PerformanceReport
             judge_decision = JudgeDecision(
                 approve=False,
                 confidence=0.0,
@@ -494,7 +494,7 @@ class Orchestrator:
 
     def _create_initial_findings(self) -> JudgeFindings:
         """Create initial findings to start the process."""
-        from agents.pm_agent import Component, ExperimentPriority
+        from agents.team.pm_agent import Component, ExperimentPriority
 
         # Find component with most failures in memory
         stats = self.memory_agent.get_stats()
@@ -519,7 +519,7 @@ class Orchestrator:
 
     def _create_next_findings(self, result: ExperimentResult) -> JudgeFindings:
         """Create findings for next iteration based on result."""
-        from agents.pm_agent import Component, ExperimentPriority
+        from agents.team.pm_agent import Component, ExperimentPriority
 
         # In real implementation, this would analyze the results
         # and find the next best opportunity
@@ -547,7 +547,7 @@ class Orchestrator:
 def _get_context_for_spec_findings(pm_agent: PMAgent, findings: JudgeFindings) -> Dict[str, Any]:
     """Get historical context from Memory Agent for findings."""
     if pm_agent.memory_client:
-        from agents.pm_agent import Component
+        from agents.team.pm_agent import Component
 
         # Create a temporary spec to query memory
         temp_spec = ExperimentSpec(

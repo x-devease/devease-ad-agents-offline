@@ -157,9 +157,9 @@ class PathManager:
         self,
         customer: Optional[str] = None,
         platform: Optional[str] = None,
-        filename: str = "rules.yaml",
+        filename: str = "config.yaml",
     ) -> Path:
-        """Path to rules configuration file."""
+        """Path to consolidated customer configuration file."""
         customer = customer or self.customer
         platform = platform or self.platform
         return self.config_base / customer / platform / filename
@@ -167,11 +167,13 @@ class PathManager:
     def system_config_path(
         self,
         environment: Optional[str] = None,
-        filename: str = "system.yaml",
+        filename: str = "config.yaml",
     ) -> Path:
-        """Path to system configuration file."""
-        environment = environment or "default"
-        return self.config_base / f"{environment}.yaml"
+        """Path to consolidated customer configuration file (system_config is now consolidated)."""
+        # System config is now consolidated into customer config
+        customer = self.customer
+        platform = self.platform
+        return self.config_base / customer / platform / filename
 
     # === State Paths ===
 

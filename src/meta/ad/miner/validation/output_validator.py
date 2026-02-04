@@ -1,8 +1,8 @@
-"""Output schema validator for mined patterns JSON."""
+"""Output schema validator for mined patterns YAML."""
 
 from pathlib import Path
-from typing import Any, Dict
-import json
+from typing import Any, Dict, Union, List
+import yaml
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,20 +35,20 @@ class OutputSchemaValidator:
     VALID_CONFIDENCE = ["high", "medium", "low"]
     VALID_PATTERN_TYPES = ["DO", "DO_CONVERSION", "DO_AWARENESS", "DO_TRAFFIC", "DON'T", "ANTI_PATTERN"]
 
-    def __init__(self, json_path: str | Path):
+    def __init__(self, yaml_path: Union[str, Path]):
         """
         Initialize validator.
 
         Args:
-            json_path: Path to JSON file to validate
+            yaml_path: Path to YAML file to validate
         """
-        self.json_path = Path(json_path)
-        self.errors: list[str] = []
-        self.warnings: list[str] = []
+        self.yaml_path = Path(yaml_path)
+        self.errors: List[str] = []
+        self.warnings: List[str] = []
 
     def validate(self) -> bool:
         """
-        Validate JSON against schema.
+        Validate YAML against schema.
 
         Returns:
             True if valid, False otherwise
@@ -56,12 +56,12 @@ class OutputSchemaValidator:
         self.errors = []
         self.warnings = []
 
-        # Load JSON
+        # Load YAML
         try:
-            with open(self.json_path) as f:
-                data = json.load(f)
+            with open(self.yaml_path) as f:
+                data = yaml.safe_load(f)
         except Exception as e:
-            self.errors.append(f"Failed to read JSON: {e}")
+            self.errors.append(f"Failed to read YAML: {e}")
             return False
 
         # Run validation checks

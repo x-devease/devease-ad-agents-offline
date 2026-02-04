@@ -221,12 +221,12 @@ class TestExtractWorkflowAggregateToAdset:
 class TestExtractWorkflowProcessCustomer:
     """Test ExtractWorkflow._process_customer method."""
 
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_adset_features_path")
     def test_process_customer_success_with_aggregation(
         self,
         mock_get_adset_path,
@@ -294,11 +294,11 @@ class TestExtractWorkflowProcessCustomer:
             result.data["adset_features"] == 3
         )  # Updated to match actual column count
 
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
     def test_process_customer_success_without_aggregation(
         self,
         mock_get_ad_path,
@@ -355,8 +355,8 @@ class TestExtractWorkflowProcessCustomer:
         assert result.data["ad_features"] == 5  # Updated to match actual column count
         assert "adset_rows" not in result.data
 
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     def test_process_customer_missing_ad_data(
         self, mock_ensure_dirs, mock_get_data_dir
     ):
@@ -378,11 +378,11 @@ class TestExtractWorkflowProcessCustomer:
         assert result.success is False
         assert "Ad-level data is required" in result.message
 
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
     def test_process_customer_file_not_found_error(
         self,
         mock_get_ad_path,
@@ -411,11 +411,11 @@ class TestExtractWorkflowProcessCustomer:
         assert "File not found" in result.message
         assert isinstance(result.error, FileNotFoundError)
 
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
     def test_process_customer_value_error(
         self,
         mock_get_ad_path,
@@ -444,11 +444,11 @@ class TestExtractWorkflowProcessCustomer:
         assert "Data error" in result.message
         assert isinstance(result.error, ValueError)
 
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
     def test_process_customer_unexpected_error(
         self,
         mock_get_ad_path,
@@ -476,12 +476,12 @@ class TestExtractWorkflowProcessCustomer:
         assert "Unexpected error" in result.message
         assert isinstance(result.error, RuntimeError)
 
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_adset_features_path")
     def test_process_customer_with_explicit_files(
         self,
         mock_get_adset_path,
@@ -547,11 +547,11 @@ class TestExtractWorkflowProcessCustomer:
 
     @patch("pandas.DataFrame.to_csv")
     @patch("pathlib.Path.mkdir", return_value=None)
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
     def test_process_customer_respects_preprocess_flags(
         self,
         mock_get_ad_path,
@@ -593,12 +593,12 @@ class TestExtractWorkflowProcessCustomer:
 class TestExtractWorkflowIntegration:
     """Integration tests for ExtractWorkflow orchestration."""
 
-    @patch("src.utils.customer_paths.get_all_customers")
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
     def test_workflow_run_multiple_customers(
         self,
         mock_get_ad_path,
@@ -646,12 +646,12 @@ class TestExtractWorkflowIntegration:
         assert workflow.metrics.total_customers == 2
         assert workflow.metrics.successful_customers == 2
 
-    @patch("src.utils.customer_paths.get_all_customers")
-    @patch("src.utils.customer_paths.get_customer_data_dir")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_data_dir")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.ensure_customer_dirs")
     @patch("src.meta.adset.allocator.features.Joiner.join_all_levels")
     @patch("src.meta.adset.allocator.features.Aggregator.create_aggregated_features")
-    @patch("src.utils.customer_paths.get_customer_ad_features_path")
+    @patch("src.meta.adset.allocator.features.workflows.extract_workflow.get_customer_ad_features_path")
     @patch("pandas.DataFrame.to_csv")
     @patch("pathlib.Path.mkdir", return_value=None)
     def test_workflow_run_single_customer(

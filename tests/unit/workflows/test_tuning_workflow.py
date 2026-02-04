@@ -6,8 +6,9 @@ Focuses on Bayesian optimization, constraint handling, and result reporting.
 """
 
 import os
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock, mock_open
 import pytest
+import yaml
 
 # Skip these tests in CI since they require file system access
 pytestmark = pytest.mark.skipif(
@@ -18,6 +19,27 @@ pytestmark = pytest.mark.skipif(
 from src.meta.adset.allocator.workflows.tuning_workflow import TuningWorkflow
 from src.meta.adset.allocator.features.workflows.base import WorkflowResult
 from src.meta.adset.allocator.optimizer.tuning import TuningResult
+
+# Sample config for mocking
+SAMPLE_CONFIG = {
+    "decision_rules": {
+        "low_roas_threshold": 2.0,
+        "high_roas_threshold": 3.0,
+        "aggressive_increase_pct": 0.20,
+    },
+    "safety_rules": {
+        "max_daily_increase_pct": 0.20,
+        "cold_start_days": 3,
+    }
+}
+
+
+@pytest.fixture(autouse=True)
+def mock_config_open():
+    """Automatically mock config file loading for all tests."""
+    m = mock_open(read_data=yaml.dump(SAMPLE_CONFIG))
+    with patch("builtins.open", m):
+        yield
 
 
 @pytest.fixture
@@ -92,7 +114,7 @@ class TestTuningWorkflowProcessCustomer:
     """Test TuningWorkflow._process_customer method."""
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_success(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):
@@ -128,7 +150,7 @@ class TestTuningWorkflowProcessCustomer:
         mock_tuner.tune_customer.assert_called_once_with("test_customer")
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_with_custom_optimization_params(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):
@@ -150,7 +172,7 @@ class TestTuningWorkflowProcessCustomer:
         assert call_kwargs["n_initial_points"] == 20
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_updates_config(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):
@@ -169,7 +191,7 @@ class TestTuningWorkflowProcessCustomer:
         )
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_skips_config_update(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):
@@ -186,7 +208,7 @@ class TestTuningWorkflowProcessCustomer:
         mock_tuner.update_config_with_results.assert_not_called()
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_no_valid_configuration(
         self, mock_tuner_class, mock_ensure_dirs
     ):
@@ -205,7 +227,7 @@ class TestTuningWorkflowProcessCustomer:
         assert result.error is None
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_file_not_found(self, mock_tuner_class, mock_ensure_dirs):
         """Test handling of FileNotFoundError during tuning."""
         mock_tuner = MagicMock()
@@ -221,7 +243,7 @@ class TestTuningWorkflowProcessCustomer:
         assert isinstance(result.error, FileNotFoundError)
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_unexpected_error(
         self, mock_tuner_class, mock_ensure_dirs
     ):
@@ -239,7 +261,7 @@ class TestTuningWorkflowProcessCustomer:
         assert isinstance(result.error, RuntimeError)
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_with_verbose_logging(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result, caplog
     ):
@@ -264,7 +286,7 @@ class TestTuningWorkflowProcessCustomer:
         mock_print.assert_called_once_with("test_customer", sample_tuning_result)
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_process_customer_without_report_generation(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):
@@ -340,9 +362,9 @@ class TestTuningWorkflowPrintResultSummary:
 class TestTuningWorkflowIntegration:
     """Integration tests for TuningWorkflow orchestration."""
 
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_run_multiple_customers(
         self,
         mock_tuner_class,
@@ -379,7 +401,7 @@ class TestTuningWorkflowIntegration:
         assert "customer2" in updated_customers
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_run_single_customer(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):
@@ -398,9 +420,9 @@ class TestTuningWorkflowIntegration:
         assert workflow.metrics.total_customers == 1
         assert workflow.metrics.successful_customers == 1
 
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_run_mixed_results(
         self,
         mock_tuner_class,
@@ -434,9 +456,9 @@ class TestTuningWorkflowIntegration:
         assert workflow.metrics.successful_customers == 2
         assert workflow.metrics.failed_customers == 1
 
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_continues_on_error(
         self,
         mock_tuner_class,
@@ -471,9 +493,9 @@ class TestTuningWorkflowIntegration:
         assert workflow.metrics.successful_customers == 2
         assert workflow.metrics.failed_customers == 1
 
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_with_constraints(
         self,
         mock_tuner_class,
@@ -504,9 +526,9 @@ class TestTuningWorkflowIntegration:
         assert constraints.min_avg_roas == 1.5
         assert constraints.min_revenue_efficiency == 0.8
 
-    @patch("src.utils.customer_paths.get_all_customers")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_empty_customer_list(
         self, mock_tuner_class, mock_ensure_dirs, mock_get_customers
     ):
@@ -527,7 +549,7 @@ class TestTuningWorkflowWithDifferentModes:
     """Test TuningWorkflow with different tuning modes."""
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_bayesian_mode(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):
@@ -549,7 +571,7 @@ class TestTuningWorkflowWithDifferentModes:
         assert call_kwargs["n_initial_points"] == 10
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_with_more_iterations(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):
@@ -571,7 +593,7 @@ class TestTuningWorkflowWithDifferentModes:
         assert call_kwargs["n_initial_points"] == 30
 
     @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.meta.adset.allocator.optimizer.lib.bayesian_tuner.BayesianTuner")
+    @patch("src.meta.adset.allocator.workflows.tuning_workflow.BayesianTuner")
     def test_workflow_diagnose_mode(
         self, mock_tuner_class, mock_ensure_dirs, sample_tuning_result
     ):

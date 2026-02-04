@@ -1,0 +1,135 @@
+metadata:
+  schema_version: '2.0'
+  customer: moprobo
+  product: Your Magic Pickup Mop  # Generic - should be configured per customer
+  platform: meta
+  branch: US
+  campaign_goal: ROAS
+  generated_at: '2026-01-30'
+
+# Mining Strategy: Determines top-performing ads % to analyze
+mining_strategy:
+  # Winner quantile: Top X% of ads to mine for patterns
+  # 0.95 = Top 5% (conservative), 0.90 = Top 10% (balanced), 0.80 = Top 20% (aggressive)
+  winner_quantile: 0.80  # Top 20% - Aggressive mining
+
+  # Loser quantile: Bottom X% of ads to analyze for anti-patterns
+  # If not set, automatically calculated as (1 - winner_quantile)
+  # 0.20 = Bottom 20%, 0.30 = Bottom 30%, 0.40 = Bottom 40%
+  loser_quantile: 0.20  # Bottom 20% - Symmetric with winners
+
+  # Mining profiles (predefined strategies)
+  mining_profiles:
+    conservative:
+      base_quantile: 0.95  # Top 5%
+      min_sample_size: 100
+      description: "Strict mining for high-budget campaigns"
+    balanced:
+      base_quantile: 0.90  # Top 10%
+      min_sample_size: 50
+      description: "Balanced mining for typical campaigns"
+    aggressive:
+      base_quantile: 0.80  # Top 20%
+      min_sample_size: 30
+      description: "Aggressive mining for data-rich scenarios"
+
+  # Default profile for this customer
+  default_profile: balanced
+
+nano_generation_rules:
+  inference_config:
+    aspect_ratio: '3:4'
+    batch_size: 20
+    cfg_scale: 3.5
+    guidance: perspective_aware
+    model: nanobanana_pro
+    steps: 8
+  negative_prompt: cartoon, illustration, text, watermark, distorted
+  prompt_slots:
+    atmosphere: luxury home environment
+    product_context: product  # Generic - should be configured per customer
+  prompt_template_structure: Product on table, {atmosphere}
+
+# Prompt Building: Controls how many prompts to generate for each category
+prompt_building:
+  # Maximum prompts to generate for each pattern category
+  # Set to 0 to disable a category, -1 to use all available patterns
+  max_prompts:
+    top_combination: 1  # Always 1 (the top combination)
+    supporting_combinations: 3  # Number of backup combinations to generate
+    individual_features: 6  # Number of individual feature prompts (use all available)
+    psychology_patterns: 2  # Number of psychology pattern prompts
+
+  # Confidence thresholds: Only include patterns with confidence >= threshold
+  # Set to 0.0 to include all patterns (no filtering)
+  confidence_thresholds:
+    individual_features: 0.70  # Only include individual features with 70%+ confidence
+    supporting_combinations: 0.0  # Include all supporting combinations
+    psychology_patterns: 0.0  # Include all psychology patterns
+
+  # Whether to use nano agent for prompt enhancement
+  enable_nano_enhancement: true
+
+# Reference Images: Multi-image product reference configuration
+reference_images:
+  # Enable multi-image generation (up to 3 images per request)
+  enabled: true
+
+  # Directory containing product reference images (shared across platforms)
+  directory: config/moprobo/product
+
+  # Maximum number of reference images to use per generation (1-3 recommended)
+  max_images: 3
+
+  # Fallback to single image if reference directory doesn't exist
+  fallback_to_single_image: true
+
+compositing:
+  light_match_mode: soft_light
+  light_match_opacity: 0.25
+  light_wrap_intensity: 0.3
+  shadow_direction: left
+text_overlay:
+  template_id: trust_authority
+  psychology_driven: true
+  smart_color_enabled: true
+  collision_detection_enabled: true
+psychology_catalog:
+  total_types: 1
+  types:
+  - category: authority_trust
+    colors:
+      primary: '#003366'
+    copy_patterns:
+    - Expert recommended
+    description: Establish credibility
+    full_name: Trust & Authority
+    layout:
+      position: centered
+    psychology_id: trust
+    typography:
+      headline_font: Serif_Bold
+psychology_templates:
+- display_name: 'Trust: Authority'
+  layout:
+    alignment: center
+    margin_y: 80
+    position: Bottom_Center
+  psychology_driver: trust
+  style:
+    cta_bg_color: Transparent
+    cta_shape: Pill_Solid
+    font_color_logic: Auto_Contrast
+  template_id: trust_authority
+  typography:
+    cta:
+      font_family: Sans_Medium
+      font_size: 24
+      padding_x: 40
+      padding_y: 16
+    headline:
+      font_family: Sans_Bold
+      font_size: 48
+    sub_text:
+      font_family: Sans_Regular
+      font_size: 32

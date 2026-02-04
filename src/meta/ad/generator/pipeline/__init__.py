@@ -9,6 +9,9 @@ This module provides:
 """
 
 from .ad_miner_adapter import (
+    convert_patterns_to_visual_formula,
+    load_patterns_as_visual_formula,
+    # Backward compatibility aliases
     convert_recommendations_to_visual_formula,
     load_recommendations_as_visual_formula,
 )
@@ -27,6 +30,10 @@ __all__ = [
     "create_product_context",
     "CreativePipeline",
     "FeatureReproductionTracker",
+    # New function names
+    "convert_patterns_to_visual_formula",
+    "load_patterns_as_visual_formula",
+    # Backward compatibility
     "convert_recommendations_to_visual_formula",
     "load_recommendations_as_visual_formula",
 ]

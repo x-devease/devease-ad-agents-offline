@@ -265,9 +265,9 @@ class TestAllocationWorkflowAllocateBudget:
 class TestAllocationWorkflowProcessCustomer:
     """Test AllocationWorkflow._process_customer method."""
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_success(
@@ -293,7 +293,16 @@ class TestAllocationWorkflowProcessCustomer:
 
         # Mock config and allocator
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = True
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])
@@ -301,6 +310,7 @@ class TestAllocationWorkflowProcessCustomer:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -333,9 +343,9 @@ class TestAllocationWorkflowProcessCustomer:
         assert "avg_roas" in result.data
         assert output_file.exists()
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     def test_process_customer_missing_adset_id(
         self, mock_get_allocations_path, mock_get_adset_path, mock_ensure_dirs, tmp_path
     ):
@@ -367,10 +377,12 @@ class TestAllocationWorkflowProcessCustomer:
         assert result.success is False
         assert "missing 'adset_id' column" in result.message
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
     def test_process_customer_file_not_found(
-        self, mock_get_adset_path, mock_ensure_dirs
+        self, mock_get_adset_path, mock_ensure_dirs, mock_tracker_class, mock_state_class
     ):
         """Test processing with FileNotFoundError."""
         mock_get_adset_path.return_value = Path("/nonexistent/file.csv")
@@ -378,6 +390,9 @@ class TestAllocationWorkflowProcessCustomer:
         workflow = AllocationWorkflow(budget=10000.0)
 
         mock_config = MagicMock()
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
         with patch.object(workflow, "get_customer_config", return_value=mock_config):
             with patch.object(
                 workflow, "_initialize_allocator", return_value=MagicMock()
@@ -390,9 +405,9 @@ class TestAllocationWorkflowProcessCustomer:
         assert "File not found" in result.message
         assert isinstance(result.error, FileNotFoundError)
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_with_explicit_paths(
@@ -416,7 +431,16 @@ class TestAllocationWorkflowProcessCustomer:
         workflow = AllocationWorkflow(budget=10000.0)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = True
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])
@@ -424,6 +448,7 @@ class TestAllocationWorkflowProcessCustomer:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -455,9 +480,9 @@ class TestAllocationWorkflowProcessCustomer:
         assert result.success is True
         assert custom_output.exists()
 
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_process_customer_calculates_statistics(
@@ -481,7 +506,16 @@ class TestAllocationWorkflowProcessCustomer:
         workflow = AllocationWorkflow(budget=10000.0)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = True
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])
@@ -489,6 +523,7 @@ class TestAllocationWorkflowProcessCustomer:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -526,10 +561,10 @@ class TestAllocationWorkflowIntegration:
 
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
-    @patch("src.utils.customer_paths.get_all_customers")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.features.workflows.base.get_all_customers")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     def test_workflow_run_multiple_customers(
         self,
         mock_get_allocations_path,
@@ -545,6 +580,7 @@ class TestAllocationWorkflowIntegration:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -591,8 +627,16 @@ class TestAllocationWorkflowIntegration:
         workflow = AllocationWorkflow(budget=10000.0, verbose=False)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = 0.8
-        mock_config.get_safety_rule.return_value = 1.0
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])
@@ -611,9 +655,9 @@ class TestAllocationWorkflowIntegration:
 
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
-    @patch("src.utils.customer_paths.ensure_customer_dirs")
-    @patch("src.utils.customer_paths.get_customer_adset_features_path")
-    @patch("src.utils.customer_paths.get_customer_allocations_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.ensure_customer_dirs")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_adset_features_path")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.get_customer_allocations_path")
     def test_workflow_run_single_customer(
         self,
         mock_get_allocations_path,
@@ -628,6 +672,7 @@ class TestAllocationWorkflowIntegration:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
+        mock_state.budget = {"monthly_budget_cap": 10000.0}
         mock_state.month_start_date = datetime(2026, 1, 1)
         mock_state.days_since_budget_start = 1
         mock_state.is_first_execution = True
@@ -655,8 +700,16 @@ class TestAllocationWorkflowIntegration:
         workflow = AllocationWorkflow(budget=10000.0, verbose=False)
 
         mock_config = MagicMock()
-        mock_config.get_monthly_setting.return_value = 0.8
-        mock_config.get_safety_rule.return_value = 1.0
+        mock_config.get.side_effect = lambda key, default=None: {
+            "monthly_budget.day1_budget_multiplier": 0.8,
+            "monthly_budget.monthly_budget_cap": 10000.0,
+        }.get(key, default)
+        mock_config.get_monthly_setting.side_effect = lambda key, default=None: {
+            "day1_budget_multiplier": 0.8,
+        }.get(key, default)
+        mock_config.get_safety_rule.side_effect = lambda key, default=None: {
+            "max_daily_increase_pct": 0.15,
+        }.get(key, default)
         mock_allocator = MagicMock()
         # Mock allocate_budget to return (new_budget, decision_path)
         mock_allocator.allocate_budget.return_value = (100.0, ["test_rule"])

@@ -1,0 +1,19 @@
+# Test customer 2 configuration
+environment: development
+customer: customer2
+platform: google
+
+mining_strategy:
+  winner_quantile: 0.90
+  loser_quantile: 0.10
+
+nano_generation_rules:
+  inference_config:
+    aspect_ratio: '3:4'
+    batch_size: 20
+
+compositing:
+  light_match_mode: soft_light
+
+text_overlay:
+  template_id: test_template

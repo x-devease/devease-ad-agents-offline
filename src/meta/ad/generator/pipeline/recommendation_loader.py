@@ -6,12 +6,12 @@ recommendation_generator.py module.
 
 Note:
     This loader is for the creative scorer offline repository JSON format.
-    For ad/miner markdown format (primary), use the ad_miner_adapter
-    which handles the conversion from MD to visual formula format.
+    For ad/miner YAML format (primary), use the ad_miner_adapter
+    which handles the conversion from YAML to visual formula format.
 
 Path formats:
     - Scorer repo: devease-creative-scorer-offline/data/headroom_analysis/visual_recommendation.json
-    - Ad/miner (primary): config/ad/miner/{customer}/{platform}/{date}/recommendations.md
+    - Ad/miner (primary): config/{customer_id}/{platform}/patterns.yaml
 
 Key improvements:
 - Filters out low-penetration outliers using configurable thresholds
@@ -63,7 +63,6 @@ class RecommendationLoader:
     - headroom_features: High ROAS, low penetration features (prioritize)
     - synergy_pairs: Golden formula combinations (1+1>2)
     - negative_guidance: Efficiency traps to avoid
-    - generation_instructions: Structured instructions for generation
     """
 
     def __init__(
@@ -326,16 +325,6 @@ class RecommendationLoader:
             logger.warning(
                 "Creative blueprint has no features - generation may be suboptimal"
             )
-
-    def get_generation_instructions(self) -> Dict[str, Any]:
-        """
-        Get generation instructions from formula.
-
-        Returns:
-            Dict with must_include, prioritize, synergy_combinations, avoid
-        """
-        recommendation = self.load()
-        return recommendation.get("generation_instructions", {})
 
     def get_feature_summary(self) -> Dict[str, Any]:
         """

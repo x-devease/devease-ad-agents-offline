@@ -1079,23 +1079,6 @@ class PromptBuilder:
         visual_formula: Dict[str, Any],
         placeholder_values: Dict[str, Any],
     ) -> None:
-        """Extract layout and composition features."""
-        # Layout Logic: Check scorer recommendations first for composition/negative space
-        # MACRO BRANCH: Use visual filling (tight framing) instead of negative space
-        # Avoid 'balanced' space usage (negative performer)
-        # UNIFIED REGISTRY: Use canonical value from registry
-        if True:
-            self._extract_layout_features(visual_formula, placeholder_values)
-
-        self._extract_product_visibility(visual_formula, placeholder_values)
-        self._extract_visual_impact(visual_formula, placeholder_values)
-        self._extract_remaining_layout_features(visual_formula, placeholder_values)
-
-    def _extract_layout_features(
-        self,
-        visual_formula: Dict[str, Any],
-        placeholder_values: Dict[str, Any],
-    ) -> None:
         """Extract V2-specific layout features."""
         if self.branch_name == "high_efficiency":
             # Branch 2 (Macro): Visual filling logic - tight framing, no negative space

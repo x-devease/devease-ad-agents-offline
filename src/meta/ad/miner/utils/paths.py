@@ -248,14 +248,14 @@ class MinerPaths:
         else:  # Level 4
             return base
 
-    def patterns_json(self) -> Path:
+    def patterns_yaml(self) -> Path:
         """
-        Get path to patterns JSON file.
+        Get path to patterns YAML file.
 
         Returns:
-            Path to patterns.json
+            Path to patterns.yaml
         """
-        return self.segment_patterns_dir() / "patterns.json"
+        return self.segment_patterns_dir() / "patterns.yaml"
 
     def patterns_md(self) -> Path:
         """

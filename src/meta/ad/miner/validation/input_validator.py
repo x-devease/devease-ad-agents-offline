@@ -1,7 +1,7 @@
 """Input schema validator for creative features CSV."""
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 import pandas as pd
 import logging
 import yaml
@@ -23,7 +23,7 @@ class InputSchemaValidator:
 
     SCHEMA_PATH = Path(__file__).parent.parent / "schemas" / "input_schema.yaml"
 
-    def __init__(self, csv_path: str | Path, schema_path: str | Path = None):
+    def __init__(self, csv_path: Union[str, Path], schema_path: Union[str, Path] = None):
         """
         Initialize validator.
 

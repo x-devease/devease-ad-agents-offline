@@ -8,8 +8,8 @@ import argparse
 import sys
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent.parent.parent
+# Add project root to path (script is at src/meta/adset/allocator/cli/commands/extract.py)
+project_root = Path(__file__).parent.parent.parent.parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 import numpy as np

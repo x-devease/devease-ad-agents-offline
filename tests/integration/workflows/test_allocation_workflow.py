@@ -97,18 +97,70 @@ def sample_config(tmp_path):
             "freeze_health_threshold": 0.2,
         },
         "decision_rules": {
-            "low_roas_threshold": 2.0,
-            "medium_roas_threshold": 2.5,
+            "very_low_roas_threshold": 1.0,
+            "low_roas_threshold": 1.5,
+            "medium_roas_threshold": 2.0,
+            "medium_high_roas_threshold": 2.5,
             "high_roas_threshold": 3.0,
-            "aggressive_increase_pct": 0.20,
+            "very_high_roas_threshold": 3.5,
+            "excellent_roas_threshold": 3.5,
+            "high_vs_adset_threshold": 1.2,
+            "high_vs_campaign_threshold": 1.15,
+            "high_vs_account_threshold": 1.10,
+            "low_vs_adset_threshold": 0.8,
+            "strong_rising_trend": 0.10,
+            "strong_falling_trend": -0.10,
+            "moderate_rising_trend": 0.05,
+            "moderate_falling_trend": -0.05,
+            "high_revenue_per_impression": 0.08,
+            "low_revenue_per_impression": 0.02,
+            "high_revenue_per_click": 2.5,
+            "low_revenue_per_click": 1.0,
+            "high_efficiency_threshold": 0.10,
+            "low_efficiency_threshold": 0.02,
+            "healthy_threshold": 0.7,
+            "unhealthy_threshold": 0.3,
+            "excellent_health_threshold": 0.85,
+            "cold_start_days": 3,
+            "learning_phase_days_early": 7,
+            "learning_phase_days_mid": 14,
+            "learning_phase_days_late": 21,
+            "learning_phase_days": 14,
+            "established_days": 21,
+            "high_spend_threshold": 100,
+            "low_spend_threshold": 10,
+            "high_impressions_threshold": 5000,
+            "spend_trend_rising": 0.15,
+            "spend_trend_falling": -0.20,
+            "high_clicks_threshold": 50,
+            "high_reach_threshold": 1000,
+            "aggressive_increase_pct": 0.15,
             "moderate_increase_pct": 0.10,
-            "aggressive_decrease_pct": 0.20,
+            "conservative_increase_pct": 0.05,
             "moderate_decrease_pct": 0.10,
+            "aggressive_decrease_pct": 0.20,
+            "maintenance_pct": 0.0,
+            "gradient_enabled": True,
+            "trend_scaling_enabled": True,
+            "default_health_score": 0.5,
+            "default_efficiency": 0.05,
+            "health_score_multiplier_enabled": True,
+            "budget_relative_scaling_enabled": True,
+            "large_budget_threshold": 100,
+            "medium_budget_threshold": 20,
+            "small_budget_max_increase": 0.20,
+            "medium_budget_max_increase": 0.15,
+            "large_budget_max_increase": 0.10,
+            "low_clicks_threshold": 20,
+            "medium_clicks_threshold": 100,
+            "low_clicks_multiplier": 0.8,
+            "medium_clicks_multiplier": 0.9,
         },
         "monthly_budget": {
             "monthly_budget_cap": 10000.0,
             "conservative_factor": 0.95,
             "archive_daily_allocations": True,
+            "day1_budget_multiplier": 0.8,
         },
     }
 
@@ -122,8 +174,8 @@ def sample_config(tmp_path):
 class TestAllocationWorkflow:
     """Test AllocationWorkflow end-to-end."""
 
-    @patch("src.meta.adset.allocator.budget.state_manager.MonthlyBudgetState")
-    @patch("src.meta.adset.allocator.budget.monthly_tracker.MonthlyBudgetTracker")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetState")
+    @patch("src.meta.adset.allocator.workflows.allocation_workflow.MonthlyBudgetTracker")
     def test_rules_based_allocation(
         self,
         mock_tracker_class,
@@ -138,19 +190,37 @@ class TestAllocationWorkflow:
         # Mock state and tracker
         mock_state = MagicMock()
         mock_state.month = "2026-01"
-        mock_state.tracking = {
+        mock_state.state_path = tmp_path / "state.json"
+        mock_state.is_first_execution = True
+        from datetime import date
+        mock_state.month_start_date = date(2026, 1, 30)
+        mock_state.days_since_budget_start = 1
+
+        # Use configure_mock to properly set up dict-like access
+        mock_budget_dict = {"monthly_budget_cap": 10000.0}
+        mock_tracking_dict = {
             "total_spent": 0.0,
             "total_allocated": 0.0,
             "remaining_budget": 10000.0,
             "days_active": 0,
         }
-        mock_state.state_path = tmp_path / "state.json"
+        # Configure __getitem__ to return actual dict values
+        mock_state.budget.__getitem__.side_effect = mock_budget_dict.__getitem__
+        mock_state.budget.get.side_effect = mock_budget_dict.get
+        mock_state.tracking.__getitem__.side_effect = mock_tracking_dict.__getitem__
+        mock_state.tracking.get.side_effect = mock_tracking_dict.get
+
         mock_state_class.load_or_create.return_value = mock_state
 
         mock_tracker = MagicMock()
+        # Always return False for budget exhausted check
         mock_tracker.is_budget_exhausted.return_value = False
+        mock_tracker.is_budget_exhausted.__bool__ = False
         mock_tracker.calculate_daily_budget.return_value = 333.33
+
+        # Patch MonthlyBudgetTracker to return our mock
         mock_tracker_class.return_value = mock_tracker
+        mock_tracker_class.side_effect = lambda state: mock_tracker
 
         workflow = AllocationWorkflow(
             config_path=str(sample_config),

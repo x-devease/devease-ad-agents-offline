@@ -119,7 +119,7 @@ class ImplementationResult:
 
 
 # Import PM Agent types
-from agents.pm_agent import ExperimentSpec, ChangeScope, Component
+from agents.team.pm_agent import ExperimentSpec, ChangeScope, Component
 
 
 class CoderAgent:

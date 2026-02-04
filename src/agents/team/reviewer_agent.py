@@ -187,8 +187,8 @@ class ReviewResult:
 
 
 # Import from other agents
-from agents.coder_agent import PullRequest, CodeChange
-from agents.pm_agent import ExperimentSpec, Component
+from agents.team.coder_agent import PullRequest, CodeChange
+from agents.team.pm_agent import ExperimentSpec, Component
 
 
 class ReviewerAgent:

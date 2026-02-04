@@ -40,8 +40,8 @@ Author: Ad System Dev Team
 Date: 2026-02-04
 """
 
-# Core agents
-from agents.pm_agent import (
+# Team agents
+from agents.team.pm_agent import (
     PMAgent,
     ExperimentSpec,
     ChangeScope,
@@ -52,7 +52,7 @@ from agents.pm_agent import (
     create_pm_agent,
 )
 
-from agents.coder_agent import (
+from agents.team.coder_agent import (
     CoderAgent,
     PullRequest,
     CodeChange,
@@ -62,7 +62,7 @@ from agents.coder_agent import (
     create_coder_agent,
 )
 
-from agents.reviewer_agent import (
+from agents.team.reviewer_agent import (
     ReviewerAgent,
     ReviewStatus,
     ReviewResult,
@@ -72,7 +72,7 @@ from agents.reviewer_agent import (
     create_reviewer_agent,
 )
 
-from agents.judge_agent import (
+from agents.team.judge_agent import (
     JudgeAgent,
     JudgeDecision,
     BacktestResult,
@@ -81,7 +81,7 @@ from agents.judge_agent import (
     create_judge_agent,
 )
 
-from agents.memory_agent import (
+from agents.team.memory_agent import (
     MemoryAgent,
     ExperimentRecord,
     ExperimentOutcome,
@@ -90,7 +90,7 @@ from agents.memory_agent import (
     create_memory_agent,
 )
 
-from agents.orchestrator import (
+from agents.team.orchestrator import (
     Orchestrator,
     OrchestratorMode,
     WorkflowStatus,

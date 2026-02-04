@@ -305,7 +305,12 @@ class ZeroCostLabelGenerator:
                 continue
 
             # 规则1: Creative Fatigue
-            fatigue_labels = self._apply_fatigue_rules(entity_data, entity_id, cpa_col)
+            fatigue_labels = self._apply_fatigue_rules(
+                entity_data,
+                entity_id,
+                cpa_col,
+                detector_instance=kwargs.get('detector_instance')
+            )
             labels.extend(fatigue_labels)
 
             # 规则2: Latency
@@ -325,6 +330,7 @@ class ZeroCostLabelGenerator:
         data: pd.DataFrame,
         entity_id: str,
         cpa_col: str = None,
+        detector_instance = None,
     ) -> List[Dict[str, Any]]:
         """应用疲劳检测规则
 
@@ -333,8 +339,45 @@ class ZeroCostLabelGenerator:
         - 找黄金期 (cum_frequency between 1.0 and 2.5)
         - 检查疲劳信号
         - 需要3 consecutive days确认
+
+        修复：使用detector的实际阈值，而非硬编码
         """
         labels = []
+
+        # 获取detector的阈值（确保一致性）
+        if detector_instance and hasattr(detector_instance, 'DEFAULT_THRESHOLDS'):
+            thresholds = detector_instance.DEFAULT_THRESHOLDS
+            logger.info(f"Using thresholds from detector instance for {entity_id}")
+        else:
+            # 后备：导入detector获取阈值
+            try:
+                from src.meta.diagnoser.detectors.fatigue_detector import FatigueDetector
+                thresholds = FatigueDetector.DEFAULT_THRESHOLDS
+                logger.info(f"Using thresholds from FatigueDetector.DEFAULT_THRESHOLDS")
+            except ImportError:
+                logger.warning("Cannot import FatigueDetector, using hardcoded thresholds (may be inconsistent!)")
+                # 硬编码后备（与detector保持一致）
+                thresholds = {
+                    "window_size_days": 23,
+                    "golden_min_freq": 1.0,
+                    "golden_max_freq": 2.5,
+                    "fatigue_freq_threshold": 3.0,
+                    "cpa_increase_threshold": 1.15,
+                    "consecutive_days": 1,
+                    "min_golden_days": 1,
+                }
+
+        # 提取阈值参数
+        window_size = thresholds["window_size_days"]
+        consecutive_days = thresholds["consecutive_days"]
+        min_golden_days = thresholds["min_golden_days"]
+        cpa_increase_threshold = thresholds["cpa_increase_threshold"]
+        golden_min_freq = thresholds["golden_min_freq"]
+        golden_max_freq = thresholds["golden_max_freq"]
+        fatigue_freq_threshold = thresholds["fatigue_freq_threshold"]
+
+        logger.debug(f"Fatigue thresholds: window={window_size}, consecutive={consecutive_days}, "
+                    f"min_golden={min_golden_days}, cpa_thresh={cpa_increase_threshold}")
 
         # Check for required columns
         required_cols = ["date_start", "spend", "impressions", "reach"]
@@ -353,19 +396,10 @@ class ZeroCostLabelGenerator:
         # Sort by date
         data = data.sort_values("date_start").reset_index(drop=True)
 
-        # Skip if insufficient data (need 21 + 1 days = 22 days)
-        min_required = 21 + 1
+        # Skip if insufficient data
+        min_required = window_size + consecutive_days
         if len(data) < min_required:
             return labels
-
-        # Rolling window parameters (matching optimized FatigueDetector)
-        window_size = 21
-        consecutive_days = 1  # Optimized from 2
-        golden_min_freq = 1.0
-        golden_max_freq = 2.5
-        fatigue_freq_threshold = 3.0
-        cpa_increase_threshold = 1.2  # 20% (optimized from 1.3)
-        min_golden_days = 2  # Optimized from 3
 
         detections = []
 

@@ -39,6 +39,7 @@ def __getattr__(name: str):
 # Note: __all__ is not defined because we use lazy imports via __getattr__
 # This avoids circular dependencies with the framework module
 
-# Legacy mode - use legacy implementation to avoid framework bugs
+# Framework mode - use framework by default for enhanced prompt quality
+# Set NANO_LEGACY_MODE=true to use legacy implementation
 import os
-USE_LEGACY = os.environ.get("NANO_LEGACY_MODE", "true").lower() == "true"
+USE_LEGACY = os.environ.get("NANO_LEGACY_MODE", "false").lower() == "true"

@@ -411,8 +411,16 @@ class FatigueDetector(BaseDetector):
             },
         )
 
-    def _parse_conversions_from_json(self, actions_str):
-        """Parse conversions from actions JSON string."""
+    def _parse_conversions_from_json(self, actions_str: str) -> float:
+        """
+        Parse conversions from actions JSON string.
+
+        Args:
+            actions_str: JSON string containing action data
+
+        Returns:
+            Total conversion value from purchase actions
+        """
         import json
         if pd.isna(actions_str) or actions_str == "":
             return 0

@@ -64,6 +64,60 @@ class DarkHoursDetector(BaseDetector):
     # Day of week names
     DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
+    # Scoring constants - hourly analysis
+    DEAD_ZONE_PENALTY_PER_HOUR_LOW = 5  # Penalty per dead zone hour (≤2 hours)
+    DEAD_ZONE_PENALTY_PER_HOUR_MID = 5  # Penalty per dead zone hour (2-4 hours)
+    DEAD_ZONE_PENALTY_PER_HOUR_HIGH = 10  # Penalty per dead zone hour (>4 hours)
+    DEAD_ZONE_PENALTY_MID_THRESHOLD = 10  # Base penalty at 2-4 hours
+    DEAD_ZONE_PENALTY_HIGH_THRESHOLD = 20  # Base penalty at >4 hours
+    DEAD_ZONE_MAX_PENALTY = 40  # Maximum dead zone penalty
+    SPEND_PENALTY_MULTIPLIER = 100  # Convert spend ratio to penalty points
+    SPEND_MAX_PENALTY = 20  # Maximum spend-based penalty
+
+    VARIANCE_CV_LOW = 0.5  # Low coefficient of variation threshold
+    VARIANCE_CV_HIGH = 1.0  # High coefficient of variation threshold
+    VARIANCE_LOW_PENALTY_MAX = 10  # Max penalty for low variance
+    VARIANCE_HIGH_PENALTY_BASE = 10  # Base penalty for high variance
+    VARIANCE_HIGH_PENALTY_MULTIPLIER = 20  # Multiplier for high variance
+    VARIANCE_MAX_PENALTY = 30  # Maximum variance penalty
+
+    PEAK_HOURS_VERY_HIGH = 12  # Threshold for very high peak hours
+    PEAK_HOURS_HIGH = 8  # Threshold for high peak hours
+    PEAK_HOURS_MEDIUM = 4  # Threshold for medium peak hours
+    PEAK_BONUS_VERY_HIGH = 30  # Bonus for very high peak hours
+    PEAK_BONUS_HIGH = 20  # Bonus for high peak hours
+    PEAK_BONUS_MEDIUM = 10  # Bonus for medium peak hours
+    PEAK_BONUS_PER_HOUR = 2.5  # Bonus per peak hour (below medium)
+    PEAK_MAX_BONUS = 30  # Maximum peak hours bonus
+
+    # Scoring constants - weekly analysis
+    WEAK_DAY_PENALTY_1_DAY = 5  # Penalty for 1 weak day
+    WEAK_DAY_PENALTY_2_DAYS = 15  # Penalty for 2 weak days
+    WEAK_DAY_PENALTY_3_OR_MORE = 30  # Penalty for 3+ weak days
+    WEAK_DAY_MAX_PENALTY = 40  # Maximum weak day penalty
+
+    STRONG_DAY_BONUS_5_OR_MORE = 30  # Bonus for 5+ strong days
+    STRONG_DAY_BONUS_4_DAYS = 20  # Bonus for 4 strong days
+    STRONG_DAY_BONUS_3_DAYS = 10  # Bonus for 3 strong days
+    STRONG_DAY_BONUS_PER_DAY = 2.5  # Bonus per strong day (below 3)
+    STRONG_DAY_MAX_BONUS = 30  # Maximum strong days bonus
+
+    # Weekly variance constants (different from hourly)
+    WEEKLY_VARIANCE_CV_LOW = 0.3  # Low CV threshold for weekly
+    WEEKLY_VARIANCE_CV_HIGH = 0.6  # High CV threshold for weekly
+    WEEKLY_VARIANCE_PENALTY_MAX = 10  # Max penalty for weekly variance
+    WEEKLY_VARIANCE_PENALTY_BASE = 10  # Base penalty for high weekly variance
+    WEEKLY_VARIANCE_PENALTY_MULTIPLIER = 30  # Multiplier for weekly variance
+
+    # Weekly weak day penalty constants
+    WEEKLY_WEAK_PENALTY_1_DAY = 5  # Base penalty for 1 weak day
+    WEEKLY_WEAK_PENALTY_2_DAYS = 15  # Penalty for 2 weak days
+    WEEKLY_WEAK_PENALTY_3_PLUS_BASE = 25  # Base penalty for 3+ weak days
+    WEEKLY_WEAK_PENALTY_3_PLUS_MULTIPLIER = 10  # Per-day penalty for 3+ weak days
+    WEEKLY_WEAK_MAX_PENALTY = 40  # Maximum weak day penalty
+    WEEKLY_WEAK_SPEND_PENALTY_MULTIPLIER = 100  # Weekly weak spend penalty multiplier
+    WEEKLY_WEAK_SPEND_MAX_PENALTY = 20  # Maximum weekly weak spend penalty
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize day & hour performance analyzer."""
         super().__init__(config)
@@ -305,16 +359,21 @@ class DarkHoursDetector(BaseDetector):
 
             # Penalty based on number of dead zone hours
             if dead_zone_hours <= 2:
-                dead_penalty = dead_zone_hours * 5
+                dead_penalty = dead_zone_hours * self.DEAD_ZONE_PENALTY_PER_HOUR_LOW
             elif dead_zone_hours <= 4:
-                dead_penalty = 10 + (dead_zone_hours - 2) * 5
+                dead_penalty = self.DEAD_ZONE_PENALTY_MID_THRESHOLD + (
+                    (dead_zone_hours - 2) * self.DEAD_ZONE_PENALTY_PER_HOUR_MID
+                )
             else:
-                dead_penalty = 20 + min(20, (dead_zone_hours - 4) * 10)
+                dead_penalty = self.DEAD_ZONE_PENALTY_HIGH_THRESHOLD + min(
+                    self.DEAD_ZONE_MAX_PENALTY - self.DEAD_ZONE_PENALTY_HIGH_THRESHOLD,
+                    (dead_zone_hours - 4) * self.DEAD_ZONE_PENALTY_PER_HOUR_HIGH
+                )
 
             # Additional penalty for spend in dead zones
-            spend_penalty = min(20, dead_zone_spend_ratio * 100)
+            spend_penalty = min(self.SPEND_MAX_PENALTY, dead_zone_spend_ratio * self.SPEND_PENALTY_MULTIPLIER)
 
-            total_dead_penalty = min(40, dead_penalty + spend_penalty)
+            total_dead_penalty = min(self.DEAD_ZONE_MAX_PENALTY, dead_penalty + spend_penalty)
             score -= total_dead_penalty
 
         # ROAS variance penalty (0-30 points)
@@ -323,12 +382,17 @@ class DarkHoursDetector(BaseDetector):
 
         if roas_mean > 0:
             roas_cv = roas_std / roas_mean
-            if roas_cv < 0.5:
+            if roas_cv < self.VARIANCE_CV_LOW:
                 variance_penalty = 0
-            elif roas_cv < 1.0:
-                variance_penalty = (roas_cv - 0.5) / 0.5 * 10
+            elif roas_cv < self.VARIANCE_CV_HIGH:
+                variance_penalty = (roas_cv - self.VARIANCE_CV_LOW) / (
+                    self.VARIANCE_CV_HIGH - self.VARIANCE_CV_LOW
+                ) * self.VARIANCE_LOW_PENALTY_MAX
             else:
-                variance_penalty = 10 + min(20, (roas_cv - 1.0) * 20)
+                variance_penalty = self.VARIANCE_HIGH_PENALTY_BASE + min(
+                    self.VARIANCE_MAX_PENALTY - self.VARIANCE_HIGH_PENALTY_BASE,
+                    (roas_cv - self.VARIANCE_CV_HIGH) * self.VARIANCE_HIGH_PENALTY_MULTIPLIER
+                )
             score -= variance_penalty
 
         # Peak hours bonus (0-30 points)
@@ -337,15 +401,15 @@ class DarkHoursDetector(BaseDetector):
         ]
         if len(peak_hours) > 0:
             peak_count = len(peak_hours)
-            if peak_count >= 12:
-                peak_bonus = 30
-            elif peak_count >= 8:
-                peak_bonus = 20
-            elif peak_count >= 4:
-                peak_bonus = 10
+            if peak_count >= self.PEAK_HOURS_VERY_HIGH:
+                peak_bonus = self.PEAK_BONUS_VERY_HIGH
+            elif peak_count >= self.PEAK_HOURS_HIGH:
+                peak_bonus = self.PEAK_BONUS_HIGH
+            elif peak_count >= self.PEAK_HOURS_MEDIUM:
+                peak_bonus = self.PEAK_BONUS_MEDIUM
             else:
-                peak_bonus = peak_count * 2.5
-            score += min(30, peak_bonus)
+                peak_bonus = peak_count * self.PEAK_BONUS_PER_HOUR
+            score += min(self.PEAK_MAX_BONUS, peak_bonus)
 
         return min(100, max(0, score))
 
@@ -374,16 +438,23 @@ class DarkHoursDetector(BaseDetector):
 
             # Penalty based on number of weak days
             if weak_day_count == 1:
-                weak_penalty = 5
+                weak_penalty = self.WEEKLY_WEAK_PENALTY_1_DAY
             elif weak_day_count == 2:
-                weak_penalty = 15
+                weak_penalty = self.WEEKLY_WEAK_PENALTY_2_DAYS
             else:
-                weak_penalty = min(40, 25 + (weak_day_count - 2) * 10)
+                weak_penalty = min(
+                    self.WEEKLY_WEAK_MAX_PENALTY,
+                    self.WEEKLY_WEAK_PENALTY_3_PLUS_BASE +
+                    (weak_day_count - 2) * self.WEEKLY_WEAK_PENALTY_3_PLUS_MULTIPLIER
+                )
 
             # Additional penalty for spend in weak days
-            spend_penalty = min(20, weak_day_spend_ratio * 100)
+            spend_penalty = min(
+                self.WEEKLY_WEAK_SPEND_MAX_PENALTY,
+                weak_day_spend_ratio * self.WEEKLY_WEAK_SPEND_PENALTY_MULTIPLIER
+            )
 
-            total_weak_penalty = min(40, weak_penalty + spend_penalty)
+            total_weak_penalty = min(self.WEEKLY_WEAK_MAX_PENALTY, weak_penalty + spend_penalty)
             score -= total_weak_penalty
 
         # ROAS variance penalty (0-30 points)
@@ -392,12 +463,17 @@ class DarkHoursDetector(BaseDetector):
 
         if roas_mean > 0:
             roas_cv = roas_std / roas_mean
-            if roas_cv < 0.3:
+            if roas_cv < self.WEEKLY_VARIANCE_CV_LOW:
                 variance_penalty = 0
-            elif roas_cv < 0.6:
-                variance_penalty = (roas_cv - 0.3) / 0.3 * 10
+            elif roas_cv < self.WEEKLY_VARIANCE_CV_HIGH:
+                variance_penalty = (roas_cv - self.WEEKLY_VARIANCE_CV_LOW) / (
+                    self.WEEKLY_VARIANCE_CV_HIGH - self.WEEKLY_VARIANCE_CV_LOW
+                ) * self.WEEKLY_VARIANCE_PENALTY_MAX
             else:
-                variance_penalty = 10 + min(20, (roas_cv - 0.6) * 30)
+                variance_penalty = self.WEEKLY_VARIANCE_PENALTY_BASE + min(
+                    self.VARIANCE_MAX_PENALTY - self.WEEKLY_VARIANCE_PENALTY_BASE,
+                    (roas_cv - self.WEEKLY_VARIANCE_CV_HIGH) * self.WEEKLY_VARIANCE_PENALTY_MULTIPLIER
+                )
             score -= variance_penalty
 
         # Strong days bonus (0-30 points)
@@ -407,12 +483,12 @@ class DarkHoursDetector(BaseDetector):
         if len(strong_days) > 0:
             strong_count = len(strong_days)
             if strong_count >= 5:
-                strong_bonus = 30
+                strong_bonus = self.STRONG_DAY_BONUS_5_OR_MORE
             elif strong_count >= 3:
-                strong_bonus = 20
+                strong_bonus = self.STRONG_DAY_BONUS_3_DAYS
             else:
-                strong_bonus = strong_count * 5
-            score += min(30, strong_bonus)
+                strong_bonus = strong_count * self.STRONG_DAY_BONUS_PER_DAY
+            score += min(self.STRONG_DAY_MAX_BONUS, strong_bonus)
 
         return min(100, max(0, score))
 

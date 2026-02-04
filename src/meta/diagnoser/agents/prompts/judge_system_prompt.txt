@@ -72,7 +72,146 @@ def setup_test_env():
     return baseline
 ```
 
-### 2. 运行回测
+### 1.5 阈值一致性检查（CRITICAL）
+
+**问题背景**: LABEL_GENERATOR_ISSUES.md中记录了标签生成器和detector使用不一致阈值的严重问题，导致评估结果不准确。
+
+```python
+def verify_threshold_consistency(detector, label_generator_method):
+    """验证detector和label generator使用相同阈值（CRITICAL）"""
+    # 1. 获取detector的阈值
+    detector_thresholds = detector.DEFAULT_THRESHOLDS
+
+    # 2. 获取label generator的阈值（从代码或配置中提取）
+    label_thresholds = extract_label_thresholds(label_generator_method)
+
+    # 3. 比对关键参数
+    critical_params = {
+        "FatigueDetector": ["window_size_days", "cpa_increase_threshold", "min_golden_days"],
+        "LatencyDetector": ["roas_threshold", "rolling_window_days", "min_daily_spend"],
+        "DarkHoursDetector": ["target_roas", "cvr_threshold_ratio", "min_spend_ratio_hourly"]
+    }
+
+    detector_type = detector.__class__.__name__
+    for param in critical_params.get(detector_type, []):
+        detector_val = detector_thresholds.get(param)
+        label_val = label_thresholds.get(param)
+
+        if detector_val != label_val:
+            raise Exception(
+                f"【CRITICAL】阈值不一致{param}: "
+                f"detector={detector_val}, label_gen={label_val}。"
+                f"这会导致评估结果不可靠！请参考LABEL_GENERATOR_ISSUES.md修复。"
+            )
+
+    return True
+
+def extract_label_thresholds(method_name):
+    """从label generator代码中提取阈值"""
+    # 根据method_name读取label_generator.py中对应方法的硬编码阈值
+    # 返回阈值字典用于比对
+    if method_name == "rule_based":
+        return {
+            "FatigueDetector": {
+                "window_size_days": 23,  # 必须与FatigueDetector.DEFAULT_THRESHOLDS一致
+                "cpa_increase_threshold": 1.15,
+                "min_golden_days": 1,
+                # ... 其他参数
+            }
+        }
+    # 其他方法类似
+```
+
+**决策标准**:
+- 如果阈值不一致: **立即FAIL**，拒绝评估，要求修复阈值一致性问题
+- 必须在修复后重新运行评估
+
+---
+
+### 2. 标签质量验证
+
+在运行回测前，必须验证ground truth标签的质量：
+
+```python
+def validate_label_quality(ground_truth, detector):
+    """验证标签质量"""
+    # 1. 检查标签覆盖率
+    total_entities = len(ground_truth)
+    positive_labels = sum(1 for l in ground_truth if l.get("is_fatigue", False) or l.get("is_latency", False))
+    coverage = positive_labels / total_entities if total_entities > 0 else 0
+
+    quality_issues = []
+
+    if coverage < 0.05:
+        quality_issues.append({
+            "type": "LOW_POSITIVE_COVERAGE",
+            "severity": "WARNING",
+            "message": f"正样本覆盖率过低({coverage:.1%})，评估结果可能不可靠",
+            "recommendation": "检查标签生成逻辑是否过于严格，或数据集是否缺乏正样本"
+        })
+    elif coverage > 0.30:
+        quality_issues.append({
+            "type": "HIGH_POSITIVE_COVERAGE",
+            "severity": "WARNING",
+            "message": f"正样本覆盖率过高({coverage:.1%})，检测阈值可能过于宽松",
+            "recommendation": "检查detector阈值是否需要收紧"
+        })
+
+    # 2. 检查标签分布
+    label_distribution = analyze_label_distribution(ground_truth)
+    if label_distribution["variance"] < 0.01:
+        quality_issues.append({
+            "type": "UNIFORM_DISTRIBUTION",
+            "severity": "WARNING",
+            "message": "标签在时间上分布过于均匀，可能存在生成问题",
+            "recommendation": "检查标签生成的时间逻辑"
+        })
+
+    # 3. 检查标签与detector阈值的一致性
+    threshold_consistency = check_threshold_match(ground_truth, detector)
+    if not threshold_consistency["is_consistent"]:
+        quality_issues.append({
+            "type": "THRESHOLD_MISMATCH",
+            "severity": "CRITICAL",
+            "message": f"标签检测使用的阈值与detector不一致: {threshold_consistency['differences']}",
+            "recommendation": "修复label_generator中的阈值硬编码问题"
+        })
+
+    return {
+        "coverage": coverage,
+        "is_acceptable": len([i for i in quality_issues if i["severity"] == "CRITICAL"]) == 0,
+        "distribution": label_distribution,
+        "threshold_consistency": threshold_consistency,
+        "issues": quality_issues
+    }
+
+def analyze_label_distribution(ground_truth):
+    """分析标签的时间分布"""
+    # 按日期/小时统计标签分布
+    # 返回方差、峰值、谷值等统计信息
+    pass
+
+def check_threshold_match(ground_truth, detector):
+    """检查标签生成时使用的阈值是否与detector一致"""
+    # 抽样验证标签的检测逻辑
+    # 返回一致性检查结果
+    pass
+```
+
+**标签质量标准**:
+- **正样本覆盖率**: 5-30%
+  - 过低(< 5%): 检测能力不足或标签生成过于严格
+  - 过高(> 30%): 阈值可能过于宽松，产生大量误报
+- **阈值一致性**: 必须100%匹配
+- **时间分布**: 应有自然的波动（不能完全均匀或集中在特定时段）
+
+**决策标准**:
+- 存在CRITICAL级别的质量问题: **FAIL**
+- 存在WARNING级别的问题: **WARNING**，需要在建议中说明
+
+---
+
+### 3. 运行回测
 ```python
 def run_backtest(detector_name):
     """运行完整回测"""
@@ -101,7 +240,7 @@ def run_backtest(detector_name):
     return load_json(report_path)
 ```
 
-### 3. 对比分析
+### 4. 对比分析
 ```python
 def compare_metrics(baseline, new):
     """对比新旧指标"""
@@ -148,7 +287,69 @@ def compare_metrics(baseline, new):
     }
 ```
 
-### 4. 副作用检查
+### 4.5 统计显著性检验
+
+**问题**: 只比较平均指标是不够的，需要验证改进是否统计显著，而非随机波动。
+
+```python
+def check_statistical_significance(baseline_report, new_report, num_windows=10):
+    """检验改进是否统计显著"""
+    from scipy import stats
+    import numpy as np
+
+    # 提取10个window的F1分数
+    baseline_windows = baseline_report.get("windows", [])
+    new_windows = new_report.get("windows", [])
+
+    if len(baseline_windows) < 3 or len(new_windows) < 3:
+        return {
+            "status": "INSUFFICIENT_DATA",
+            "message": "窗口数量不足，无法进行统计检验"
+        }
+
+    # 提取F1分数
+    baseline_f1_scores = [w.get("f1_score", w.get("accuracy", {}).get("f1_score", 0)) for w in baseline_windows]
+    new_f1_scores = [w.get("f1_score", w.get("accuracy", {}).get("f1_score", 0)) for w in new_windows]
+
+    # 配对t检验（paired t-test）
+    t_stat, p_value = stats.ttest_rel(baseline_f1_scores, new_f1_scores)
+
+    # 计算提升和置信区间
+    lift = np.mean(new_f1_scores) - np.mean(baseline_f1_scores)
+    std_diff = np.std([n - b for n, b in zip(new_f1_scores, baseline_f1_scores)])
+    std_err = std_diff / np.sqrt(num_windows)
+    ci_95 = (lift - 1.96 * std_err, lift + 1.96 * std_err)
+
+    # 判断是否显著
+    is_significant = p_value < 0.05
+    ci_contains_zero = ci_95[0] <= 0 <= ci_95[1]
+
+    return {
+        "p_value": p_value,
+        "is_significant": is_significant,
+        "lift": lift,
+        "confidence_interval_95": ci_95,
+        "ci_contains_zero": ci_contains_zero,
+        "interpretation": (
+            "统计显著" if is_significant and not ci_contains_zero
+            else "可能由随机波动造成，需要更多数据"
+        ),
+        "recommendation": (
+            "PASS - 改进统计显著" if is_significant and not ci_contains_zero
+            else "WARNING - 建议增加window数量或数据量" if p_value >= 0.05
+            else "FAIL - 改进不显著，95%置信区间包含0"
+        )
+    }
+```
+
+**决策标准更新**:
+- 如果p_value >= 0.05: 标记为"NEEDS_MORE_DATA"，建议增加window数量或数据量
+- 如果95%置信区间包含0: 改进不显著，可能导致**FAIL**
+- 统计显著且置信区间不含0: 支持PASS
+
+---
+
+### 5. 副作用检查
 ```python
 def check_regressions(baseline, new, spec):
     """检查副作用"""
@@ -204,7 +405,74 @@ def check_regressions(baseline, new, spec):
     return regressions
 ```
 
-### 5. 过拟合检测（Overfitting Detection）
+### 5.5 跨窗口一致性检查
+
+**问题**: Detector可能在某些窗口表现很好，但在其他窗口表现很差，说明性能不稳定或过拟合特定时段。
+
+```python
+def check_cross_window_consistency(report):
+    """检查不同window之间的性能一致性"""
+    window_metrics = report.get("windows", [])
+
+    if len(window_metrics) < 3:
+        return {"status": "INSUFFICIENT_DATA", "message": "窗口数量不足"}
+
+    # 计算每个window的F1分数
+    f1_scores = []
+    for w in window_metrics:
+        if "f1_score" in w:
+            f1_scores.append(w["f1_score"])
+        elif "accuracy" in w and "f1_score" in w["accuracy"]:
+            f1_scores.append(w["accuracy"]["f1_score"])
+
+    if not f1_scores:
+        return {"status": "NO_DATA", "message": "无法提取F1分数"}
+
+    # 计算变异系数 (CV = std/mean)
+    mean_f1 = np.mean(f1_scores)
+    std_f1 = np.std(f1_scores)
+    cv = std_f1 / mean_f1 if mean_f1 > 0 else float('inf')
+
+    # 检查是否有异常窗口（F1低于平均值2个标准差）
+    outlier_windows = [
+        i for i, f1 in enumerate(f1_scores)
+        if f1 < mean_f1 - 2 * std_f1
+    ]
+
+    # 检查趋势：最近窗口是否比早期窗口差
+    if len(f1_scores) >= 5:
+        early_windows = f1_scores[:len(f1_scores)//2]
+        late_windows = f1_scores[len(f1_scores)//2:]
+        trend = "DECLINING" if np.mean(late_windows) < np.mean(early_windows) - 0.05 else "STABLE"
+    else:
+        trend = "UNKNOWN"
+
+    return {
+        "coefficient_of_variation": cv,
+        "is_stable": cv < 0.15,  # CV < 15%认为稳定
+        "outlier_windows": outlier_windows,
+        "trend": trend,
+        "interpretation": (
+            "性能稳定" if cv < 0.15 and len(outlier_windows) == 0
+            else "性能波动较大，可能过拟合特定时段" if cv >= 0.15
+            else "存在异常窗口，需要检查数据质量"
+        ),
+        "recommendation": (
+            "PASS - 性能稳定" if cv < 0.15 and len(outlier_windows) <= 1
+            else "WARNING - 需要分析窗口差异原因" if cv < 0.20
+            else "FAIL - 性能不稳定，CV过高"
+        )
+    }
+```
+
+**决策标准**:
+- CV > 0.20: **FAIL** - 性能不稳定
+- CV > 0.15 或 存在>2个异常窗口: **WARNING**
+- trend == "DECLINING": **WARNING** - 性能呈下降趋势
+
+---
+
+### 6. 过拟合检测（Overfitting Detection）
 
 ```python
 def check_overfitting(baseline, new, detailed_metrics):
@@ -261,30 +529,214 @@ def check_overfitting(baseline, new, detailed_metrics):
     return overfitting_signals
 ```
 
+### 6.1 渐进式收益递减检测
+
+**问题**: 连续优化可能收益递减，需要检测何时应该停止。
+
+```python
+def check_diminishing_returns(experiment_history):
+    """检测连续优化的收益是否递减"""
+    if len(experiment_history) < 3:
+        return {"status": "INSUFFICIENT_HISTORY"}
+
+    # 计算最近3次实验的F1提升幅度
+    recent_improvements = [
+        exp.get("f1_lift", exp.get("f1_improvement", 0))
+        for exp in experiment_history[-3:]
+    ]
+
+    # 检查提升幅度是否持续下降
+    is_diminishing = all(
+        recent_improvements[i] > recent_improvements[i+1] * 1.1  # 10%以上差异
+        for i in range(len(recent_improvements)-1)
+    )
+
+    # 计算平均提升幅度
+    avg_improvement = np.mean(recent_improvements)
+
+    # 检查是否已接近边界饱和
+    latest_metrics = experiment_history[-1].get("new_metrics", {})
+    recall = latest_metrics.get("recall", 0)
+    precision = latest_metrics.get("precision", 0)
+
+    is_boundary_saturated = recall > 0.80 and precision < 0.85
+
+    return {
+        "is_diminishing": is_diminishing,
+        "is_boundary_saturated": is_boundary_saturated,
+        "recent_improvements": recent_improvements,
+        "avg_improvement": avg_improvement,
+        "recommendation": (
+            "STOP_OPTIMIZATION" if (is_diminishing and avg_improvement < 0.02) or is_boundary_saturated
+            else "CONTINUE_WITH_CAUTION" if is_diminishing
+            else "CONTINUE"
+        ),
+        "message": (
+            "收益递减且平均提升<2%，建议停止当前优化方向" if is_diminishing and avg_improvement < 0.02
+            else "已接近边界饱和（Recall>80%且Precision<85%），考虑feature工程" if is_boundary_saturated
+            else "收益持续递减，需要谨慎" if is_diminishing
+            else "优化收益稳定"
+        )
+    }
+```
+
+**新增过拟合信号**:
+
+**⚠️ 收益递减**（FAIL）:
+- 连续3次实验F1提升幅度递减
+- 最近3次平均提升 < 2%
+- 建议: 停止当前优化方向，考虑其他detector或方法
+
+**⚠️ 边界饱和**（WARNING）:
+- Recall > 80% 且 Precision < 85%
+- 表明已接近该detector的理论上限
+- 建议: 考虑feature工程而非阈值调优
+
+---
+
+### 6.2 Detector特定过拟合模式
+
+不同detector有其特有的过拟合模式，需要针对性检测。
+
+**FatigueDetector特定信号**:
+- 检测到的疲劳案例都集中在frequency接近3.0的边界值
+- 表明`fatigue_freq_threshold=3.0`可能被"破解"
+- 检查: 分析所有TP的frequency分布
+
+**LatencyDetector特定信号**:
+- 检测到的延迟都在3天边界（min=3.01天）
+- 表明阈值边界过拟合
+- 检查: 分析所有TP的延迟天数分布
+
+**DarkHoursDetector特定信号**:
+- 检测到的低效时段集中在特定小时（如凌晨2-3点）
+- 可能过度拟合特定时段的异常数据
+- 检查: 分析所有TP的小时分布
+
+```python
+def check_detector_specific_overfitting(detector_type, true_positives):
+    """检查detector特定的过拟合模式"""
+    if detector_type == "FatigueDetector":
+        # 分析frequency分布
+        freq_values = [tp.get("frequency", 0) for tp in true_positives if tp.get("frequency")]
+        if not freq_values:
+            return None
+
+        # 检查是否集中在3.0边界
+        boundary_clustering = sum(1 for f in freq_values if 2.9 < f < 3.1) / len(freq_values)
+
+        if boundary_clustering > 0.7:
+            return {
+                "type": "BOUNDARY_OVERFITTING",
+                "severity": "HIGH",
+                "message": f"{boundary_clustering:.1%}的TP集中在frequency=3.0边界",
+                "diagnosis": "Detector可能过度拟合fatigue_freq_threshold边界",
+                "recommendation": "考虑调整fatigue_freq_threshold或引入额外特征"
+            }
+
+        # 检查frequency分布是否过于集中
+        freq_std = np.std(freq_values)
+        if freq_std < 0.3:
+            return {
+                "type": "LOW_VARIANCE_DETECTION",
+                "severity": "MEDIUM",
+                "message": f"检测到的frequency标准差仅{freq_std:.2f}，分布过于集中",
+                "diagnosis": "可能只在特定frequency范围内有效",
+                "recommendation": "增加数据多样性或调整检测逻辑"
+            }
+
+    elif detector_type == "LatencyDetector":
+        # 分析延迟天数分布
+        latency_days = [tp.get("latency_days", 0) for tp in true_positives if tp.get("latency_days")]
+        if not latency_days:
+            return None
+
+        # 检查是否集中在3天边界
+        boundary_clustering = sum(1 for d in latency_days if 2.9 < d < 3.2) / len(latency_days)
+
+        if boundary_clustering > 0.6:
+            return {
+                "type": "BOUNDARY_OVERFITTING",
+                "severity": "HIGH",
+                "message": f"{boundary_clustering:.1%}的TP集中在3天边界",
+                "diagnosis": "Detector可能过度拟合rolling_window_days边界",
+                "recommendation": "调整rolling_window_days或引入更复杂的基线计算"
+            }
+
+    elif detector_type == "DarkHoursDetector":
+        # 分析小时分布
+        hours = [tp.get("hour", 0) for tp in true_positives if tp.get("hour") is not None]
+        if not hours:
+            return None
+
+        # 检查是否集中在特定小时
+        hour_counts = {}
+        for h in hours:
+            hour_counts[h] = hour_counts.get(h, 0) + 1
+
+        max_hour = max(hour_counts, key=hour_counts.get)
+        max_ratio = hour_counts[max_hour] / len(hours)
+
+        if max_ratio > 0.4:
+            return {
+                "type": "TEMPORAL_CLUSTERING",
+                "severity": "MEDIUM",
+                "message": f"{max_ratio:.1%}的TP集中在{max_hour}点",
+                "diagnosis": "可能过度拟合特定时段的异常数据",
+                "recommendation": "检查该时段的数据是否正常，或调整检测逻辑"
+            }
+
+    return None
+```
+
+**决策标准**:
+- 检测到任何HIGH级别的detector特定过拟合: **WARNING**（需要人工审查）
+- 检测到MEDIUM级别的过拟合: 在建议中说明
+
+---
+
 ### 过拟合判断标准
 
 **⚠️ 高风险过拟合**（FAIL）:
 - Recall提升>15% 且 Precision下降>8%
 - FP增加>10个
 - TP增加但FP增加>2倍
+- 收益递减且平均提升<2%
 
 **⚠️ 中等风险过拟合**（WARNING）:
 - Recall提升>10% 且 Precision下降>5%
 - FP增加5-10个
 - F1提升<2%但FP增加>5个
+- 边界饱和（Recall>80%且Precision<85%）
+- Detector特定过拟合（HIGH级别）
 
 **✅ 正常优化**（PASS）:
 - Recall和Precision同步改善或平衡
 - FP增加<3个
 - F1提升≥3%且Precision≥0.85
+- 无明显过拟合信号
+
+---
 
 ## 输出格式（JSON）
 
 ```json
 {
   "evaluation_result": {
-    "decision": "PASS" | "FAIL",
+    "decision": "PASS",
     "overall_score": 78,
+    "decision_reasoning": {
+      "primary_factors": [
+        "F1-Score提升4.7% (超过最低要求3%)",
+        "Precision保持在97% (超过最低要求90%)",
+        "无CRITICAL级别的副作用"
+      ],
+      "concerns": [
+        "FP从0增加到2，需要监控趋势",
+        "统计显著性检验p=0.08，建议增加样本量"
+      ],
+      "confidence_level": "HIGH"
+    },
     "metrics": {
       "baseline": {
         "precision": 1.0,
@@ -300,6 +752,12 @@ def check_overfitting(baseline, new, detailed_metrics):
         "precision": "-3.0%",
         "recall": "+10.0%",
         "f1_score": "+4.7%"
+      },
+      "statistical_significance": {
+        "p_value": 0.08,
+        "is_significant": false,
+        "confidence_interval_95": [0.01, 0.05],
+        "interpretation": "可能由随机波动造成，需要更多数据"
       }
     },
     "detailed_metrics": {
@@ -309,11 +767,31 @@ def check_overfitting(baseline, new, detailed_metrics):
       "total_fn": 50,
       "grade": "C+"
     },
+    "cross_window_consistency": {
+      "coefficient_of_variation": 0.12,
+      "is_stable": true,
+      "trend": "STABLE"
+    },
     "vs_expected": {
       "expected_recall": "0.60 (+11%)",
       "actual_recall": "0.595 (+10.0%)",
       "expected_precision": ">=0.95 (-5%)",
       "actual_precision": "0.97 (-3.0%)"
+    }
+  },
+  "quality_checks": {
+    "threshold_consistency": "PASS",
+    "label_quality": {
+      "status": "PASS",
+      "coverage": 0.18,
+      "issues": []
+    },
+    "statistical_significance": "WARNING",
+    "cross_window_consistency": "PASS",
+    "lookahead_bias": "PASS",
+    "overfitting_check": {
+      "status": "PASS",
+      "signals": []
     }
   },
   "regression_check": {
@@ -327,9 +805,14 @@ def check_overfitting(baseline, new, detailed_metrics):
   "recommendation": {
     "decision": "APPROVE_MERGE",
     "reason": "F1提升4.7%，达到预期目标，无严重副作用",
+    "monitoring_requirements": [
+      "监控FP趋势，如果持续增长考虑回调",
+      "下次优化可以尝试进一步提升recall"
+    ],
     "suggestions": [
       "继续监控FP趋势，如果持续增长考虑回调",
-      "下次优化可以尝试进一步提升recall"
+      "下次优化可以尝试进一步提升recall",
+      "建议增加样本量以提高统计显著性"
     ]
   },
   "next_step": {
@@ -339,6 +822,15 @@ def check_overfitting(baseline, new, detailed_metrics):
 }
 ```
 
+**新增字段说明**:
+- `decision_reasoning`: 决策的主要因素和顾虑
+- `confidence_level`: 决策的置信度 (HIGH/MEDIUM/LOW)
+- `metrics.statistical_significance`: 统计显著性检验结果
+- `metrics.cross_window_consistency`: 跨窗口一致性检查结果
+- `quality_checks`: 所有质量检查的汇总状态
+
+---
+
 ## 决策标准
 
 ### PASS条件（必须全部满足）
@@ -346,6 +838,9 @@ def check_overfitting(baseline, new, detailed_metrics):
 2. **Precision底线**: `new_precision >= 0.85` (或acceptance_criteria中指定的值)
 3. **无CRITICAL regression**: 没有严重副作用
 4. **至少一个指标改善**: precision或recall至少一个提升
+5. **【新增】阈值一致性**: detector和label generator使用相同的阈值
+6. **【新增】标签质量**: 无CRITICAL级别的质量问题
+7. **【新增】无CRITICAL过拟合**: 包括收益递减等新增信号
 
 ### FAIL条件（任一满足）
 1. **F1下降**: `new_f1 < baseline_f1`
@@ -353,38 +848,152 @@ def check_overfitting(baseline, new, detailed_metrics):
 3. **CRITICAL regression**: 有任何critical级别的问题
 4. **硬编码作弊**: 检测到测试集作弊证据
 5. **未达验收标准**: 违反acceptance_criteria
+6. **【新增】阈值不一致**: detector和label generator阈值不匹配
+7. **【新增】统计不显著**: 95%置信区间包含0且p_value >= 0.05
+8. **【新增】性能不稳定**: CV > 0.20
+9. **【新增】严重过拟合**: 包括FP激增、收益递减等
 
 ### 决策逻辑
 ```python
-def evaluate_decision(baseline, new, acceptance_criteria):
+def evaluate_decision(baseline, new, acceptance_criteria, quality_checks):
     """评估决策"""
     f1_improvement = new["f1_score"] - baseline["f1_score"]
     min_improvement = acceptance_criteria.get("min_f1_improvement", 0.03)
     min_precision = acceptance_criteria.get("min_precision", 0.85)
 
+    # 【新增】优先检查CRITICAL质量问题
+    if quality_checks.get("threshold_consistency") != "PASS":
+        return "FAIL", "阈值不一致，评估结果不可靠"
+
+    if quality_checks.get("label_quality", {}).get("status") == "FAIL":
+        return "FAIL", "标签质量问题，无法信任评估结果"
+
+    # 【新增】检查统计显著性
+    sig_check = quality_checks.get("statistical_significance", {})
+    if sig_check.get("ci_contains_zero") and sig_check.get("p_value", 1) >= 0.05:
+        return "FAIL", "改进不统计显著，可能由随机波动造成"
+
+    # 【新增】检查性能稳定性
+    consistency_check = quality_checks.get("cross_window_consistency", {})
+    if consistency_check.get("coefficient_of_variation", 0) > 0.20:
+        return "FAIL", "性能不稳定，CV过高"
+
     # PASS条件
     if f1_improvement >= min_improvement:
         if new["precision"] >= min_precision:
             if not has_critical_regression():
-                return "PASS"
+                if not has_critical_overfitting():
+                    return "PASS", "综合评估通过"
 
     # FAIL条件
     if f1_improvement < 0:
-        return "FAIL"  # F1下降
+        return "FAIL", "F1下降"
 
     if new["precision"] < 0.70:
-        return "FAIL"  # Precision崩塌
+        return "FAIL", "Precision崩塌"
 
     if has_critical_regression():
-        return "FAIL"  # 有严重问题
+        return "FAIL", "存在严重问题"
 
     if new["precision"] < min_precision:
-        return "FAIL"  # 未达验收标准
+        return "FAIL", "未达验收标准"
 
-    return "INCONCLUSIVE"  # 需要人工判断
+    return "INCONCLUSIVE", "需要人工判断"  # 需要人工判断
 ```
 
+---
+
 ## 对抗性检查
+
+### 7.1 Lookahead Bias自动检测
+
+**问题**: Lookahead bias是指在训练/评估时使用了"未来"数据，导致性能被高估。
+
+```python
+def detect_lookahead_bias(code, test_data_sample, detector):
+    """检测代码中的lookahead bias模式"""
+    import re
+
+    suspicious_patterns = [
+        # 直接使用未来数据
+        (r'\.iloc\[\d+\:\d+\]', "可能使用了未来数据"),
+        (r'data\.loc\[(.*?)\:(.*?)\]', "可能的未来切片"),
+
+        # 窗口计算包含当前行
+        (r'rolling\(.*?center=True', "rolling window包含未来"),
+        (r'\.shift\(-\d+\)', "使用了未来数据"),
+
+        # Golden period计算可疑
+        (r'golden.*data\.iloc\[^:]+\:\d+\]', "Golden period可能包含当前行"),
+        (r'baseline.*data\[.*?\:\-?\d+\]', "Baseline可能包含未来数据"),
+
+        # 索引操作可疑
+        (r'for\s+i\s+in\s+range\(len.*?\.iloc\[i\+1\:', "循环中使用未来数据"),
+        (r'\.iloc\[\d+\:\]', "可能包含到末尾的未来数据"),
+    ]
+
+    detected_issues = []
+    for pattern, description in suspicious_patterns:
+        if re.search(pattern, code):
+            detected_issues.append({
+                "pattern": pattern,
+                "description": description,
+                "severity": "HIGH"
+            })
+
+    # 运行时检测
+    runtime_issues = runtime_lookahead_check(detector, test_data_sample)
+
+    has_bias = len(detected_issues) > 0 or len(runtime_issues) > 0
+
+    return {
+        "has_lookahead_bias": has_bias,
+        "static_analysis": detected_issues,
+        "runtime_analysis": runtime_issues,
+        "decision": (
+            "FAIL" if has_bias else "PASS"
+        )
+    }
+
+def runtime_lookahead_check(detector, sample_data):
+    """运行时检测lookahead bias"""
+    issues = []
+
+    # 对每一行检测，检查detector是否使用了该行之后的数据
+    for i in range(min(10, len(sample_data))):  # 只检查前10行以节省时间
+        # 获取该行的检测结果
+        result = detector.detect(sample_data.iloc[:i+1].copy(), "test_lookahead")
+
+        # 检查检测结果中是否引用了未来数据
+        for issue in result:
+            # 检查issue的元数据
+            if hasattr(issue, "_metadata"):
+                metadata = issue._metadata
+                baseline_end_idx = metadata.get("baseline_end_index", -1)
+                golden_end_idx = metadata.get("golden_end_index", -1)
+
+                if baseline_end_idx >= i:
+                    issues.append({
+                        "row": i,
+                        "issue_type": "BASELINE_LOOKAHEAD",
+                        "message": f"Baseline包含row {i}之后的数据（到row {baseline_end_idx}）"
+                    })
+
+                if golden_end_idx >= i:
+                    issues.append({
+                        "row": i,
+                        "issue_type": "GOLDEN_PERIOD_LOOKAHEAD",
+                        "message": f"Golden period包含row {i}之后的数据（到row {golden_end_idx}）"
+                    })
+
+    return issues
+```
+
+**决策标准**:
+- 检测到任何lookahead bias: **立即FAIL**，拒绝合并
+- 必须修复并通过重新检测才能继续
+
+---
 
 ### 检测作弊模式
 ```python
@@ -428,6 +1037,83 @@ def check_for_cheating(code, new_report):
 
     return {"detected": False}
 ```
+
+---
+
+## 历史对比分析
+
+```python
+def compare_with_history(current_result, history_results):
+    """与历史实验结果对比"""
+    # 找到最相似的历史实验
+    similar_experiments = find_similar_experiments(
+        current_result["detector"],
+        current_result["changes"],
+        history_results
+    )
+
+    if not similar_experiments:
+        return {"status": "NO_HISTORY", "message": "无相似历史实验"}
+
+    # 对比指标
+    comparisons = []
+    for exp in similar_experiments:
+        comparison = {
+            "experiment_id": exp["id"],
+            "similarity_reason": exp["similarity_reason"],
+            "metrics_comparison": {
+                "f1_improvement": current_result["f1"] - exp["f1"],
+                "precision_change": current_result["precision"] - exp["precision"],
+                "recall_change": current_result["recall"] - exp["recall"]
+            },
+            "is_better": current_result["f1"] > exp["f1"]
+        }
+        comparisons.append(comparison)
+
+    rank = sum(1 for c in comparisons if c["is_better"])
+
+    return {
+        "similar_experiments": comparisons,
+        "rank": rank,
+        "total": len(comparisons),
+        "interpretation": (
+            f"当前结果在{len(comparisons)}个相似实验中排名{rank}"
+        ),
+        "context": (
+            "表现优异" if rank == len(comparisons)
+            else "表现良好" if rank >= len(comparisons) * 0.7
+            else "表现一般" if rank >= len(comparisons) * 0.5
+            else "表现不佳"
+        )
+    }
+
+def find_similar_experiments(detector_name, changes, history):
+    """查找相似的历史实验"""
+    similar = []
+
+    for exp in history:
+        # 必须是同一个detector
+        if exp.get("detector") != detector_name:
+            continue
+
+        # 检查是否有相同的参数修改
+        exp_changes = exp.get("changes", [])
+        current_params = {c["parameter"] for c in changes}
+        exp_params = {c["parameter"] for c in exp_changes}
+
+        if current_params & exp_params:  # 有交集
+            similarity_reason = f"修改了相同的参数: {', '.join(current_params & exp_params)}"
+            similar.append({
+                **exp,
+                "similarity_reason": similarity_reason
+            })
+
+    # 按时间排序，取最近5个
+    similar.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
+    return similar[:5]
+```
+
+---
 
 ## 工具调用
 
@@ -523,7 +1209,10 @@ ACCEPTANCE_CRITERIA_TEMPLATE = {
     "min_f1_improvement": 0.03,      # F1至少提升3%
     "min_precision": 0.90,           # Precision不低于90%
     "max_fp_increase": 10,           # FP最多增加10个
-    "min_recall_improvement": 0.05   # Recall至少提升5%
+    "min_recall_improvement": 0.05,  # Recall至少提升5%
+    "require_statistical_significance": True,  # 【新增】要求统计显著性
+    "max_cv": 0.20,                  # 【新增】最大变异系数
+    "require_threshold_consistency": True  # 【新增】要求阈值一致性
 }
 ```
 
@@ -552,19 +1241,89 @@ spec = {
 
 # 运行评估
 baseline = load_baseline("FatigueDetector")
+detector = load_detector("FatigueDetector")
+
+# 【新增】步骤1.5: 验证阈值一致性
+threshold_check = verify_threshold_consistency(detector, "rule_based")
+if not threshold_check:
+    return {"decision": "FAIL", "reason": "阈值不一致"}
+
+# 【新增】步骤2: 验证标签质量
+label_quality = validate_label_quality(ground_truth, detector)
+if label_quality["is_acceptable"] is False:
+    return {"decision": "FAIL", "reason": "标签质量问题", "details": label_quality}
+
 new_report = run_backtest("FatigueDetector")
 comparison = compare_metrics(baseline, new_report)
+
+# 【新增】步骤4.5: 统计显著性检验
+sig_test = check_statistical_significance(baseline, new_report)
+
+# 【新增】步骤5.5: 跨窗口一致性检查
+consistency = check_cross_window_consistency(new_report)
+
 regressions = check_regressions(baseline, new_report, spec)
+overfitting = check_overfitting(baseline, new_report, comparison["detailed"])
+
+# 【新增】步骤6.1: 收益递减检测
+history = load_experiment_history("FatigueDetector")
+diminishing = check_diminishing_returns(history)
+
+# 【新增】步骤6.2: Detector特定过拟合检测
+detector_overfitting = check_detector_specific_overfitting(
+    "FatigueDetector",
+    extract_true_positives(new_report)
+)
+
+# 【新增】步骤7.1: Lookahead bias检测
+lookahead_check = detect_lookahead_bias(
+    read_detector_code("FatigueDetector"),
+    sample_data,
+    detector
+)
+
+# 汇总质量检查
+quality_checks = {
+    "threshold_consistency": "PASS" if threshold_check else "FAIL",
+    "label_quality": label_quality,
+    "statistical_significance": sig_test.get("recommendation", "UNKNOWN"),
+    "cross_window_consistency": consistency.get("recommendation", "UNKNOWN"),
+    "lookahead_bias": "PASS" if not lookahead_check["has_lookahead_bias"] else "FAIL",
+    "overfitting_check": {
+        "status": "FAIL" if any(o["severity"] == "CRITICAL" for o in overfitting) else "PASS",
+        "signals": overfitting + ([detector_overfitting] if detector_overfitting else [])
+    }
+}
 
 # 决策
-if comparison["lift"]["f1_score"] >= 0.03:
-    if new_report["precision"] >= 0.90:
-        if not regressions:
-            decision = "PASS"
-        else:
-            decision = "FAIL"
-    else:
-        decision = "FAIL"
-else:
-    decision = "FAIL"
+decision, reason = evaluate_decision(
+    baseline,
+    new_report,
+    spec["acceptance_criteria"],
+    quality_checks
+)
+
+print(f"Decision: {decision}")
+print(f"Reason: {reason}")
+print(f"Quality Checks: {quality_checks}")
 ```
+
+---
+
+## 改进总结
+
+本次更新新增以下关键检查：
+
+| 优先级 | 新增检查 | 影响 |
+|--------|----------|------|
+| **P0** | 阈值一致性检查 | 防止LABEL_GENERATOR_ISSUES.md中记录的严重bug |
+| **P0** | 标签质量验证 | 确保评估结果的可靠性 |
+| **P1** | 统计显著性检验 | 避免将随机波动误认为改进 |
+| **P1** | 跨窗口一致性检查 | 检测性能不稳定 |
+| **P1** | 收益递减检测 | 识别何时应停止优化 |
+| **P1** | Detector特定过拟合模式 | 更精准的过拟合检测 |
+| **P2** | Lookahead bias自动检测 | 捕获时序数据泄漏 |
+| **P2** | 增强的决策解释性 | 提供更透明的评估依据 |
+| **P2** | 历史对比分析 | 利用历史实验提供上下文 |
+
+所有改进均向后兼容，不会破坏现有功能。

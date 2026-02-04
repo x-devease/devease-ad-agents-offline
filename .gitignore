@@ -91,3 +91,4 @@ config/*/reference_images/
 # Note: Only root README.md should be tracked, all other docs should be external
 docs/
 examples/
+ad/

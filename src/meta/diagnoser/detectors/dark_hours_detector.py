@@ -52,12 +52,12 @@ class DarkHoursDetector(BaseDetector):
     - 0-19: Critical - severe waste
     """
 
-    # Default thresholds
+    # Default thresholds (optimized for high recall - v2)
     DEFAULT_THRESHOLDS = {
-        "target_roas": 2.5,
-        "cvr_threshold_ratio": 0.2,  # 20% of average
-        "min_spend_ratio_hourly": 0.05,  # 5% for hourly
-        "min_spend_ratio_daily": 0.10,  # 10% for daily
+        "target_roas": 2.0,  # Optimized: 2.5 → 2.0
+        "cvr_threshold_ratio": 0.15,  # Optimized for recall: 0.2 → 0.15 (15% of average)
+        "min_spend_ratio_hourly": 0.03,  # Optimized for recall: 0.05 → 0.03 (3% for hourly)
+        "min_spend_ratio_daily": 0.05,  # Optimized for recall: 0.10 → 0.05 (5% for daily)
         "min_days": 21,  # At least 3 weeks of data
     }
 

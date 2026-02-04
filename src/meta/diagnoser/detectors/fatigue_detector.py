@@ -45,15 +45,15 @@ class FatigueDetector(BaseDetector):
     - 80-100: Severe fatigue (urgent action needed)
     """
 
-    # Default thresholds (optimized via Iteration 10 - Improved recall)
+    # Default thresholds (optimized for high recall - v2)
     DEFAULT_THRESHOLDS = {
-        "window_size_days": 23,  # Optimized: 21 → 23
+        "window_size_days": 23,
         "golden_min_freq": 1.0,
         "golden_max_freq": 2.5,
-        "fatigue_freq_threshold": 3.0,
-        "cpa_increase_threshold": 1.10,  # Optimized: 1.2 → 1.15 → 1.10 (improved recall)
-        "consecutive_days": 1,  # Need 1 consecutive day to confirm (optimized from 2)
-        "min_golden_days": 1,  # Optimized: 2 → 1
+        "fatigue_freq_threshold": 2.0,  # Optimized for recall: 3.0 → 2.0
+        "cpa_increase_threshold": 1.05,  # Optimized for recall: 1.10 → 1.05
+        "consecutive_days": 1,  # Need 1 consecutive day to confirm
+        "min_golden_days": 1,
     }
 
     def __init__(self, config: Optional[Dict[str, Any]] = None):

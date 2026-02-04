@@ -110,21 +110,12 @@ class FatigueDetector(BaseDetector):
             )
             return issues
 
-        # Log for debugging
-        if str(entity_id) == '120215767837920310':
-            logger.info(f"Entity {entity_id}: Running fatigue analysis on {len(data)} days...")
-            logger.info(f"  Conversions: {data['conversions'].sum():.1f}")
-            logger.info(f"  Spend: {data['spend'].sum():.2f}")
-
         # Run rolling window fatigue analysis
         analysis_result = self._analyze_fatigue_rolling(data, entity_id)
 
         if analysis_result["is_fatigued"]:
             logger.info(f"Entity {entity_id}: Fatigue detected!")
             issues.append(self._create_fatigue_issue(entity_id, data, analysis_result))
-        else:
-            if str(entity_id) == '120215767837920310':
-                logger.info(f"Entity {entity_id}: No fatigue detected - {analysis_result.get('reason', 'unknown')}")
 
         return issues
 
@@ -444,5 +435,6 @@ class FatigueDetector(BaseDetector):
                     total += float(action.get("value", 0))
 
             return total
-        except:
+        except (json.JSONDecodeError, ValueError, AttributeError, TypeError) as e:
+            logger.debug(f"Failed to parse conversions JSON: {e}")
             return 0

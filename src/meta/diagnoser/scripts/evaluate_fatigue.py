@@ -11,7 +11,9 @@ from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 
-project_root = Path(__file__).parent.parent
+# Script is at: .../project/src/meta/diagnoser/scripts/evaluate_fatigue.py
+# Project root is 5 levels up: .../project/
+project_root = Path(__file__).parent.parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.meta.diagnoser.detectors import FatigueDetector

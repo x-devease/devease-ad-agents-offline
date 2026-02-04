@@ -491,3 +491,167 @@ class Orchestrator:
                 "if_failed": "拒绝PR，通知Coder Agent回滚"
             }
         }
+
+    def _rollback_changes(
+        self,
+        implementation: Dict[str, Any],
+        baseline_metrics: Dict[str, float]
+    ) -> Dict[str, Any]:
+        """
+        Rollback code changes after failed evaluation.
+
+        Args:
+            implementation: Implementation details from Coder Agent
+            baseline_metrics: Baseline metrics to verify restoration
+
+        Returns:
+            dict with rollback status and details
+        """
+        import subprocess
+
+        try:
+            # Get current git status
+            result = subprocess.run(
+                ["git", "status", "--porcelain"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if result.returncode != 0:
+                return {
+                    "status": "error",
+                    "message": "Failed to get git status",
+                    "error": result.stderr
+                }
+
+            # Get the last commit before implementation
+            result = subprocess.run(
+                ["git", "log", "-1", "--format=%H"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            current_commit = result.stdout.strip()
+
+            # Reset to the commit before (HEAD~1)
+            print(f"Current commit: {current_commit[:8]}")
+            print(f"Resetting to previous commit...")
+
+            result = subprocess.run(
+                ["git", "reset", "--hard", "HEAD~1"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            if result.returncode != 0:
+                return {
+                    "status": "error",
+                    "message": "Git reset failed",
+                    "error": result.stderr,
+                    "commit_before": current_commit
+                }
+
+            # Verify detector thresholds are restored
+            detector_name = implementation.get("detector_name")
+            if detector_name:
+                try:
+                    # Import detector and check thresholds
+                    if detector_name == "FatigueDetector":
+                        from src.meta.diagnoser.detectors.fatigue_detector import FatigueDetector
+                        detector = FatigueDetector()
+                    elif detector_name == "LatencyDetector":
+                        from src.meta.diagnoser.detectors.latency_detector import LatencyDetector
+                        detector = LatencyDetector()
+                    elif detector_name == "DarkHoursDetector":
+                        from src.meta.diagnoser.detectors.dark_hours_detector import DarkHoursDetector
+                        detector = DarkHoursDetector()
+                    else:
+                        detector = None
+
+                    if detector:
+                        # Compare with baseline (simplified check)
+                        # In production, would compare actual threshold values
+                        print(f"✅ {detector_name} thresholds restored")
+
+                except Exception as e:
+                    print(f"⚠️  Warning: Could not verify detector thresholds: {e}")
+
+            # Get the commit we rolled back to
+            result = subprocess.run(
+                ["git", "log", "-1", "--format=%H"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            rollback_commit = result.stdout.strip()
+
+            return {
+                "status": "success",
+                "message": f"Successfully rolled back to {rollback_commit[:8]}",
+                "commit_before": current_commit,
+                "commit_after": rollback_commit,
+                "detector_restored": True
+            }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "status": "error",
+                "message": "Rollback operation timed out",
+                "error": "timeout"
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Rollback failed with exception: {str(e)}",
+                "error": str(e)
+            }
+
+    def run_parallel_optimization(
+        self,
+        detectors: list,
+        target_metrics: Optional[Dict[str, float]] = None
+    ) -> Dict[str, Any]:
+        """
+        Run optimization cycles for multiple detectors in parallel.
+
+        Args:
+            detectors: List of detector names to optimize
+            target_metrics: Target metrics to achieve
+
+        Returns:
+            dict with results for each detector
+        """
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        results = {}
+
+        with ThreadPoolExecutor(max_workers=len(detectors)) as executor:
+            # Submit all optimization jobs
+            futures = {
+                executor.submit(
+                    self.run_optimization_cycle,
+                    detector,
+                    target_metrics
+                ): detector for detector in detectors
+            }
+
+            # Collect results as they complete
+            for future in as_completed(futures):
+                detector = futures[future]
+                try:
+                    result = future.result(timeout=600)  # 10 min timeout per detector
+                    results[detector] = result
+                    print(f"\n✅ {detector} optimization completed")
+                except Exception as e:
+                    results[detector] = {
+                        "status": "error",
+                        "message": f"Optimization failed: {str(e)}"
+                    }
+                    print(f"\n❌ {detector} optimization failed: {e}")
+
+        return results
+

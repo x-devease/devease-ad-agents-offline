@@ -321,7 +321,7 @@ class CoderAgent:
     def _generate_psychology_keywords(self, experiment_spec: Dict[str, Any]) -> Dict[str, List[str]]:
         """Generate psychology keywords based on experiment domain."""
 
-        domain = experiment_spec.get("domain", "")
+        domain = experiment_spec.get("domain") or ""
 
         if "gaming" in domain.lower():
             return {

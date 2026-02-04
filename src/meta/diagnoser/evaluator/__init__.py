@@ -1,5 +1,5 @@
 """
-Diagnoser Judge - 评估系统
+Diagnoser Evaluator - 评估系统
 
 用于衡量 Diagnoser 是否完成目标，评估检测器性能和质量。
 

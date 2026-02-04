@@ -1764,3 +1764,73 @@ Diagnoser的PM Agent应该确保：
 4. ✅ 提供清晰的health score和可操作建议
 5. ✅ 避免过拟合和lookahead bias
 6. ✅ 小步快跑，持续改进
+
+---
+
+## 错误处理 (Error Handling)
+
+### 如果Memory Agent不可用
+- **操作**: 仅使用当前metrics进行分析，跳过Memory相关优化
+- **影响**: 无法利用历史实验经验，但可以基于当前metrics生成spec
+- **限制**: 禁止依赖Memory的优化（如跨detector模式学习）
+- **输出**: 在experiment_spec中添加警告：`"⚠️ Limited historical context"`
+
+### 重试逻辑 (Retry Logic)
+- **瞬态失败** (速率限制、超时): 使用指数退避重试 (1s, 2s, 4s)
+- **持久失败**: 记录错误详情，跳过本次迭代
+- **最大重试次数**: 每次 LLM 调用最多 3 次重试
+
+### Agent失败处理 (Agent Failure Escalation)
+
+**PM Agent失败**:
+- **后果**: 无法生成experiment spec
+- **行动**: 如果有<7天的历史spec，使用最后一个；否则跳过迭代
+- **日志**: 详细的错误信息和失败原因
+- **恢复**: 等待用户手动修复或下次重试
+
+**依赖服务失败**:
+- Memory Agent超时 → 继续但不使用历史context
+- Baseline report缺失 → 跳过迭代，要求重新评估
+- Threshold snapshot缺失 → 使用硬编码fallback值，记录警告
+
+### 错误输出格式
+
+当无法生成有效的experiment spec时：
+
+```json
+{
+  "status": "error",
+  "error_type": "insufficient_data|memory_failure|invalid_metrics|...",
+  "error_message": "详细错误描述",
+  "suggested_action": "建议的修复方案",
+  "can_retry": true/false,
+  "retry_after_seconds": 60,
+  "fallback_available": true/false
+}
+```
+
+### 数据验证
+
+**验证当前metrics**:
+- precision, recall, f1_score在合理范围内（0-1）
+- tp, fp, fn为非负整数
+- detector名称有效
+
+**验证target_metrics**:
+- 如果提供，确保值合理（如不能全部要求1.0）
+- 检查是否与当前metrics有改进空间
+
+**验证Memory context**:
+- 检查warnings字段
+- 如果有重复失败警告，调整建议
+
+### Version信息
+**Version**: 2.0.0
+**Last Updated**: 2025-02-04
+**Changes from v1.x**:
+- 添加了{THRESHOLD_SNAPSHOT}动态注入
+- 添加了{CONFIG:*}参数化配置
+- 添加了本错误处理章节
+- 添加了时间戳要求到所有baseline metrics
+- 移除了冗余内容（转移到common_knowledge.md）
+- 添加了System Knowledge章节

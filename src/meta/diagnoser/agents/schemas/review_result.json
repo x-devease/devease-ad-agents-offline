@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ReviewResult",
+  "description": "Schema for Reviewer Agent review result",
+  "type": "object",
+  "required": ["review_result"],
+  "properties": {
+    "review_result": {
+      "type": "object",
+      "required": ["decision", "overall_score"],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["APPROVED", "REJECTED"],
+          "description": "Review decision"
+        },
+        "overall_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Overall quality score (0-100)"
+        },
+        "checks": {
+          "type": "object",
+          "properties": {
+            "architecture": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "string", "enum": ["PASS", "WARNING", "FAIL"]},
+                "score": {"type": "number", "minimum": 0, "maximum": 100}
+              }
+            },
+            "compliance": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "string", "enum": ["PASS", "WARNING", "FAIL"]},
+                "score": {"type": "number", "minimum": 0, "maximum": 100}
+              }
+            },
+            "logic_safety": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "string", "enum": ["PASS", "WARNING", "FAIL"]},
+                "score": {"type": "number", "minimum": 0, "maximum": 100}
+              }
+            },
+            "code_quality": {
+              "type": "object",
+              "properties": {
+                "status": {"type": "string", "enum": ["PASS", "WARNING", "FAIL"]},
+                "score": {"type": "number", "minimum": 0, "maximum": 100}
+              }
+            }
+          }
+        }
+      }
+    },
+    "feedback": {
+      "type": "object",
+      "properties": {
+        "strengths": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "concerns": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "next_step": {
+      "type": "object",
+      "properties": {
+        "if_approved": {"type": "string"},
+        "if_rejected": {"type": "string"}
+      }
+    }
+  }
+}

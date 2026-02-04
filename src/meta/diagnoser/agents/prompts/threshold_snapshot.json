@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-02-04T10:14:24.874336",
+  "git_commit": "7254abc3bbf4321994eaa0bfb161d9f613873688",
+  "detectors": {
+    "FatigueDetector": {
+      "file": "src/meta/diagnoser/detectors/fatigue_detector.py",
+      "thresholds": {
+        "window_size_days": 23,
+        "golden_min_freq": 1.0,
+        "golden_max_freq": 2.5,
+        "fatigue_freq_threshold": 3.0,
+        "cpa_increase_threshold": 1.1,
+        "consecutive_days": 1,
+        "min_golden_days": 1
+      }
+    },
+    "LatencyDetector": {
+      "file": "src/meta/diagnoser/detectors/latency_detector.py",
+      "thresholds": {
+        "roas_threshold": 1.0,
+        "rolling_window_days": 3,
+        "min_daily_spend": 50,
+        "min_drop_ratio": 0.2
+      }
+    },
+    "DarkHoursDetector": {
+      "file": "src/meta/diagnoser/detectors/dark_hours_detector.py",
+      "thresholds": {
+        "target_roas": 2.5,
+        "cvr_threshold_ratio": 0.2,
+        "min_spend_ratio_hourly": 0.05,
+        "min_spend_ratio_daily": 0.1,
+        "min_days": 21
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Runtime threshold snapshot for agent prompts",
+    "warning": "DO NOT manually edit this file. It is auto-generated."
+  }
+}

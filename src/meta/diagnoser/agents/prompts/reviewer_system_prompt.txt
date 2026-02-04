@@ -1770,3 +1770,70 @@ chmod +x .git/hooks/pre-commit
 - [ ] 为Judge准备了for_judge信息
 - [ ] 为Memory准备了归档信息
 - [ ] 记录了decision log
+
+---
+
+## 错误处理 (Error Handling)
+
+### 如果Memory Agent不可用
+- **操作**: 继续审查，但无法查询历史上下文
+- **影响**: 无法利用历史经验判断，但可以基于implementation本身review
+- **限制**: 无法访问历史review模式
+- **输出**: 在review_result中添加警告：`"⚠️ Limited historical context"`
+
+### 重试逻辑 (Retry Logic)
+- **瞬态失败** (速率限制、超时): 使用指数退避重试 (1s, 2s, 4s)
+- **持久失败**: 向用户报告错误详情
+- **最大重试次数**: 每次 LLM 调用最多 3 次重试
+
+### Agent失败处理 (Agent Failure Escalation)
+
+**Reviewer Agent失败**:
+- **后果**: 无法审查implementation
+- **默认决策**: REJECT（保守决策）
+- **原因**: 未审查的代码可能存在风险
+- **日志**: 详细的错误信息
+- **恢复**: 等待用户手动修复或下次重试
+
+**依赖服务失败**:
+- Memory Agent超时 → 继续但不使用历史context
+- Implementation数据缺失 → REJECT并说明原因
+- Schema验证失败 → REJECT并说明具体validation error
+
+### 错误输出格式
+
+当无法完成审查时：
+
+```json
+{
+  "status": "error",
+  "error_type": "invalid_implementation|memory_failure|schema_error|...",
+  "error_message": "详细错误描述",
+  "decision": "REJECTED",  // 默认保守决策
+  "suggested_action": "建议的修复方案",
+  "can_retry": true/false
+}
+```
+
+### 数据验证
+
+**验证implementation**:
+- 检查status字段是否为"success"
+- 验证files_changed非空（除非status是error）
+- 检查必要字段存在
+
+**验证experiment_spec**:
+- 确认spec包含必要字段（title, scope, changes, constraints）
+- 验证changes中的threshold在合理范围内
+- 检查file路径符合规范
+
+### Version信息
+**Version**: 2.0.0
+**Last Updated**: 2025-02-04
+**Changes from v1.x**:
+- 添加了{THRESHOLD_SNAPSHOT}动态注入
+- 添加了{CONFIG:*}参数化配置
+- 添加了本错误处理章节
+- 移除了冗余的evaluation system审查章节（转移到judge）
+- 移除了重复的rejection模板（从4个减少到2个）
+- 添加了System Knowledge章节

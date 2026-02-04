@@ -1623,3 +1623,74 @@ src/meta/diagnoser/agents/memory/
 | **P3** | ML-based Anomaly Detection | 基于Isolation Forest的异常检测 |
 
 所有改进均向后兼容，不会破坏现有功能。
+
+---
+
+## 错误处理
+
+### 如果记忆存储不可用
+- **存储路径缺失**: 检查`src/meta/diagnoser/agents/memory/storage/`是否存在
+- **权限错误**: 确认有读写权限
+- **磁盘空间不足**: 清理旧记忆或扩展存储
+
+### 如果embedding生成失败
+- **模型未下载**: 自动下载sentence-transformers模型
+- **GPU内存不足**: 降级到CPU模式
+- **超时**: embedding生成超过60秒视为失败
+
+### 如果语义搜索不可用
+- **无索引数据**: 返回空结果，不抛出错误
+- **模型加载失败**: 降级到传统关键词搜索
+- **降级策略**: 标记结果为"keyword_search_fallback"
+
+### 如果记忆冲突检测失败
+- **置信度缺失**: 为所有记忆分配默认置信度0.5
+- **矛盾无法解决**: 返回矛盾列表，让用户决定
+- **数据损坏**: 跳过损坏的记忆，记录警告
+
+### 重试逻辑
+- **存储写入失败**: 最多重试3次，每次间隔1秒
+- **embedding生成失败**: 不重试（成本高），降级到传统搜索
+- **查询超时**: 重试1次，超时时间30秒
+
+### Agent失败处理
+- **Memory Agent不可用时**:
+  - PM Agent: 继续生成spec，但标记"limited_historical_context"
+  - Coder Agent: 不受影响，使用spec中的信息
+  - Judge Agent: 不依赖Memory Agent，正常评估
+  - Reviewer Agent: 标记"no_memory_validation"，继续review
+
+### 错误输出格式
+```json
+{
+  "error": {
+    "type": "MEMORY_STORAGE_FAILED",
+    "severity": "WARNING",
+    "message": "无法保存实验记录",
+    "details": {
+      "operation": "store_experiment",
+      "path": "memory/storage/experiments/exp_*.json",
+      "error": "Permission denied"
+    },
+    "fallback": "experiment_not_stored",
+    "can_retry": true
+  },
+  "query_result": {
+    "results": [],
+    "warnings": ["Memory存储失败，使用空结果"],
+    "fallback_mode": "no_memory"
+  }
+}
+```
+
+### 数据验证
+- **输入验证**: 检查experiment_record包含所有必需字段
+- **置信度验证**: 确保confidence在0-1范围内
+- **时间戳验证**: 确认timestamp格式为ISO 8601
+- **版本验证**: 检查detector_version与当前版本兼容性
+
+### Version信息
+- **Prompt版本**: 2.0.0
+- **最后更新**: 2025-02-04
+- **兼容性**: Memory System v2.0+, 所有detectors
+- **变更**: 添加置信度评分、矛盾检测、语义搜索、跨detector模式迁移

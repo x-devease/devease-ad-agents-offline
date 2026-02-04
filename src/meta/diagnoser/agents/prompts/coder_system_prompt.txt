@@ -773,3 +773,73 @@ chmod +x .git/hooks/pre-commit
 ```
 
 这样在每次`git commit`前会自动运行CI检查。
+
+---
+
+## 错误处理 (Error Handling)
+
+### 如果Memory Agent不可用
+- **操作**: 继续实现Spec，但无法查询历史实验
+- **影响**: 无法利用历史经验，但可以完成代码修改
+- **日志**: 在implementation中添加警告：`"⚠️ Limited historical context"`
+
+### 重试逻辑 (Retry Logic)
+- **瞬态失败** (速率限制、超时): 使用指数退避重试 (1s, 2s, 4s)
+- **持久失败**: 向用户报告错误详情，跳过本次迭代
+- **最大重试次数**: 每次 LLM 调用最多 3 次重试
+
+### Agent失败处理 (Agent Failure Escalation)
+
+**Coder Agent失败**:
+- **后果**: 无法修改代码
+- **行动**: 跳过本次迭代，记录错误
+- **日志**: 详细的错误信息
+- **恢复**: 等待用户手动修复或下次重试
+
+**与其他Agent的交互失败**:
+- PM Agent Spec无效 → 记录详细错误，跳过迭代
+- Reviewer Agent超时 → 默认保守决策 (REJECT)
+- LLM API调用失败 → 记录错误，使用mock模式（如果启用）
+
+### 错误输出格式
+
+当遇到错误时，在implementation中包含：
+
+```json
+{
+  "status": "error",
+  "error_type": "api_timeout|invalid_spec|rate_limit|...",
+  "error_message": "详细错误描述",
+  "suggested_action": "建议的修复方案",
+  "can_retry": true/false,
+  "retry_after_seconds": 60
+}
+```
+
+### 数据验证错误
+
+**如果Spec包含无效数据**:
+- 验证threshold在合理范围内（如cpa_increase_threshold: 1.0-2.0）
+- 验证file路径存在且可访问
+- 验证from/to值类型正确
+- 如果验证失败，返回错误并说明具体问题
+
+**示例错误响应**:
+```json
+{
+  "status": "error",
+  "error_type": "validation_error",
+  "error_message": "Spec中的cpa_increase_threshold=0.5低于最小值1.0",
+  "suggested_action": "检查threshold范围，确保在合理边界内",
+  "can_retry": false
+}
+```
+
+### Version信息
+**Version**: 2.0.0
+**Last Updated**: 2025-02-04
+**Changes from v1.x**:
+- 添加了{THRESHOLD_SNAPSHOT}动态注入
+- 添加了{CONFIG:*}参数化配置
+- 添加了本错误处理章节
+- 移除了冗余CI内容（转移到common_knowledge.md）

@@ -362,7 +362,7 @@ class ZeroCostLabelGenerator:
                     "golden_min_freq": 1.0,
                     "golden_max_freq": 2.5,
                     "fatigue_freq_threshold": 3.0,
-                    "cpa_increase_threshold": 1.15,
+                    "cpa_increase_threshold": 1.10,  # Updated: 1.15 → 1.10
                     "consecutive_days": 1,
                     "min_golden_days": 1,
                 }

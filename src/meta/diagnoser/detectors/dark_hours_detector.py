@@ -458,31 +458,40 @@ class DarkHoursDetector(BaseDetector):
         # Calculate dead zone ROAS
         dead_zone_roas = result["dead_zones_df"]["purchase_roas"].mean()
 
-        # Determine severity based on efficiency score
+        # Determine severity and action based on efficiency score
         if efficiency_score < 20:
             severity = IssueSeverity.CRITICAL
-            status = "Critical time slot waste - urgent optimization needed"
+            action = "Pause ads during dead hours immediately"
+            explanation = "Critical time slot waste"
         elif efficiency_score < 40:
             severity = IssueSeverity.HIGH
-            status = "Significant dead zones detected"
+            action = "Implement dayparting to exclude dead hours"
+            explanation = "Significant dead zones detected"
         elif efficiency_score < 60:
             severity = IssueSeverity.MEDIUM
-            status = "Moderate time slot inefficiency"
+            action = "Consider reducing bids during dead hours"
+            explanation = "Moderate time slot inefficiency"
         else:
             severity = IssueSeverity.LOW
-            status = "Minor dead zones detected"
+            action = "Monitor hourly performance patterns"
+            explanation = "Minor dead zones detected"
+
+        # Calculate business impact
+        dead_zone_spend = result["dead_zones_df"]["spend"].sum()
+        wasted_spend = f"${dead_zone_spend:,.2f}" if dead_zone_spend > 0 else "$0.00"
 
         return Issue(
             id=f"hourly_performance_{entity_id}",
             category=IssueCategory.PERFORMANCE,
             severity=severity,
-            title=f"Dead Hours Detected (Efficiency: {efficiency_score:.0f}/100)",
+            title=f"Dead Hours: {explanation} (Efficiency: {efficiency_score:.0f}/100)",
             description=(
-                f"Identified {len(dead_zones)} low-performance time periods (dead zones). {status}. "
-                f"Dead zones: {', '.join(dead_zones)}. "
-                f"Dead zone ROAS: {dead_zone_roas:.2f} vs target {result['target_roas']}. "
-                f"Peak hours: {peak_hours_str}. "
-                f"Hourly efficiency score: {efficiency_score:.0f}/100."
+                f"**What's happening:** {explanation}. This adset wastes money during {len(dead_zones)} specific hours "
+                f"when ROAS is dramatically lower.\n\n"
+                f"**Dead zones:** {', '.join(dead_zones)} (ROAS: {dead_zone_roas:.2f} vs target: {result['target_roas']:.2f}).\n\n"
+                f"**Business impact:** {wasted_spend} wasted in low-performance hours.\n\n"
+                f"**Action recommended:** {action}. Shift budget to peak hours: {peak_hours_str}.\n\n"
+                f"**Metrics:** Hourly efficiency: {efficiency_score:.0f}/100 (higher is better)."
             ),
             affected_entities=[entity_id],
             metrics={
@@ -492,6 +501,9 @@ class DarkHoursDetector(BaseDetector):
                 "target_roas": result["target_roas"],
                 "peak_hours": peak_hours,
                 "total_spend_analysis_period": result["total_spend"],
+                "dead_zone_spend": dead_zone_spend,
+                "action_recommendation": action,
+                "business_impact": f"{wasted_spend} wasted in dead hours",
                 "analysis_type": "hourly",
             },
         )
@@ -513,31 +525,40 @@ class DarkHoursDetector(BaseDetector):
         # Calculate weak day ROAS
         weak_day_roas = result["weak_days_df"]["purchase_roas"].mean()
 
-        # Determine severity based on efficiency score
+        # Determine severity and action based on efficiency score
         if efficiency_score < 20:
             severity = IssueSeverity.CRITICAL
-            status = "Critical day performance waste - urgent optimization needed"
+            action = "Pause ads on weak days immediately"
+            explanation = "Critical day performance waste"
         elif efficiency_score < 40:
             severity = IssueSeverity.HIGH
-            status = "Significant weak days detected"
+            action = "Reduce budgets or pause on weak days"
+            explanation = "Significant weak days detected"
         elif efficiency_score < 60:
             severity = IssueSeverity.MEDIUM
-            status = "Moderate day performance inefficiency"
+            action = "Consider lowering bids on weak days"
+            explanation = "Moderate day performance inefficiency"
         else:
             severity = IssueSeverity.LOW
-            status = "Minor weak days detected"
+            action = "Monitor weekly performance patterns"
+            explanation = "Minor weak days detected"
+
+        # Calculate business impact
+        weak_day_spend = result["weak_days_df"]["spend"].sum()
+        wasted_spend = f"${weak_day_spend:,.2f}" if weak_day_spend > 0 else "$0.00"
 
         return Issue(
             id=f"weekly_performance_{entity_id}",
             category=IssueCategory.PERFORMANCE,
             severity=severity,
-            title=f"Weak Days Detected (Efficiency: {efficiency_score:.0f}/100)",
+            title=f"Weak Days: {explanation} (Efficiency: {efficiency_score:.0f}/100)",
             description=(
-                f"Identified {len(weak_days)} low-performance days. {status}. "
-                f"Weak days: {', '.join(weak_days)}. "
-                f"Weak day ROAS: {weak_day_roas:.2f} vs target {result['target_roas']}. "
-                f"Strong days: {strong_days_str}. "
-                f"Weekly efficiency score: {efficiency_score:.0f}/100."
+                f"**What's happening:** {explanation}. This adset performs significantly worse on {len(weak_days)} days "
+                f"of the week.\n\n"
+                f"**Weak days:** {', '.join(weak_days)} (ROAS: {weak_day_roas:.2f} vs target: {result['target_roas']:.2f}).\n\n"
+                f"**Business impact:** {wasted_spend} wasted on low-performance days.\n\n"
+                f"**Action recommended:** {action}. Shift budget to strong days: {strong_days_str}.\n\n"
+                f"**Metrics:** Weekly efficiency: {efficiency_score:.0f}/100 (higher is better)."
             ),
             affected_entities=[entity_id],
             metrics={
@@ -547,6 +568,9 @@ class DarkHoursDetector(BaseDetector):
                 "target_roas": result["target_roas"],
                 "strong_days": strong_days,
                 "total_spend_analysis_period": result["total_spend"],
+                "weak_day_spend": weak_day_spend,
+                "action_recommendation": action,
+                "business_impact": f"{wasted_spend} wasted on weak days",
                 "analysis_days": result["analysis_days"],
                 "analysis_type": "weekly",
             },

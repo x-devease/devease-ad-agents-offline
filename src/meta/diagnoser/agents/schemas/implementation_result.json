@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ImplementationResult",
+  "description": "Schema for Coder Agent implementation result",
+  "type": "object",
+  "required": ["status", "implementation"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["success", "error"],
+      "description": "Implementation status"
+    },
+    "implementation": {
+      "type": "object",
+      "required": ["files_changed"],
+      "properties": {
+        "files_changed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "change_type"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "File path that was changed"
+              },
+              "change_type": {
+                "type": "string",
+                "enum": ["threshold_tuning", "window_resize", "feature_add", "code_edit"],
+                "description": "Type of change"
+              },
+              "action": {
+                "type": "string",
+                "description": "Action taken (edit, create, delete)"
+              },
+              "old_value": {
+                "description": "Previous value"
+              },
+              "new_value": {
+                "description": "New value"
+              }
+            }
+          },
+          "description": "List of files that were changed"
+        },
+        "test_results": {
+          "type": "object",
+          "properties": {
+            "unit_tests": {"type": "string", "enum": ["PASS", "FAIL", "SKIPPED"]},
+            "syntax_check": {"type": "string", "enum": ["PASS", "FAIL"]},
+            "import_check": {"type": "string", "enum": ["PASS", "FAIL", "SKIPPED"]}
+          }
+        },
+        "git_commit": {
+          "type": "object",
+          "properties": {
+            "branch": {"type": "string"},
+            "commit_message": {"type": "string"},
+            "commit_hash": {"type": "string"}
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "code_quality": {"type": "string"},
+        "risk_assessment": {"type": "string"},
+        "compliance": {"type": "string"}
+      }
+    },
+    "error": {
+      "type": "string",
+      "description": "Error message if status is 'error'"
+    },
+    "raw_response": {
+      "type": "object",
+      "description": "Raw LLM response data"
+    }
+  }
+}

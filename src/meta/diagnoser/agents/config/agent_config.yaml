@@ -1,0 +1,88 @@
+# Diagnoser Agent Configuration
+#
+# This file contains all configurable parameters for the agent system.
+# Values can be injected into prompts using {CONFIG:key.path} syntax.
+#
+# Example: {CONFIG:business.avg_monthly_spend_per_ad} will be replaced with 500
+
+# Business Context
+business:
+  avg_monthly_spend_per_ad: 500
+  daily_waste_per_fatigue_ad: 50
+  loss_per_false_positive: 200
+  currency: "USD"
+
+# Performance Targets
+performance_targets:
+  min_precision: 0.90
+  min_recall: 0.60
+  min_f1: 0.70
+  min_improvement: 0.03  # 3% minimum improvement required
+
+# Confidence Thresholds
+confidence:
+  high: 0.7
+  medium: 0.5
+  low: 0.3
+
+# File Paths
+paths:
+  detectors: "src/meta/diagnoser/detectors/"
+  scripts: "scripts/"
+  reports: "src/meta/diagnoser/judge/reports/moprobo_sliding/"
+  memory_storage: "src/meta/diagnoser/agents/memory/storage/"
+  prompts: "src/meta/diagnoser/agents/prompts/"
+  schemas: "src/meta/diagnoser/agents/schemas/"
+
+# Agent Settings
+agents:
+  pm:
+    temperature: 0.7
+    max_tokens: 4096
+    description: "PM Agent - Analyzes metrics and generates experiment specs"
+
+  coder:
+    temperature: 0.3
+    max_tokens: 8192
+    description: "Coder Agent - Implements experiment specs via code changes"
+
+  reviewer:
+    temperature: 0.5
+    max_tokens: 4096
+    description: "Reviewer Agent - Reviews implementation for safety and compliance"
+
+  judge:
+    temperature: 0.2
+    max_tokens: 4096
+    description: "Judge Agent - Evaluates backtest results and makes merge decisions"
+
+  memory:
+    temperature: 0.4
+    max_tokens: 2048
+    description: "Memory Agent - Stores and retrieves historical experiment data"
+
+# Model Configuration
+model:
+  default: "claude-3-5-sonnet-20241022"
+  fallback: "claude-3-5-haiku-20241022"
+  max_retries: 3
+  timeout_seconds: 120
+
+# Advanced Features (all disabled by default - Phase 5)
+advanced_features:
+  semantic_search_enabled: false
+  counterfactuals_enabled: false
+  telemetry_enabled: false
+  ab_testing_enabled: false
+
+# Evaluation Settings
+evaluation:
+  sliding_window_size: 10
+  min_data_days: 22
+  baseline_refresh_days: 14  # Re-run baseline if older than this
+
+# Threshold Validation
+threshold_validation:
+  enabled: true
+  strict_mode: false  # If true, reject specs with any threshold mismatch
+  tolerance: 0.01  # Floating point comparison tolerance

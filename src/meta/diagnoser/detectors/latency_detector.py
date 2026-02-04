@@ -299,31 +299,40 @@ class LatencyDetector(BaseDetector):
         pause_count = sum(1 for inc in incidents if inc["intervention_type"] == "pause")
         recovery_count = sum(1 for inc in incidents if inc["intervention_type"] == "recovery")
 
-        # Determine severity based on average responsiveness score
+        # Determine severity and action based on average responsiveness score
         if avg_score < 20:
             severity = IssueSeverity.CRITICAL
-            status = "Critical response delays detected"
+            action = "Implement automated alerts and 24/7 monitoring"
+            explanation = "Critical delays - you're wasting money for too long"
         elif avg_score < 40:
             severity = IssueSeverity.HIGH
-            status = "Poor response times"
+            action = "Set up daily performance monitoring alerts"
+            explanation = "Poor response times - significant money wasted"
         elif avg_score < 60:
             severity = IssueSeverity.MEDIUM
-            status = "Moderate response delays"
+            action = "Review performance at least twice weekly"
+            explanation = "Moderate delays - some waste occurring"
         else:
             severity = IssueSeverity.LOW
-            status = "Response delays acceptable"
+            action = "Continue weekly performance reviews"
+            explanation = "Acceptable response times"
+
+        # Calculate business impact
+        total_bleeding_spend = sum(inc["bleeding_spend"] for inc in incidents)
+        wasted_spend = f"${total_bleeding_spend:,.2f}" if total_bleeding_spend > 0 else "$0.00"
 
         return Issue(
             id=f"latency_{entity_id}",
             category=IssueCategory.PERFORMANCE,
             severity=severity,
-            title=f"Response Latency Detected (Responsiveness: {avg_score:.0f}/100)",
+            title=f"Response Delay: {explanation} (Score: {avg_score:.0f}/100)",
             description=(
-                f"Detected {len(incidents)} performance drop events with delayed response. {status}. "
-                f"Average response delay: {avg_delay:.1f} days. "
-                f"Longest delay: {max_delay:.0f} days. "
-                f"Responsiveness score: {avg_score:.0f}/100. "
-                f"Interventions: {pause_count} manual pauses, {recovery_count} natural recoveries."
+                f"**What's happening:** {explanation}. When this adset's performance drops, it takes an average of "
+                f"{avg_delay:.1f} days to respond (up to {max_delay:.0f} days).\n\n"
+                f"**Business impact:** {wasted_spend} wasted during performance drops ({len(incidents)} events).\n\n"
+                f"**Action recommended:** {action}. Faster response could save thousands.\n\n"
+                f"**Metrics:** Responsiveness: {avg_score:.0f}/100 (higher is better). "
+                f"You paused {pause_count}x, recovered naturally {recovery_count}x."
             ),
             affected_entities=[entity_id],
             metrics={
@@ -333,6 +342,9 @@ class LatencyDetector(BaseDetector):
                 "avg_responsiveness_score": avg_score,
                 "manual_pause_interventions": pause_count,
                 "natural_recovery_interventions": recovery_count,
+                "total_bleeding_spend": total_bleeding_spend,
+                "action_recommendation": action,
+                "business_impact": f"{wasted_spend} wasted during delays",
             },
         )
 

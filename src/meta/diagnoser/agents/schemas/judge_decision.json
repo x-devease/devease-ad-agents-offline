@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JudgeDecision",
+  "description": "Schema for Judge Agent evaluation decision",
+  "type": "object",
+  "required": ["decision", "metrics_comparison"],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": ["MERGE", "REJECT"],
+      "description": "Final decision on the experiment"
+    },
+    "metrics_comparison": {
+      "type": "object",
+      "required": ["baseline", "new", "improvement"],
+      "properties": {
+        "baseline": {
+          "type": "object",
+          "properties": {
+            "precision": {"type": "number"},
+            "recall": {"type": "number"},
+            "f1_score": {"type": "number"},
+            "tp": {"type": "integer"},
+            "fp": {"type": "integer"},
+            "fn": {"type": "integer"}
+          }
+        },
+        "new": {
+          "type": "object",
+          "properties": {
+            "precision": {"type": "number"},
+            "recall": {"type": "number"},
+            "f1_score": {"type": "number"},
+            "tp": {"type": "integer"},
+            "fp": {"type": "integer"},
+            "fn": {"type": "integer"}
+          }
+        },
+        "improvement": {
+          "type": "object",
+          "properties": {
+            "precision_delta": {"type": "number"},
+            "recall_delta": {"type": "number"},
+            "f1_delta": {"type": "number"},
+            "precision_improvement_pct": {"type": "number"},
+            "recall_improvement_pct": {"type": "number"},
+            "f1_improvement_pct": {"type": "number"}
+          }
+        }
+      }
+    },
+    "statistical_significance": {
+      "type": "object",
+      "properties": {
+        "p_value": {"type": "number"},
+        "is_significant": {"type": "boolean"},
+        "confidence_interval": {
+          "type": "array",
+          "items": {"type": "number"},
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    },
+    "business_impact": {
+      "type": "object",
+      "properties": {
+        "estimated_savings": {"type": "number"},
+        "impact_level": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH"]
+        }
+      }
+    },
+    "regression_check": {
+      "type": "object",
+      "properties": {
+        "has_regression": {"type": "boolean"},
+        "regression_details": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "overfitting_signals": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of detected overfitting signals"
+    },
+    "reasoning": {
+      "type": "string",
+      "description": "Explanation for the decision"
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Any warnings or concerns"
+    }
+  }
+}

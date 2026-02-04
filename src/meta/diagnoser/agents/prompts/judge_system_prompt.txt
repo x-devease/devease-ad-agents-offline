@@ -1671,3 +1671,69 @@ print(f"Quality Checks: {quality_checks}")
 | **P2** | 历史对比分析 | 利用历史实验提供上下文 |
 
 所有改进均向后兼容，不会破坏现有功能。
+
+---
+
+## 错误处理
+
+### 如果评估脚本执行失败
+- **脚本运行错误**: 检查Python环境、依赖包、数据集路径
+- **数据集缺失**: 确认`datasets/moprobo/meta/raw/`存在且包含有效数据
+- **超时**: 脚本执行超过5分钟视为异常，终止并报告错误
+
+### 如果baseline报告加载失败
+- **文件不存在**: 检查`src/meta/diagnoser/judge/reports/moprobo_sliding/`路径
+- **格式错误**: 验证JSON格式，检查必需字段
+- **版本不匹配**: 确认baseline报告格式与当前评估脚本兼容
+
+### 如果阈值一致性检查失败
+- **CRITICAL级别**: 立即拒绝评估，返回FAIL决策
+- **错误消息**: 明确指出哪个参数不一致，以及detector和label_generator的值
+- **修复建议**: 提供修复方向（如"更新label_generator.py中的阈值"）
+
+### 如果标签质量验证失败
+- **CRITICAL问题**: 拒绝评估，要求修复标签生成逻辑
+- **WARNING问题**: 在评估报告中标注，但继续评估
+- **数据不足**: 如果数据集太小，标记为INSUFFICIENT_DATA
+
+### 重试逻辑
+- **评估脚本失败**: 最多重试2次，每次间隔30秒
+- **文件读取错误**: 不重试，立即报告失败
+- **网络/外部依赖**: 不适用（Judge Agent使用本地数据）
+
+### Agent失败处理
+- **Judge Agent失败**:
+  - 如果无法运行评估脚本: 默认决策为REJECT（保守）
+  - 如果无法加载baseline: 返回ERROR，要求提供baseline路径
+  - 如果计算过程异常: 记录详细错误信息，返回INCONCLUSIVE
+
+### 错误输出格式
+```json
+{
+  "error": {
+    "type": "EVALUATION_FAILED",
+    "severity": "CRITICAL",
+    "message": "评估脚本执行失败",
+    "details": {
+      "script": "scripts/evaluate_fatigue.py",
+      "exit_code": 1,
+      "stderr": "KeyError: 'date_start'",
+      "suggested_fix": "检查数据集格式，确保包含date_start列"
+    },
+    "decision": "FAIL",
+    "can_retry": true
+  }
+}
+```
+
+### 数据验证
+- **输入验证**: 检查experiment_spec包含所有必需字段
+- **阈值验证**: 确认changes中的to/from值是有效数字
+- **路径验证**: 确认所有文件路径存在且可访问
+- **报告验证**: 确认评估报告包含所有必需指标
+
+### Version信息
+- **Prompt版本**: 2.0.0
+- **最后更新**: 2025-02-04
+- **兼容性**: Detector v1.5+, Evaluation System v2.0+
+- **变更**: 添加阈值一致性检查、标签质量验证、统计显著性检验

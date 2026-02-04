@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExperimentSpec",
+  "description": "Schema for PM Agent experiment specification",
+  "type": "object",
+  "required": ["title", "scope", "changes", "constraints", "expected_outcome"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Human-readable title of the optimization experiment"
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["阈值调整", "窗口大小", "特征工程", "架构重构", "其他"],
+      "description": "Type of optimization scope"
+    },
+    "detector": {
+      "type": "string",
+      "description": "Detector being optimized (e.g., 'FatigueDetector')"
+    },
+    "changes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["file", "type", "parameter", "from", "to", "reason"],
+        "properties": {
+          "file": {
+            "type": "string",
+            "pattern": "^src/meta/diagnoser/",
+            "description": "Path to file to modify"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["threshold_tuning", "window_resize", "feature_add", "bug_fix"],
+            "description": "Type of change"
+          },
+          "parameter": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Parameter name to modify"
+          },
+          "from": {
+            "type": "number",
+            "description": "Current value"
+          },
+          "to": {
+            "type": "number",
+            "description": "New value"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 20,
+            "description": "Explanation for the change"
+          }
+        }
+      },
+      "description": "List of changes to implement"
+    },
+    "constraints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 10
+      },
+      "description": "Constraints that must be followed"
+    },
+    "expected_outcome": {
+      "type": "object",
+      "required": ["f1_score", "precision", "recall"],
+      "properties": {
+        "f1_score": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\s*\\([+-]?\\d+%\\)",
+          "description": "Expected F1 score with percentage change (e.g., '0.72 (+5%)')"
+        },
+        "precision": {
+          "type": "string",
+          "description": "Expected precision (e.g., '>=0.95')"
+        },
+        "recall": {
+          "type": "string",
+          "description": "Expected recall (e.g., '0.65 (+10%)')"
+        }
+      },
+      "description": "Expected performance outcomes"
+    },
+    "rollback_plan": {
+      "type": "string",
+      "minLength": 20,
+      "description": "Plan to rollback if experiment fails"
+    },
+    "baseline_metrics": {
+      "type": "object",
+      "properties": {
+        "precision": {"type": "number"},
+        "recall": {"type": "number"},
+        "f1_score": {"type": "number"}
+      },
+      "description": "Current baseline metrics"
+    }
+  }
+}

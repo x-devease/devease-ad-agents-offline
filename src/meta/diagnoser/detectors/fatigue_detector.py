@@ -45,13 +45,13 @@ class FatigueDetector(BaseDetector):
     - 80-100: Severe fatigue (urgent action needed)
     """
 
-    # Default thresholds (optimized via Iteration 9 - F1: 63.72%, Recall: 50%)
+    # Default thresholds (optimized via Iteration 10 - Improved recall)
     DEFAULT_THRESHOLDS = {
         "window_size_days": 23,  # Optimized: 21 → 23
         "golden_min_freq": 1.0,
         "golden_max_freq": 2.5,
         "fatigue_freq_threshold": 3.0,
-        "cpa_increase_threshold": 1.15,  # Optimized: 1.2 → 1.15
+        "cpa_increase_threshold": 1.10,  # Optimized: 1.2 → 1.15 → 1.10 (improved recall)
         "consecutive_days": 1,  # Need 1 consecutive day to confirm (optimized from 2)
         "min_golden_days": 1,  # Optimized: 2 → 1
     }
@@ -369,29 +369,38 @@ class FatigueDetector(BaseDetector):
         # Determine severity level based on score
         if severity_score >= 80:
             severity = IssueSeverity.CRITICAL
-            status = "Severe fatigue - urgent action needed"
+            action = "PAUSE this ad immediately and refresh creative"
+            explanation = "Ad is severely fatigued and wasting budget"
         elif severity_score >= 60:
             severity = IssueSeverity.HIGH
-            status = "Moderate fatigue - consider refresh"
+            action = "Consider pausing or reducing budget significantly"
+            explanation = "Ad performance has declined substantially"
         elif severity_score >= 30:
             severity = IssueSeverity.MEDIUM
-            status = "Early signs - monitor closely"
+            action = "Monitor closely and plan creative refresh"
+            explanation = "Early signs of fatigue detected"
         else:
             severity = IssueSeverity.LOW
-            status = "Minor fatigue - plan rotation"
+            action = "Plan rotation schedule"
+            explanation = "Minor fatigue beginning to show"
+
+        # Calculate business impact in plain language
+        premium_loss_formatted = f"${premium_loss:,.2f}" if premium_loss > 0 else "$0.00"
+        missed_conversions_formatted = f"{missed_conversions:.0f} conversions" if missed_conversions > 1 else f"{missed_conversions:.1f} conversions"
 
         return Issue(
             id=f"fatigue_{entity_id}",
             category=IssueCategory.FATIGUE,
             severity=severity,
-            title=f"Creative Fatigue Detected (Severity: {severity_score:.0f}/100)",
+            title=f"Creative Fatigue: {explanation} (Health: {health_score:.0f}/100)",
             description=(
-                f"Creative shows fatigue signals (rolling window analysis). {status}. "
-                f"Current frequency: {result['fatigue_freq']:.1f}x. "
-                f"CPA increased by {result['cpa_increase_pct']:.1f}% since golden period. "
-                f"Fatigue duration: {result['post_fatigue_days']} days. "
-                f"Confirmed for {result['consecutive_days']} consecutive days. "
-                f"Health score: {health_score:.0f}/100."
+                f"**What's happening:** {explanation}. This ad has been shown to the same audience {result['fatigue_freq']:.1f}x, "
+                f"causing CPA to increase by {result['cpa_increase_pct']:.0f}% since its best-performing period.\n\n"
+                f"**Business impact:** You've lost {premium_loss_formatted} ({missed_conversions_formatted}) during the fatigue period "
+                f"({result['post_fatigue_days']} days).\n\n"
+                f"**Action recommended:** {action}.\n\n"
+                f"**Metrics:** Health score: {health_score:.0f}/100 (higher is better). "
+                f"Current CPA: ${result['current_cpa']:.2f} vs best: ${result['cpa_gold']:.2f}."
             ),
             affected_entities=[entity_id],
             metrics={
@@ -406,6 +415,8 @@ class FatigueDetector(BaseDetector):
                 "window_size_days": self.thresholds["window_size_days"],
                 "premium_loss": max(0, premium_loss),
                 "missed_conversions": max(0, missed_conversions),
+                "action_recommendation": action,
+                "business_impact": f"{premium_loss_formatted} wasted ({missed_conversions_formatted} missed)",
             },
         )
 

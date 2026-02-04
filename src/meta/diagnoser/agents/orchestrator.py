@@ -5,6 +5,7 @@ Manages the workflow from analysis to implementation to validation.
 """
 
 import json
+import logging
 import subprocess
 import sys
 from datetime import datetime
@@ -12,6 +13,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .memory_agent import MemoryAgent
+
+logger = logging.getLogger(__name__)
 
 
 class Orchestrator:
@@ -27,19 +30,36 @@ class Orchestrator:
     6. Judge Agent evaluates → decides MERGE/REJECT
     7. If MERGE → Memory Agent archives experience
     8. Start next iteration
+
+    Args:
+        max_iterations: Maximum number of optimization iterations
+        use_real_llm: If True, use real Anthropic Claude API. If False, use mock implementations.
     """
 
-    def __init__(self, max_iterations: int = 10):
+    def __init__(self, max_iterations: int = 10, use_real_llm: bool = False):
         """
         Initialize orchestrator.
 
         Args:
             max_iterations: Maximum number of optimization iterations
+            use_real_llm: Whether to use real LLM calls (requires ANTHROPIC_API_KEY)
         """
         self.max_iterations = max_iterations
+        self.use_real_llm = use_real_llm
         self.memory_agent = MemoryAgent()
         self.current_iteration = 0
         self.best_f1 = {}  # Track best F1 per detector
+
+        # Initialize LLM client if real LLM is enabled
+        self.llm_client = None
+        if use_real_llm:
+            try:
+                from .llm_client import LLMClient
+                self.llm_client = LLMClient()
+                logger.info("Real LLM mode enabled")
+            except (ImportError, ValueError) as e:
+                logger.warning(f"Failed to initialize LLM client: {e}. Falling back to mock mode.")
+                self.use_real_llm = False
 
     def run_optimization_cycle(
         self,
@@ -244,8 +264,26 @@ class Orchestrator:
         """
         PM Agent: Analyze metrics and generate experiment spec.
 
-        Simplified implementation - generates threshold tuning suggestions.
+        Can use either real LLM or mock implementation.
         """
+        # Use real LLM if enabled
+        if self.use_real_llm and self.llm_client:
+            try:
+                from .llm_client import call_pm_agent
+
+                context = {
+                    "detector": detector,
+                    "current_metrics": current_metrics,
+                    "target_metrics": target_metrics,
+                    "memory_context": memory_context,
+                }
+
+                return call_pm_agent(self.llm_client, context)
+
+            except Exception as e:
+                logger.error(f"Real LLM PM agent failed: {e}. Falling back to mock mode.")
+
+        # Mock implementation - generates threshold tuning suggestions
         f1 = current_metrics.get("f1_score", 0)
         recall = current_metrics.get("recall", 0)
         fn = current_metrics.get("fn", 0)
@@ -264,8 +302,8 @@ class Orchestrator:
                         "file": "src/meta/diagnoser/detectors/fatigue_detector.py",
                         "type": "threshold_tuning",
                         "parameter": "cpa_increase_threshold",
-                        "from": 1.2,
-                        "to": 1.15,
+                        "from": 1.15,
+                        "to": 1.10,
                         "reason": "降低CPA增长阈值，捕捉更多早期疲劳信号"
                     }],
                     "constraints": [
@@ -350,8 +388,19 @@ class Orchestrator:
         """
         Reviewer Agent: Review the implementation.
 
-        Simplified implementation - approves threshold changes.
+        Can use either real LLM or mock implementation.
         """
+        # Use real LLM if enabled
+        if self.use_real_llm and self.llm_client:
+            try:
+                from .llm_client import call_reviewer_agent
+
+                return call_reviewer_agent(self.llm_client, implementation, spec)
+
+            except Exception as e:
+                logger.error(f"Real LLM Reviewer agent failed: {e}. Falling back to mock mode.")
+
+        # Mock implementation - approves threshold changes
         changes = implementation.get("implementation", {}).get("files_changed", [])
 
         # Simple checks

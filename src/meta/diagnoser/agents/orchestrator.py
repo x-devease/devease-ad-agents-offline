@@ -121,6 +121,45 @@ class Orchestrator:
         print(f"Evaluation result: {evaluation['evaluation_result']['decision']}")
         print(f"Metrics lift: {json.dumps(evaluation['evaluation_result'].get('metrics', {}).get('lift', {}), indent=2)}")
 
+        # Phase 4b: Rollback if evaluation failed
+        if evaluation["evaluation_result"]["decision"] == "FAIL":
+            print("\n--- Phase 4b: Automatic Rollback ---")
+
+            # Rollback code changes
+            rollback_result = self._rollback_changes(implementation, current_metrics)
+
+            if rollback_result["status"] == "success":
+                print(f"✅ Rollback successful: {rollback_result['message']}")
+            else:
+                print(f"❌ Rollback failed: {rollback_result['message']}")
+                print(f"   Manual intervention required to restore: {rollback_result['commit_before']}")
+
+            # Archive as FAILURE with rollback info
+            outcome = "FAILURE"
+
+            experiment_record = {
+                "detector": detector,
+                "spec": experiment_spec,
+                "implementation": implementation,
+                "review": review,
+                "evaluation": evaluation["evaluation_result"],
+                "rollback": rollback_result,
+                "outcome": outcome,
+                "timestamp": datetime.now().isoformat(),
+                "tags": [experiment_spec.get("scope", "unknown"), "rolled_back"]
+            }
+
+            experiment_id = self.memory_agent.save_experiment(experiment_record)
+            print(f"✅ Archived as {experiment_id} (with rollback)")
+
+            return {
+                "status": "failed",
+                "phase": "evaluation",
+                "experiment_id": experiment_id,
+                "rollback": rollback_result,
+                "evaluation": evaluation
+            }
+
         # Phase 5: Archive to Memory
         print("\n--- Phase 5: Archive to Memory ---")
         outcome = "SUCCESS" if evaluation["evaluation_result"]["decision"] == "PASS" else "FAILURE"

@@ -216,8 +216,8 @@ class JudgeDecision:
 
 
 # Import from other agents
-from agents.team.coder_agent import PullRequest
-from agents.team.pm_agent import ExperimentSpec, Component, JudgeFindings, ExperimentPriority
+from .coder_agent import PullRequest
+from .pm_agent import ExperimentSpec, Component, JudgeFindings, ExperimentPriority
 
 
 class JudgeAgent:

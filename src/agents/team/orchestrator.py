@@ -125,11 +125,11 @@ class ExperimentResult:
 
 
 # Import all agents
-from agents.team.pm_agent import PMAgent, ExperimentSpec, JudgeFindings, create_pm_agent
-from agents.team.coder_agent import CoderAgent, PullRequest, create_coder_agent
-from agents.team.reviewer_agent import ReviewerAgent, ReviewResult, create_reviewer_agent
-from agents.team.judge_agent import JudgeAgent, JudgeDecision, create_judge_agent
-from agents.team.memory_agent import MemoryAgent, HistoricalContext, create_memory_agent
+from .pm_agent import PMAgent, ExperimentSpec, JudgeFindings, create_pm_agent
+from .coder_agent import CoderAgent, PullRequest, create_coder_agent
+from .reviewer_agent import ReviewerAgent, ReviewResult, create_reviewer_agent
+from .judge_agent import JudgeAgent, JudgeDecision, create_judge_agent
+from .memory_agent import MemoryAgent, HistoricalContext, create_memory_agent
 
 
 class Orchestrator:
@@ -243,7 +243,7 @@ class Orchestrator:
             logger.info("Step 1: PM Agent creating experiment spec...")
             self.state.step_history.append("pm_create_spec")
 
-            historical_context = self.memory_agent.get_context_for_spec_findings(findings)
+            historical_context = self.pm_agent.get_context_for_spec_findings(findings)
             spec = self.pm_agent.create_experiment_spec(findings, historical_context)
 
             result.spec_id = spec.spec_id
@@ -547,7 +547,7 @@ class Orchestrator:
 def _get_context_for_spec_findings(pm_agent: PMAgent, findings: JudgeFindings) -> Dict[str, Any]:
     """Get historical context from Memory Agent for findings."""
     if pm_agent.memory_client:
-        from agents.team.pm_agent import Component
+        from .pm_agent import Component
 
         # Create a temporary spec to query memory
         temp_spec = ExperimentSpec(

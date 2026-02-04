@@ -1,47 +1,13 @@
 """
-Ad Generator Development Team - AI Agents for Self-Evolving Code.
+Team Agents for Ad Generator Development.
 
-This package contains the development team agents for the ad/generator system:
-- PM Agent: Product requirements and experiment planning
-- Coder Agent: Code implementation engineer
-- Reviewer Agent: Code quality and compliance officer
-- Judge Agent: Quality evaluation and testing
-- Memory Agent: Knowledge base and historical records
-- Orchestrator: Team coordination and workflow
-
-The agents work together in a closed-loop system to continuously improve
-the ad/generator codebase through automated experiments.
-
-Architecture:
-    1. Judge Agent detects issues → creates findings
-    2. PM Agent + Memory → creates experiment spec
-    3. Coder Agent → implements changes → creates PR
-    4. Reviewer Agent → approves/rejects PR
-    5. Judge Agent → evaluates results → makes decision
-    6. Memory Agent → records learnings
-    7. Loop back to step 1
-
-Usage:
-    from agents import create_orchestrator
-
-    orchestrator = create_orchestrator(
-        repo_path=Path("/path/to/repo"),
-        mode=OrchestratorMode.SUPERVISED,
-    )
-
-    # Run a single experiment
-    findings = JudgeFindings(...)
-    result = await orchestrator.run_experiment_from_findings(findings)
-
-    # Or run continuously
-    results = await orchestrator.run_continuous(max_experiments=10)
-
-Author: Ad System Dev Team
-Date: 2026-02-04
+This package contains the development team agents that work together
+in a closed-loop system to continuously improve the ad/generator codebase
+through automated experiments.
 """
 
-# Team agents
-from .team.pm_agent import (
+# PM Agent
+from .pm_agent import (
     PMAgent,
     ExperimentSpec,
     ChangeScope,
@@ -52,7 +18,8 @@ from .team.pm_agent import (
     create_pm_agent,
 )
 
-from .team.coder_agent import (
+# Coder Agent
+from .coder_agent import (
     CoderAgent,
     PullRequest,
     CodeChange,
@@ -62,7 +29,8 @@ from .team.coder_agent import (
     create_coder_agent,
 )
 
-from .team.reviewer_agent import (
+# Reviewer Agent
+from .reviewer_agent import (
     ReviewerAgent,
     ReviewStatus,
     ReviewResult,
@@ -72,7 +40,8 @@ from .team.reviewer_agent import (
     create_reviewer_agent,
 )
 
-from .team.judge_agent import (
+# Judge Agent
+from .judge_agent import (
     JudgeAgent,
     JudgeDecision,
     BacktestResult,
@@ -81,7 +50,8 @@ from .team.judge_agent import (
     create_judge_agent,
 )
 
-from .team.memory_agent import (
+# Memory Agent
+from .memory_agent import (
     MemoryAgent,
     ExperimentRecord,
     ExperimentOutcome,
@@ -90,7 +60,8 @@ from .team.memory_agent import (
     create_memory_agent,
 )
 
-from .team.orchestrator import (
+# Orchestrator
+from .orchestrator import (
     Orchestrator,
     OrchestratorMode,
     WorkflowStatus,
@@ -147,5 +118,3 @@ __all__ = [
     "ExperimentResult",
     "create_orchestrator",
 ]
-
-__version__ = "1.0.0"

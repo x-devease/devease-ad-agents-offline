@@ -204,8 +204,8 @@ class ReferenceImageManager:
 
         selected_images = []
 
-        # First, select product angle references (max 2 images)
-        for category in angle_prefs[:2]:
+        # First, select product angle references (up to max_images)
+        for category in angle_prefs[:max_images]:
             if category in self.reference_images:
                 selected_images.append(self.reference_images[category].path)
 

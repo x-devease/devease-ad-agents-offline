@@ -45,13 +45,18 @@ def healthy_ad_data():
     """Create sample ad-level daily data without fatigue."""
     dates = [datetime(2025, 1, 1) + timedelta(days=i) for i in range(30)]
 
+    # Healthy ad: CPA stays constant or improves over time
+    # spend/conversions ratio should be stable
+    conversions = [5] * 30
+    spend = [20] * 30  # CPA = 20/5 = 4, constant
+
     data = {
         "ad_id": ["healthy_ad_456"] * 30,
         "date_start": [d.strftime("%Y-%m-%d") for d in dates],
         "impressions": [1000 + i * 100 for i in range(30)],
         "reach": [500 + i * 50 for i in range(30)],
-        "spend": [100 + i * 10 for i in range(30)],
-        "conversions": [5] * 30,  # Consistent good performance
+        "spend": spend,
+        "conversions": conversions,
     }
 
     return pd.DataFrame(data)
@@ -81,7 +86,7 @@ class TestFatigueDetector:
 
     def test_calculate_cumulative_frequency(self, fatigue_detector, sample_ad_data):
         """Test cumulative frequency calculation."""
-        result = fatigue_detector._analyze_fatigue(sample_ad_data, "test_ad_123")
+        result = fatigue_detector._analyze_fatigue_rolling(sample_ad_data, "test_ad_123")
 
         if result["is_fatigued"]:
             # Verify fatigue point is detected after golden period
@@ -89,7 +94,7 @@ class TestFatigueDetector:
 
     def test_golden_period_identification(self, fatigue_detector, sample_ad_data):
         """Test golden period identification."""
-        result = fatigue_detector._analyze_fatigue(sample_ad_data, "test_ad_123")
+        result = fatigue_detector._analyze_fatigue_rolling(sample_ad_data, "test_ad_123")
 
         if result["is_fatigued"]:
             # CPA_gold should be calculated
@@ -128,7 +133,7 @@ class TestFatigueDetector:
         """Test handling of missing conversions column."""
         data = pd.DataFrame({
             "ad_id": ["test"] * 10,
-            "date_start": [f"2025-01-0{i}" for i in range(1, 10)],
+            "date_start": [f"2025-01-{i:02d}" for i in range(1, 11)],
             "impressions": [100] * 10,
             "reach": [50] * 10,
             "spend": [10] * 10,

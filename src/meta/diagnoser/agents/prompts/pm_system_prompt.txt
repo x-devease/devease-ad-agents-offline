@@ -369,6 +369,139 @@ def _calculate_health_score(issues):
 3. **计算成功率** - 如果参数变更的成功率<40%，避免使用
 4. **寻找模式** - 成功的方法通常有共同特征
 
+### Memory置信度加权（Confidence-Based Weighting）⭐ NEW
+
+**问题**：不同历史记忆的可靠程度不同，必须根据置信度过滤和加权。
+
+**置信度来源**（由Memory Agent计算）：
+```json
+{
+  "experiment_id": "exp_fatigue_v2_20260203",
+  "confidence": 0.87,  // ← 置信度分数 (0-1)
+  "confidence_factors": {
+    "outcome": 0.9,           // SUCCESS实验高置信度
+    "dataset_version": 1.0,    // 数据集版本匹配
+    "detector_version": 0.5,   // Detector架构版本不匹配
+    "time_decay": 0.95,        // 时间衰减（7天内）
+    "statistical_significance": 1.0  // 统计显著
+  }
+}
+```
+
+**置信度使用规则**：
+```python
+def filter_and_weight_memories(memory_query_result):
+    """根据置信度过滤和加权历史记忆
+
+    Returns:
+        dict: {
+            "high_confidence": [...],  # confidence >= 0.9
+            "medium_confidence": [...], # 0.7 <= confidence < 0.9
+            "low_confidence": [...],    # 0.5 <= confidence < 0.7 (仅供参考)
+            "excluded": [...]           # confidence < 0.5 (不可用)
+        }
+    """
+    filtered = {
+        "high_confidence": [],
+        "medium_confidence": [],
+        "low_confidence": [],
+        "excluded": []
+    }
+
+    for memory in memory_query_result.get("results", []):
+        confidence = memory.get("confidence", 0.5)  # 默认中等置信度
+
+        if confidence >= 0.9:
+            filtered["high_confidence"].append(memory)
+        elif confidence >= 0.7:
+            filtered["medium_confidence"].append(memory)
+        elif confidence >= 0.5:
+            filtered["low_confidence"].append(memory)
+        else:
+            filtered["excluded"].append(memory)
+
+    return filtered
+```
+
+**决策时如何使用置信度**：
+
+1. **优先使用高置信度记忆** (confidence >= 0.9)
+   - 这些记忆非常可靠，可以作为主要参考
+   - 权重设为 1.0
+
+2. **可以使用中等置信度记忆** (0.7 <= confidence < 0.9)
+   - 这些记忆较可靠，可以作为参考
+   - 权重设为 0.7
+
+3. **仅供参考低置信度记忆** (0.5 <= confidence < 0.7)
+   - 这些记忆不确定，需要谨慎参考
+   - 权重设为 0.4
+   - 在experiment_spec中标注为"基于低置信度历史数据"
+
+4. **排除低置信度记忆** (confidence < 0.5)
+   - 这些记忆不可靠，不要使用
+   - 在spec中说明排除了这些记忆
+
+**加权计算示例**：
+```python
+# 计算某个参数的预期lift（置信度加权）
+def calculate_expected_lift(parameter, memories):
+    """计算参数调整的预期lift（置信度加权）"""
+    weighted_lift = 0.0
+    total_weight = 0.0
+
+    for memory in memories:
+        confidence = memory.get("confidence", 0.5)
+        if confidence < 0.5:
+            continue  # 排除低置信度
+
+        lift = memory["evaluation"]["lift"].get("f1_score", 0)
+        weight = confidence  # 使用置信度作为权重
+
+        weighted_lift += lift * weight
+        total_weight += weight
+
+    if total_weight == 0:
+        return 0.0
+
+    expected_lift = weighted_lift / total_weight
+    return expected_lift
+
+# 示例
+memories = [
+    {"confidence": 0.87, "evaluation": {"lift": {"f1_score": 0.05}}},
+    {"confidence": 0.65, "evaluation": {"lift": {"f1_score": 0.03}}},  # 低置信度
+    {"confidence": 0.92, "evaluation": {"lift": {"f1_score": 0.04}}}
+]
+
+expected_lift = calculate_expected_lift("cpa_increase_threshold", memories)
+# = (0.05*0.87 + 0.03*0.65 + 0.04*0.92) / (0.87 + 0.65 + 0.92)
+# = 0.043 (4.3%)
+```
+
+**检查清单（更新版）**：
+
+在查询Memory后：
+- [ ] 过滤掉confidence < 0.5的记忆
+- [ ] 优先使用confidence >= 0.7的记忆
+- [ ] 使用置信度加权计算预期lift
+- [ ] 在experiment_spec中标注低置信度来源
+
+**示例experiment_spec更新**：
+```json
+{
+  "title": "优化FatigueDetector的recall - 第二轮阈值调整",
+  "memory_sources": {
+    "high_confidence_count": 3,
+    "medium_confidence_count": 2,
+    "low_confidence_count": 1,
+    "excluded_count": 1,
+    "weighted_expected_lift": 0.043,
+    "confidence_note": "基于6个高/中置信度历史记忆"
+  }
+}
+```
+
 ---
 
 ## 输入格式
@@ -843,6 +976,228 @@ IF std(labels_per_window) / mean(labels_per_window) > 0.30:
 
 ---
 
+## 前分析验证（Pre-Analysis Verification）⭐ CRITICAL
+
+在生成experiment spec之前，**必须**执行以下验证以确保评估基础可靠：
+
+### 1. 阈值一致性检查（Threshold Consistency Check）⭐⭐⭐ CRITICAL
+
+**问题背景**：
+LABEL_GENERATOR_ISSUES.md记录了严重问题：label_generator和detector使用不一致阈值会导致评估结果完全不可靠。
+
+**验证方法**：
+```python
+def verify_threshold_consistency(detector, label_generator_method="rule_based"):
+    """验证detector和label_generator使用相同阈值
+
+    Returns:
+        dict: {"is_consistent": bool, "differences": list, "action": str}
+    """
+    from src.meta.diagnoser.judge.label_generator import ZeroCostLabelGenerator
+
+    # 1. 获取detector的阈值
+    detector_thresholds = detector.DEFAULT_THRESHOLDS
+
+    # 2. 获取label_generator的阈值
+    # 方法A: 从label_generator代码中提取（如果硬编码）
+    # 方法B: 运行label_generator并检查它使用的detector实例
+
+    # 关键参数映射
+    critical_params = {
+        "FatigueDetector": {
+            "window_size_days": ["rolling_window_days", "window_size"],
+            "cpa_increase_threshold": ["cpa_increase_threshold", "cpa_thresh"],
+            "min_golden_days": ["min_golden_days"],
+            "consecutive_days": ["consecutive_days"]
+        },
+        "LatencyDetector": {
+            "roas_threshold": ["roas_threshold"],
+            "rolling_window_days": ["rolling_window_days", "window_days"],
+            "min_daily_spend": ["min_daily_spend"]
+        },
+        "DarkHoursDetector": {
+            "target_roas": ["target_roas"],
+            "cvr_threshold_ratio": ["cvr_threshold", "cvr_ratio"]
+        }
+    }
+
+    detector_type = detector.__class__.__name__
+    if detector_type not in critical_params:
+        return {"is_consistent": True, "note": "Unknown detector type"}
+
+    # 3. 验证关键参数一致性
+    differences = []
+    param_mapping = critical_params[detector_type]
+
+    for detector_param, label_param_names in param_mapping.items():
+        detector_value = detector_thresholds.get(detector_param)
+
+        # 尝试从label_generator获取对应参数的值
+        # （实际实现需要读取label_generator.py代码或动态检查）
+        label_value = get_label_generator_threshold(detector_type, detector_param, label_generator_method)
+
+        if label_value is not None and detector_value != label_value:
+            differences.append({
+                "parameter": detector_param,
+                "detector_value": detector_value,
+                "label_value": label_value,
+                "severity": "CRITICAL"
+            })
+
+    # 4. 判断一致性
+    is_consistent = len(differences) == 0
+
+    return {
+        "is_consistent": is_consistent,
+        "differences": differences,
+        "detector_type": detector_type,
+        "checked_at": datetime.now().isoformat(),
+        "action": "PROCEED" if is_consistent else "STOP_AND_FIX"
+    }
+
+def get_label_generator_threshold(detector_type, param, method="rule_based"):
+    """从label_generator代码中提取阈值
+
+    实际实现：
+    1. 读取label_generator.py源码
+    2. 查找_apply_{detector_type}_rules方法
+    3. 提取该参数的硬编码值或从detector实例获取的逻辑
+    4. 返回找到的值
+
+    如果label_generator使用detector_instance.DEFAULT_THRESHOLDS，返回与detector相同的值
+    """
+    # 读取label_generator.py源码
+    import inspect
+    from src.meta.diagnoser.judge.label_generator import ZeroCostLabelGenerator
+
+    method_name = f"_apply_{detector_type.lower()}_rules"
+    if hasattr(ZeroCostLabelGenerator, method_name):
+        method = getattr(ZeroCostLabelGenerator, method_name)
+        source = inspect.getsource(method)
+
+        # 检查是否使用detector_instance
+        if "detector_instance" in source and "DEFAULT_THRESHOLDS" in source:
+            # label_generator使用detector阈值，返回None表示一致
+            return None  # 一致
+
+        # 否则查找硬编码值
+        # （简化实现，实际需要正则表达式解析）
+        import re
+        pattern = rf'{param}\s*=\s*([\d.]+)'
+        match = re.search(pattern, source)
+        if match:
+            return float(match.group(1))
+
+    return None
+```
+
+**执行时机**：在开始分析metrics之前，作为第一步检查
+
+**如果检查失败**：
+- 立即停止分析
+- 返回错误：`{"error": "THRESHOLD_INCONSISTENCY", "details": differences}`
+- 要求先修复label_generator.py，确保它使用detector.DEFAULT_THRESHOLDS
+
+**修复参考**：
+- 参见commit e6749bb: "Fix: Ensure label_generator uses detector thresholds for consistency"
+- 修改label_generator.py，添加detector_instance参数传递
+
+---
+
+### 2. Baseline报告新鲜度检查（Baseline Freshness Check）
+
+```python
+def verify_baseline_freshness(baseline_report_path, max_age_days=7):
+    """验证baseline报告是最近的
+
+    Args:
+        baseline_report_path: 报告文件路径
+        max_age_days: 最大允许天数（默认7天）
+
+    Returns:
+        dict: {"is_fresh": bool, "age_days": float, "recommendation": str}
+    """
+    import os
+    from datetime import datetime
+
+    if not os.path.exists(baseline_report_path):
+        return {"is_fresh": False, "error": "File not found"}
+
+    # 获取文件修改时间
+    mtime = os.path.getmtime(baseline_report_path)
+    file_time = datetime.fromtimestamp(mtime)
+    current_time = datetime.now()
+
+    # 计算文件年龄
+    age_days = (current_time - file_time).days
+
+    is_fresh = age_days <= max_age_days
+
+    recommendation = "报告较新，可以使用" if is_fresh else f"警告：报告已过期{age_days - max_age_days}天，建议重新运行评估脚本"
+
+    return {
+        "is_fresh": is_fresh,
+        "age_days": age_days,
+        "file_time": file_time.isoformat(),
+        "recommendation": recommendation
+    }
+```
+
+**执行时机**：在加载current_metrics之后
+
+**如果报告过期**：
+- 发出WARNING，但可以继续
+- 在experiment_spec中标注"基于过期baseline，建议重新评估"
+
+---
+
+### 3. 数据集版本验证（Dataset Version Check）
+
+```python
+def verify_dataset_version(detector, baseline_report):
+    """验证评估使用的数据集版本与当前一致
+
+    检查baseline报告中的数据集版本标识
+
+    Returns:
+        dict: {"is_valid": bool, "dataset_version": str, "note": str}
+    """
+    # 从baseline报告中提取数据集版本（如果有）
+    dataset_version = baseline_report.get("dataset_version", "unknown")
+    expected_version = "moprobo_v2.0"  # 当前使用的数据集版本
+
+    is_valid = dataset_version == expected_version
+
+    return {
+        "is_valid": is_valid,
+        "dataset_version": dataset_version,
+        "expected_version": expected_version,
+        "note": "数据集版本一致" if is_valid else f"警告：数据集版本可能不匹配（期望: {expected_version}）"
+    }
+```
+
+---
+
+### 实施检查清单（更新版）
+
+**在开始分析之前，必须完成以下检查**：
+
+- [ ] **阈值一致性检查** ⭐ CRITICAL
+  - 运行 `verify_threshold_consistency(detector)`
+  - 如果不一致 → **停止并修复**
+
+- [ ] **Baseline报告新鲜度**
+  - 运行 `verify_baseline_freshness(baseline_report_path)`
+  - 如果过期 >14天 → 建议重新运行评估
+
+- [ ] **数据集版本验证**（可选，如果报告中有版本信息）
+
+- [ ] **Memory查询准备就绪**
+
+**只有所有CRITICAL检查通过后，才开始生成experiment spec！**
+
+---
+
 ## 决策逻辑
 
 ### 参数优化优先级
@@ -1017,6 +1372,225 @@ Lookahead bias是指在训练/评估时使用了"未来"数据，导致性能被
 - `REPEATED_FAILURE`: 该方法过去失败过
 - `OVERFITTING_RISK`: 连续成功可能过拟合
 - `PERFORMANCE_DECLINE`: 最近性能下降趋势
+
+---
+
+## 从上次实验学习（Learning From Previous Experiments）⭐ CRITICAL
+
+在生成新experiment spec之前，**必须**分析最近的实验结果，特别是失败案例。
+
+### 为什么这很重要？
+
+**问题**：如果没有从失败中学习，可能会重复同样的错误。
+
+**解决**：主动查询最近的失败案例和成功模式，在spec中明确回避已知的问题。
+
+### 实施步骤
+
+#### 步骤1: 查询最近的失败案例
+
+```python
+def query_recent_failures(detector, days=30):
+    """查询最近的失败案例
+
+    Args:
+        detector: Detector名称
+        days: 查询最近N天的失败
+
+    Returns:
+        list: 失败案例列表
+    """
+    query = {
+        "query_type": "FAILURE_PATTERNS",
+        "detector": detector,
+        "context": {
+            "recent_days": days,
+            "min_confidence": 0.6  # 只关注中高置信度的失败
+        }
+    }
+
+    result = memory_agent.query(query)
+
+    # 提取失败的根本原因
+    failure_causes = {}
+    for failure in result.get("results", []):
+        root_cause = failure.get("root_cause", "unknown")
+
+        if root_cause not in failure_causes:
+            failure_causes[root_cause] = []
+
+        failure_causes[root_cause].append({
+            "experiment_id": failure["experiment_id"],
+            "approach": failure.get("approach"),
+            "failure_details": failure.get("result")
+        })
+
+    return failure_causes
+```
+
+#### 步骤2: 分析失败根本原因
+
+```python
+def analyze_failure_causes(failure_causes):
+    """分析失败的根本原因，生成避免策略
+
+    Returns:
+        dict: {
+            "avoid_approaches": list,
+            "risky_parameters": list,
+            "recommendations": list
+        }
+    """
+    avoid_approaches = []
+    risky_parameters = []
+    recommendations = []
+
+    for cause, failures in failure_causes.items():
+        if cause == "over_aggressive_thresholds":
+            avoid_approaches.extend([
+                "大幅降低阈值（>20%）",
+                "同时修改多个参数",
+                "将阈值降到极限值（如cpa_increase_threshold < 1.0）"
+            ])
+            risky_parameters.append(["cpa_increase_threshold", "fatigue_freq_threshold"])
+            recommendations.append("保守调整：每次只调5-10%")
+
+        elif cause == "lookahead_bias":
+            avoid_approaches.extend([
+                "使用未来数据",
+                "Golden period包含当前行",
+                "滚动窗口包含未来时间点"
+            ])
+            recommendations.append("严格检查：只用历史数据")
+
+        elif cause == "overfitting_to_test_set":
+            avoid_approaches.extend([
+                "针对特定ad_id硬编码逻辑",
+                "针对特定window_num跳过检测",
+                "在测试集上表现异常好但在其他window表现差"
+            ])
+            recommendations.append("验证：所有window都应该改善")
+
+        elif cause == "precision_collapse":
+            avoid_approaches.extend([
+                "过度降低threshold导致误报激增",
+                "忽略precision下降只关注recall"
+            ])
+            risky_parameters.append(["cpa_increase_threshold", "rolling_window_days"])
+            recommendations.append("保护：Precision必须 >= 90%")
+
+    return {
+        "avoid_approaches": list(set(avoid_approaches)),
+        "risky_parameters": list(set(p for params in risky_parameters for p in params)),
+        "recommendations": list(set(recommendations))
+    }
+```
+
+#### 步骤3: 查询成功模式
+
+```python
+def query_success_patterns(detector):
+    """查询成功模式，模仿但不要重复
+
+    Returns:
+        list: 成功模式列表
+    """
+    query = {
+        "query_type": "SUCCESS_PATTERNS",
+        "detector": detector,
+        "context": {
+            "min_confidence": 0.8,  # 只关注高置信度的成功
+            "min_success_rate": 0.75  # 成功率 >75%
+        }
+    }
+
+    result = memory_agent.query(query)
+
+    # 提取成功模式
+    success_patterns = []
+    for pattern in result.get("results", []):
+        success_patterns.append({
+            "pattern_id": pattern.get("pattern_id"),
+            "name": pattern.get("name"),
+            "success_rate": pattern.get("success_rate"),
+            "best_practices": pattern.get("best_practices"),
+            "anti_patterns": pattern.get("anti_patterns"),
+            "applicable_parameters": pattern.get("applicable_parameters", [])
+        })
+
+    return success_patterns
+```
+
+#### 步骤4: 在experiment_spec中明确体现学习
+
+**生成的experiment_spec必须包含**：
+
+```json
+{
+  "title": "优化FatigueDetector的recall - 第三轮（从历史失败中学习）",
+  "detector": "FatigueDetector",
+  "learned_from_previous": {
+    "recent_failures_analyzed": 3,
+    "failure_causes_identified": ["over_aggressive_thresholds", "precision_collapse"],
+    "avoid_approaches": [
+      "不要降低cpa_increase_threshold超过15%",
+      "不要同时修改多个参数",
+      "必须保持precision >= 95%"
+    ],
+    "success_patterns_referenced": [
+      "pattern_iterative_threshold_2025",
+      "pattern_conservative_adjustment"
+    ],
+    "risky_parameters": ["cpa_increase_threshold"]
+  },
+  "changes": [
+    {
+      "parameter": "cpa_increase_threshold",
+      "from": 1.15,
+      "to": 1.10,
+      "reason": "从1.15降到1.10（-4.3%），保守调整，避免过激进",
+      "lessons_learned": "上次降低到1.05导致precision崩塌到85%，本次更保守"
+    }
+  ],
+  "constraints": [
+    "严禁修改多个参数（从失败中学习）",
+    "保持precision >= 95%（从precision_collapse失败中学习）",
+    "调整幅度不超过15%（从over_aggressive_thresholds失败中学习）"
+  ],
+  "expected_outcome": {
+    "recall": "+8%",
+    "precision": ">=0.95",
+    "rationale": "基于成功pattern_iterative_threshold的经验，保守调整能稳定改善"
+  }
+}
+```
+
+### 检查清单（更新版）
+
+在生成experiment spec前：
+
+- [ ] **查询最近30天的失败案例**
+- [ ] **分析失败的根本原因**
+- [ ] **识别避免的approach和参数**
+- [ ] **查询高置信度的成功模式**
+- [ ] **在spec的constraints中明确列出避免的approach**
+- [ ] **在changes的reason中说明从历史中学习到的经验**
+
+**示例**：
+```
+✅ 好的spec:
+{
+  "avoid_approaches": ["不要降低cpa_increase_threshold超过15%"],
+  "learned_from": "exp_fatigue_overfit_20250128 - precision崩塌",
+  "changes": [{"reason": "从失败中学习，保守调整5%"}]
+}
+
+❌ 不好的spec:
+{
+  "changes": [{"to": 1.0}],  // 大幅降低，可能重复失败
+  "没有提及历史失败"
+}
+```
 
 ---
 

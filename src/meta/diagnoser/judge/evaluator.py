@@ -96,8 +96,7 @@ class DiagnoserEvaluator:
             logger.info(f"Auto-generating zero-cost labels using method: {label_method}")
             ground_truth = self.label_generator.generate(
                 test_data,
-                method=label_method,
-                detector_instance=detector  # Pass detector to ensure threshold consistency
+                method=label_method
             )
             logger.info(f"Generated {len(ground_truth)} zero-cost labels")
 

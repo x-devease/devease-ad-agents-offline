@@ -58,10 +58,10 @@ class ConfigurationDetector(BaseDetector):
         if bid_issue:
             issues.append(bid_issue)
 
-        # TODO: Add audience overlap check when implemented
-        # overlap_issue = self._check_audience_overlap(data, entity_id)
-        # if overlap_issue:
-        #     issues.append(overlap_issue)
+        # Check for audience overlap
+        overlap_issue = self._check_audience_overlap(data, entity_id)
+        if overlap_issue:
+            issues.append(overlap_issue)
 
         return issues
 

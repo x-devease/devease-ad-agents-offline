@@ -546,16 +546,16 @@ class AutoFixOrchestrator:
 
         # Map detector to evaluation script
         script_map = {
-            "FatigueDetector": "src/meta/diagnoser/scripts/evaluate_fatigue.py",
-            "LatencyDetector": "src/meta/diagnoser/scripts/evaluate_latency.py",
-            "DarkHoursDetector": "src/meta/diagnoser/scripts/evaluate_dark_hours.py"
+            "FatigueDetector": "evaluate_fatigue.py",
+            "LatencyDetector": "evaluate_latency.py",
+            "DarkHoursDetector": "evaluate_dark_hours.py"
         }
 
         script = script_map.get(detector)
         if not script:
             return {"success": False, "error": f"No evaluation script for {detector}"}
 
-        script_path = project_root / script
+        script_path = project_root / "scripts" / script
 
         print(f"\nRunning evaluation script: {script}")
         print(f"  This may take 1-2 minutes...")

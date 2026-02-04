@@ -275,6 +275,6 @@ def enhance_prompt(generic_prompt: str) -> str:
         print(enhanced)
     """
 
-    # Use legacy mode to avoid framework bugs
-    agent = PromptEnhancementAgent(use_framework=False)
-    return agent.enhance_simple(generic_prompt)
+    # Use framework mode for enhanced prompt quality
+    agent = PromptEnhancementAgent(use_framework=True)
+    return agent.enhance(AgentInput(generic_prompt=generic_prompt)).enhanced_prompt

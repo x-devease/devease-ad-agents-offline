@@ -16,7 +16,7 @@ Quality checking ensures creatives meet technical and aesthetic standards before
 ### 1.1 Resolution and Dimensions
 
 ```python
-# src/meta/ad/reviewer/checkers/technical_quality_checker.py
+# src/meta/ad/qa/checkers/technical_quality_checker.py
 
 from PIL import Image
 from pathlib import Path
@@ -582,7 +582,7 @@ class TechnicalQualityChecker:
 ### 2.1 GPT-4 Vision Prompts for Quality Assessment
 
 ```python
-# src/meta/ad/reviewer/analyzers/vision_analyzer.py
+# src/meta/ad/qa/analyzers/vision_analyzer.py
 
 class VisionAnalyzer:
     """GPT-4 Vision integration for image analysis."""
@@ -1206,7 +1206,7 @@ class VisionAnalyzer:
 ## 4. Complete Technical Quality Checker
 
 ```python
-# src/meta/ad/reviewer/checkers/technical_quality_checker.py
+# src/meta/ad/qa/checkers/technical_quality_checker.py
 
 class TechnicalQualityChecker:
     """Complete technical quality checker."""

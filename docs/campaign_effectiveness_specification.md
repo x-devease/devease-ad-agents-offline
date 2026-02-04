@@ -321,7 +321,7 @@ campaign_goals:
 ### Goal Alignment Checker
 
 ```python
-# src/meta/ad/reviewer/effectiveness/campaign_goal_checker.py
+# src/meta/ad/qa/effectiveness/campaign_goal_checker.py
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional
@@ -1095,7 +1095,7 @@ regional_patterns:
 ### Regional Pattern Matcher
 
 ```python
-# src/meta/ad/reviewer/effectiveness/regional_matcher.py
+# src/meta/ad/qa/effectiveness/regional_matcher.py
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional
@@ -1494,7 +1494,7 @@ class RegionalPatternMatcher:
 ## 3. Performance Prediction Model
 
 ```python
-# src/meta/ad/reviewer/effectiveness/performance_predictor.py
+# src/meta/ad/qa/effectiveness/performance_predictor.py
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional
@@ -1711,7 +1711,7 @@ class PerformancePredictor:
 ## Integration: Complete Effectiveness Check
 
 ```python
-# src/meta/ad/reviewer/effectiveness/effectiveness_checker.py
+# src/meta/ad/qa/effectiveness/effectiveness_checker.py
 
 from dataclasses import dataclass
 

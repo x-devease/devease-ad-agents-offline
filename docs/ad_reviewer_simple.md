@@ -10,7 +10,7 @@
 ## Simplified Architecture
 
 ```
-src/meta/ad/reviewer/
+src/meta/ad/qa/
 ├── __init__.py
 ├── reviewer.py          # Main reviewer class (1 file)
 ├── checks.py            # All check functions (1 file)
@@ -33,7 +33,7 @@ config/ad/reviewer/
 ## 1. Main Reviewer (Single Class)
 
 ```python
-# src/meta/ad/reviewer/reviewer.py
+# src/meta/ad/qa/reviewer.py
 
 from pathlib import Path
 from typing import Dict, Optional
@@ -213,7 +213,7 @@ class AdReviewer:
 ## 2. Check Functions (Single File)
 
 ```python
-# src/meta/ad/reviewer/checks.py
+# src/meta/ad/qa/checks.py
 
 from typing import Dict, List
 
@@ -458,7 +458,7 @@ def _get_quality_recommendations(issues: List[str]) -> List[str]:
 ## 3. Data Models (Single File)
 
 ```python
-# src/meta/ad/reviewer/models.py
+# src/meta/ad/qa/models.py
 
 from dataclasses import dataclass, field
 from typing import Dict, List
@@ -549,7 +549,7 @@ allowed_content:
 
 ```python
 # Single file usage
-from src.meta.ad.reviewer import AdReviewer
+from src.meta.ad.qa import AdReviewer
 
 # Initialize
 reviewer = AdReviewer(brand="moprobo", region="US")

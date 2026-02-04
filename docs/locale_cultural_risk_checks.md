@@ -1324,7 +1324,7 @@ locale_risk_checks:
 ## Implementation: Risk Detection Engine
 
 ```python
-# src/meta/ad/reviewer/criteria/locale_risk_checker.py
+# src/meta/ad/qa/criteria/locale_risk_checker.py
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple

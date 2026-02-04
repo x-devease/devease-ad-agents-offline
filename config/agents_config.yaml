@@ -1,0 +1,436 @@
+# Centralized Agent Configuration
+# This file provides configuration for all agents in the system
+
+# ============================================================================
+# GLOBAL AGENT SETTINGS
+# ============================================================================
+global:
+  # Environment-specific settings
+  environment: "production"  # development, staging, production
+
+  # API Configuration
+  api:
+    # Default timeout for API calls (seconds)
+    timeout: 30.0
+
+    # Default max retries for transient failures
+    max_retries: 3
+
+    # Retry backoff settings
+    retry:
+      initial_backoff: 1.0  # seconds
+      max_backoff: 60.0  # seconds
+      exponential_base: 2.0
+      jitter: true  # Add randomness to prevent thundering herd
+
+    # Circuit breaker settings
+    circuit_breaker:
+      enabled: true
+      failure_threshold: 10  # Trip after N failures
+      success_threshold: 3    # Close after N successes
+      timeout: 60.0           # Try again after N seconds
+      window_size: 100        # Track last N calls
+
+  # Logging configuration
+  logging:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    log_api_calls: true
+    log_retry_attempts: true
+    log_circuit_breaker_events: true
+
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    tokens_per_minute: 100000
+
+# ============================================================================
+# NANO AGENT CONFIGURATION
+# ============================================================================
+nano_agent:
+  # Framework vs Legacy mode
+  framework_mode:
+    enabled: true  # Use framework for enhanced quality
+    legacy_mode_fallback: true  # Fall back to legacy if framework fails
+
+  # Framework components
+  framework:
+    examples:
+      enabled: true
+      database_path: "data/agents/examples.json"
+      k_neighbors: 3  # Number of examples to retrieve
+
+    reflexion:
+      enabled: true
+      max_iterations: 2
+      quality_threshold: 0.7
+
+    memory:
+      enabled: true
+      database_path: "data/agents/memory.json"
+      max_entries: 1000
+      min_confidence_to_store: 0.7
+
+    quality:
+      threshold: 0.7
+      checks:
+        specificity: true
+        pattern_consistency: true
+        natural_language: true
+        completeness: true
+
+  # Legacy mode (fallback if framework fails)
+  legacy:
+    use_default_prompts: true
+
+# ============================================================================
+# AD MINER AGENTS CONFIGURATION
+# ============================================================================
+ad_miner:
+  # Agent Orchestrator
+  orchestrator:
+    max_iterations: 10
+    rollback_on_failure: true
+    save_intermediate_results: true
+
+  # Pattern Mining (PM) Agent
+  pm_agent:
+    # Parameter ranges for experiments
+    parameter_ranges:
+      min_complexity: 1
+      max_complexity: 10
+      min_samples: 100
+      max_samples: 100000
+
+    # Experiment design
+    experiment:
+      min_sample_size: 1000
+      confidence_level: 0.95
+      effect_size_threshold: 0.2  # Cohen's d
+
+    # System prompts
+    prompts:
+      system_prompt_file: "src/meta/ad/miner/agents/pm_agent/prompts.py"
+      temperature: 0.7
+      max_tokens: 2000
+
+  # Memory Agent
+  memory_agent:
+    # Storage
+    storage_path: "data/ad_miner/memory/"
+    database_type: "json"  # json, sqlite, postgres
+
+    # Retrieval
+    max_results: 10
+    similarity_threshold: 0.7
+
+    # Prompts
+    prompts:
+      system_prompt_file: "src/meta/ad/miner/agents/memory_agent/prompts.py"
+
+  # Judge Agent
+  judge_agent:
+    # Evaluation thresholds
+    thresholds:
+      statistical_significance: 0.05  # p-value
+      practical_significance: 0.1     # 10% improvement
+      confidence_interval: 0.95
+
+    # Backtesting
+    backtesting:
+      time_series_splits: 5
+      min_validation_periods: 2
+
+    # Prompts
+    prompts:
+      system_prompt_file: "src/meta/ad/miner/agents/judge_agent/prompts.py"
+
+  # Coder Agent
+  coder_agent:
+    # Git configuration
+    git:
+      repo_root: "."  # Path to git repository
+      branch: "main"
+      remote: "origin"
+
+    # Code standards
+    standards:
+      max_function_length: 50  # lines
+      max_cyclomatic_complexity: 10
+      test_coverage_threshold: 0.8
+      type_hints_required: true
+
+    # Prompts
+    prompts:
+      system_prompt_file: "src/meta/ad/miner/agents/coder_agent/prompts.py"
+
+  # Reviewer Agent
+  reviewer_agent:
+    # Review dimensions
+    dimensions:
+      code_quality:
+        weight: 1.0
+        min_score: 7  # out of 10
+      architecture:
+        weight: 1.0
+        min_score: 7
+      security:
+        weight: 2.0  # Critical
+        min_score: 9
+      ml_safety:
+        weight: 2.0  # Critical
+        min_score: 9
+      testing:
+        weight: 1.0
+        min_score: 7
+      performance:
+        weight: 0.5
+        min_score: 6
+      documentation:
+        weight: 0.5
+        min_score: 6
+      compatibility:
+        weight: 1.0
+        min_score: 8
+
+    # Approval criteria
+    approval:
+      min_overall_score: 7.5
+      no_critical_issues: true
+      max_major_issues: 2
+      max_minor_issues: 10
+
+    # Prompts
+    prompts:
+      system_prompt_file: "src/meta/ad/miner/agents/reviewer_agent/prompts.py"
+
+  # Monitor Agent
+  monitor_agent:
+    # Monitoring interval
+    interval_seconds: 3600  # 1 hour
+
+    # Baseline configuration
+    baselines:
+      roas:
+        mean: 2.0
+        std_dev: 0.5
+        warning_threshold: 1.5  # 25% drop
+        critical_threshold: 1.0  # 50% drop
+      ctr:
+        mean: 0.02
+        std_dev: 0.005
+        warning_threshold: 0.015  # 25% drop
+        critical_threshold: 0.01  # 50% drop
+
+    # Anomaly detection
+    anomaly_detection:
+      method: "zscore"  # zscore, iqr, isolation_forest
+      threshold: 3.0  # Number of standard deviations
+      min_samples: 30
+
+# ============================================================================
+# DIAGNOSER AGENTS CONFIGURATION
+# ============================================================================
+diagnoser:
+  # Orchestrator
+  orchestrator:
+    max_iterations: 5
+    save_intermediate_results: true
+
+  # Detector optimization
+  detectors:
+    # List of detectors to optimize
+    active_detectors:
+      - "ctr_predictor"
+      - "roas_predictor"
+      - "conversion_predictor"
+
+    # Optimization parameters
+    optimization:
+      iterations: 10
+      patience: 3
+      min_improvement: 0.01
+
+  # Memory Agent
+  memory_agent:
+    storage_path: "data/diagnoser/memory/"
+    max_entries: 500
+
+# ============================================================================
+# AD GENERATOR CONFIGURATION
+# ============================================================================
+ad_generator:
+  # Image generation
+  image_generation:
+    model: "nano-banana-pro"
+    enable_multi_image: true
+    reference_images_dir: "data/reference_images/"
+    max_reference_images: 3
+
+    # Generation settings
+    settings:
+      enable_watermark: false
+      enable_upscaling: false
+      use_gpt4o_conversion: false
+
+    # Quality
+    quality:
+      min_confidence: 0.7
+      min_resolution: "1024x1024"
+
+  # Prompt building
+  prompt_builder:
+    # Template system
+    templates_path: "src/meta/ad/generator/pipeline/prompt_templates.py"
+
+    # Nano enhancement
+    nano_enhancement:
+      enabled: true
+      min_confidence: 0.7
+
+    # Feature thresholds
+    thresholds:
+      individual_features: 0.70
+      supporting_combinations: 0.0
+      psychology_patterns: 0.0
+
+  # Reference image manager
+  reference_images:
+    max_images_per_angle: 3
+    fallback_image: "data/fallback.png"
+
+# ============================================================================
+# WORKFLOWS CONFIGURATION
+# ============================================================================
+workflows:
+  # Allocation workflow
+  allocation:
+    batch_size: 100
+    max_parallel_jobs: 4
+
+    # Budget rules
+    rules:
+      day1_budget_multiplier: 0.8  # Conservative on day 1
+      low_performer_cutoff: 0.5  # Cutoff for low performers
+      high_performer_boost: 1.5  # Boost for top performers
+
+  # Extract workflow
+  extract:
+    batch_size: 1000
+    max_parallel_jobs: 2
+
+  # Tuning workflow
+  tuning:
+    optimization:
+      n_calls: 50
+      n_random_starts: 10
+
+    constraints:
+      min_budget: 100.0
+      max_budget: 10000.0
+
+# ============================================================================
+# FEATURE STORE CONFIGURATION
+# ============================================================================
+feature_store:
+  # Feature types
+  numerical_features:
+    - "impressions"
+    - "clicks"
+    - "spend"
+    - "conversions"
+    - "revenue"
+
+  categorical_features:
+    - "day_of_week"
+    - "hour"
+    - "adset_id"
+    - "campaign_id"
+
+  # Feature selection
+  selection:
+    method: "variance_threshold"  # variance_threshold, k_best, mutual_info
+    threshold: 0.01
+    k_best: 50
+
+  # Preprocessing
+  preprocessing:
+    handle_missing: "mean"  # mean, median, most_frequent, constant
+    scaling: "standard"  # standard, minmax, robust, normalizer
+
+# ============================================================================
+# TESTING CONFIGURATION
+# ============================================================================
+testing:
+  # Unit tests
+  unit:
+    coverage_target: 0.80
+    fail_on_coverage_drop: true
+
+  # Integration tests
+  integration:
+    timeout: 300  # seconds
+    use_mocks: false  # Set true for faster testing
+
+  # E2E tests
+  e2e:
+    enabled: true
+    timeout: 600  # seconds
+    test_data_path: "tests/e2e/data/"
+
+# ============================================================================
+# MONITORING & ALERTING
+# ============================================================================
+monitoring:
+  # Metrics collection
+  metrics:
+    enabled: true
+    export_to_prometheus: false
+    export_interval: 60  # seconds
+
+  # Alerting
+  alerts:
+    enabled: true
+    channels:
+      - type: "slack"
+        webhook_url: "${SLACK_WEBHOOK_URL}"
+      - type: "email"
+        recipients: ["${ADMIN_EMAIL}"]
+
+    # Alert rules
+    rules:
+      - name: "Agent Failure Rate"
+        condition: "error_rate > 0.5"
+        duration: 300  # seconds
+        severity: "critical"
+
+      - name: "Circuit Breaker Open"
+        condition: "circuit_breaker_open == true"
+        severity: "warning"
+
+      - name: "API Latency High"
+        condition: "p95_latency > 5.0"
+        duration: 60
+        severity: "warning"
+
+# ============================================================================
+# DEVELOPMENT SETTINGS
+# ============================================================================
+development:
+  # Debug mode
+  debug:
+    enabled: false
+    log_llm_calls: true
+    show_retry_logic: true
+
+  # Feature flags
+  features:
+    enable_experimental_agents: false
+    enable_new_strategies: false
+    enable_parallel_execution: false
+
+  # Sandbox mode (prevents accidental production changes)
+  sandbox:
+    enabled: false
+    dry_run: false
+    confirm_destructive_actions: true

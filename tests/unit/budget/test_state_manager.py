@@ -440,24 +440,28 @@ class TestMonthlyBudgetStateReset:
         """Test should_reset_month detects month rollover."""
         from unittest.mock import patch
 
+        mock_date_jan = datetime(2026, 1, 15, 12, 0, 0)
+
         state = MonthlyBudgetState(
             customer="test_customer",
             platform="meta",
             monthly_budget=10000.0,
             month="2025-12",
             state_path=Path("/tmp/test.json"),
+            month_start_date=datetime(2025, 12, 1),
         )
 
         # Mock datetime.now() to return January 2026
         with patch("src.meta.adset.allocator.budget.state_manager.datetime") as mock_dt:
-            mock_dt.now.return_value.strftime.return_value = "2026-01"
+            mock_dt.now.return_value = mock_date_jan
+            mock_dt.strptime = datetime.strptime
 
             # Should detect rollover
             assert state.should_reset_month() is True
 
-        # Reset to current month
-        state.reset_month(10000.0)
-        assert state.month == "2026-01"
+            # Reset to current month
+            state.reset_month(10000.0)
+            assert state.month == "2026-01"
 
-        # Should not detect rollover anymore
-        assert state.should_reset_month() is False
+            # Should not detect rollover anymore
+            assert state.should_reset_month() is False

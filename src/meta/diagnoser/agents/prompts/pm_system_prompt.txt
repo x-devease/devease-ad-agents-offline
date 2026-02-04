@@ -898,6 +898,167 @@ IF std(labels_per_window) / mean(labels_per_window) > 0.30:
 
 ---
 
+## 业务影响量化（Business Impact Quantification）⭐ NEW
+
+在`expected_outcome`中添加业务指标，帮助理解detector改进的实际价值。
+
+### 为什么重要？
+
+**问题**：技术指标（precision/recall/F1）对业务人员不够直观。
+
+**解决**：将技术指标转换为业务语言（节省的成本、影响的广告数、ROI）。
+
+### 计算方法
+
+```python
+def estimate_business_impact(detector, baseline_metrics, expected_metrics, business_context=None):
+    """估算detector改进的业务影响
+
+    Args:
+        detector: Detector名称
+        baseline_metrics: 当前指标 {"tp": 66, "fp": 0, "fn": 56, ...}
+        expected_metrics: 预期指标 {"tp": 72, "fp": 2, "fn": 50, ...}
+        business_context: 业务上下文（可选）
+
+    Returns:
+        dict: 业务影响估算
+    """
+    # 默认业务上下文（基于Meta广告投放）
+    if business_context is None:
+        business_context = {
+            "avg_monthly_spend_per_ad": 500,  # 每个广告每月平均花费$500
+            "daily_waste_per_fatigue_ad": 50,  # 每个疲劳广告每天浪费$50
+            "loss_per_false_positive": 200,   # 每个误报导致$200损失（误停好广告）
+            "ads_per_account": 100,            # 每个账户平均100个广告
+            "days_per_month": 30,
+            "working_hours_per_month": 160  # 假设人工审核时间成本
+        }
+
+    # 计算Recall提升带来的节省
+    baseline_tp = baseline_metrics.get("tp", 0)
+    expected_tp = expected_metrics.get("tp", baseline_tp)
+    additional_tp = expected_tp - baseline_tp
+
+    # 每个多发现的问题广告节省的浪费
+    monthly_savings_from_recall = additional_tp * business_context["daily_waste_per_fatigue_ad"] * business_context["days_per_month"]
+
+    # 计算Precision下降带来的损失
+    baseline_fp = baseline_metrics.get("fp", 0)
+    expected_fp = expected_metrics.get("fp", baseline_fp)
+    fp_increase = expected_fp - baseline_fp
+
+    monthly_loss_from_precision = fp_increase * business_context["loss_per_false_positive"]
+
+    # 净节省
+    net_monthly_savings = max(0, monthly_savings_from_recall - monthly_loss_from_precision)
+
+    # 计算影响的广告账户数
+    # 假设每个优化影响10%的账户
+    accounts_affected = business_context["ads_per_account"] / 10
+
+    # ROI计算
+    implementation_cost = 0  # 阈值调整的实现成本接近0
+    roi = float('inf') if net_monthly_savings > 0 and implementation_cost == 0 else (
+        (net_monthly_savings - implementation_cost) / implementation_cost if implementation_cost > 0 else 0
+    )
+
+    return {
+        "monthly_savings_usd": round(net_monthly_savings, 2),
+        "annual_savings_usd": round(net_monthly_savings * 12, 2),
+        "accounts_affected": round(accounts_affected),
+        "ads_detected": expected_tp,
+        "additional_ads_detected": additional_tp,
+        "false_positives": expected_fp,
+        "roi": roi,
+        "implementation_cost_usd": 0,
+        "time_to_deploy": "Immediate (threshold change only)"
+    }
+```
+
+### 在expected_outcome中添加业务影响
+
+**更新后的experiment_spec格式**：
+
+```json
+{
+  "title": "优化FatigueDetector的recall - 第二轮阈值调整",
+  "detector": "FatigueDetector",
+  "changes": [...],
+  "expected_outcome": {
+    "precision": ">=0.95 (-5%)",
+    "recall": "0.60 (+11%)",
+    "f1_score": "0.73 (+4%)",
+    "tp": "预期增加5-10个",
+    "fp": "预期从0增加到2-5个",
+    "business_impact": {
+      "estimated_monthly_savings_usd": 1500,
+      "estimated_annual_savings_usd": 18000,
+      "ads_affected": "~10个账户",
+      "additional_ads_detected": 6,
+      "implementation_cost_usd": 0,
+      "time_to_deploy": "Immediate",
+      "roi": "∞",
+      "value_proposition": "每月节省$1,500，年化$18,000"
+    }
+  },
+  "business_context": {
+    "assumptions": {
+      "avg_monthly_spend_per_ad": 500,
+      "daily_waste_per_fatigue_ad": 50,
+      "loss_per_false_positive": 200
+    },
+    "notes": [
+      "基于每个疲劳广告每天浪费$50的假设",
+      "Recall提升11%多发现6个疲劳广告",
+      "Precision下降5%增加2个误报，净节省$1,500/月"
+    ]
+  }
+}
+```
+
+### 示例计算
+
+**示例1: FatigueDetector Recall优化**
+```python
+baseline = {"tp": 66, "fp": 0, "fn": 56, "precision": 1.0, "recall": 0.541}
+expected = {"tp": 72, "fp": 2, "fn": 50, "precision": 0.97, "recall": 0.595}
+
+business_impact = estimate_business_impact("FatigueDetector", baseline, expected)
+# 返回:
+{
+    "monthly_savings_usd": 1500.00,      # 6个额外TP × $50/天 × 30天 - 2个FP × $200
+    "annual_savings_usd": 18000.00,
+    "additional_ads_detected": 6,
+    "value_proposition": "每月节省$1,500，年化$18,000"
+}
+```
+
+**示例2: LatencyDetector Precision优化**
+```python
+baseline = {"tp": 45, "fp": 5, "fn": 10, "precision": 0.90, "recall": 0.82}
+expected = {"tp": 43, "fp": 2, "fn": 11, "precision": 0.96, "recall": 0.80}
+
+business_impact = estimate_business_impact("LatencyDetector", baseline, expected)
+# 返回:
+{
+    "monthly_savings_usd": 600.00,      # 减少FP带来的节省: 3个FP × $200
+    "annual_savings_usd": 7200.00,
+    "ads_affected": "~10个账户",
+    "value_proposition": "每月节省$600（减少误报损失），年化$7,200"
+}
+```
+
+### 检查清单
+
+在生成experiment_spec时：
+- [ ] 计算Recall提升带来的节省
+- [ ] 计算Precision变化的影响
+- [ ] 估算净业务价值
+- [ ] 在expected_outcome中添加business_impact字段
+- [ ] 说明关键假设
+
+---
+
 ## 关键理解：标注与检测的循环依赖
 
 ### ⚠️ Critical Discovery

@@ -1,82 +1,26 @@
 #!/usr/bin/env python3
 """
-Evaluate all diagnoser agents and check satisfaction.
+Check detector satisfaction against target metrics.
 
-This script loads and evaluates all detectors, checking if they meet
-their target metrics.
+This script loads evaluation reports for all detectors and checks if they meet
+their target metrics (F1, precision, recall).
+
+Usage:
+    python eval/check_detector_satisfaction.py
 """
 
 import sys
-import os
-import json
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+project_root = Path(__file__).parent.parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
 
-
-def load_metrics(detector_name: str) -> dict:
-    """Load metrics for a detector."""
-    detector_map = {
-        "FatigueDetector": "fatigue_sliding_10windows.json",
-        "LatencyDetector": "latency_sliding_10windows.json",
-        "DarkHoursDetector": "dark_hours_sliding_10windows.json"
-    }
-
-    report_file = detector_map.get(detector_name)
-    if not report_file:
-        return None
-
-    report_path = Path("src/meta/diagnoser/evaluator/reports/moprobo_sliding") / report_file
-
-    if not report_path.exists():
-        return None
-
-    with open(report_path, 'r') as f:
-        report = json.load(f)
-
-    # Extract metrics based on report format
-    if "aggregated_metrics" in report:
-        # New format (DarkHoursDetector)
-        metrics = report["aggregated_metrics"]
-        return {
-            "precision": metrics.get("precision", 0),
-            "recall": metrics.get("recall", 0),
-            "f1_score": metrics.get("f1_score", 0),
-            "tp": metrics.get("total_tp", 0),
-            "fp": metrics.get("total_fp", 0),
-            "fn": metrics.get("total_fn", 0)
-        }
-    else:
-        # Old format (LatencyDetector, FatigueDetector)
-        accuracy = report.get("accuracy", {})
-        return {
-            "precision": accuracy.get("precision", 0),
-            "recall": accuracy.get("recall", 0),
-            "f1_score": accuracy.get("f1_score", 0),
-            "tp": accuracy.get("total_tp", 0),
-            "fp": accuracy.get("total_fp", 0),
-            "fn": accuracy.get("total_fn", 0)
-        }
-
-
-def check_satisfaction(metrics: dict, targets: dict) -> tuple[bool, dict]:
-    """Check if metrics meet target thresholds."""
-    satisfaction = {}
-    all_satisfied = True
-
-    for metric, target_value in targets.items():
-        current_value = metrics.get(metric, 0)
-        is_satisfied = current_value >= target_value
-        satisfaction[metric] = {
-            "current": current_value,
-            "target": target_value,
-            "satisfied": is_satisfied
-        }
-        if not is_satisfied:
-            all_satisfied = False
-
-    return all_satisfied, satisfaction
+from src.meta.diagnoser.scripts.utils.metrics_utils import (
+    load_metrics,
+    check_satisfaction,
+    format_metrics_report,
+)
 
 
 def main():

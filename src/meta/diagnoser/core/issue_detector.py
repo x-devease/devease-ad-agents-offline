@@ -1,5 +1,39 @@
 """
-Issue Detector - Detects performance and configuration issues.
+Core issue detection abstractions and orchestrator.
+
+This module provides the base abstractions for issue detection in the
+diagnoser system, along with the main IssueDetector orchestrator that
+coordinates multiple specialized detectors.
+
+Key Classes:
+    BaseDetector: Abstract base class for all detector implementations
+    IssueDetector: Main orchestrator that coordinates multiple detectors
+
+Key Features:
+    - Pluggable detector architecture via BaseDetector
+    - Multi-detector orchestration with configurable detector types
+    - Unified issue aggregation across different detection strategies
+    - Support for both performance and configuration issue detection
+
+Usage:
+    >>> from src.meta.diagnoser.core import IssueDetector
+    >>> detector = IssueDetector()
+    >>> issues = detector.detect_all(data, entity_id="123")
+    >>> for issue in issues:
+    ...     print(f"{issue.category}: {issue.description}")
+
+Extending:
+    To create a custom detector, inherit from BaseDetector:
+
+    >>> class CustomDetector(BaseDetector):
+    ...     def detect(self, data, entity_id):
+    ...         # Your detection logic here
+    ...         return [Issue(...)]
+
+See Also:
+    - src.meta.diagnoser.detectors.FatigueDetector: Creative fatigue detection
+    - src.meta.diagnoser.detectors.LatencyDetector: Conversion latency detection
+    - src.meta.diagnoser.detectors.DarkHoursDetector: Hourly performance issues
 """
 
 from __future__ import annotations

@@ -1,8 +1,51 @@
 """
-Latency Detector - Response Delay Detection (Daily, Score-Based).
+LatencyDetector - Response delay detection using daily performance data.
 
-Detects delays in responding to performance drops using daily data.
-Outputs responsiveness scores instead of monetary loss.
+This module implements the LatencyDetector class which identifies delays in
+responding to performance drops, helping teams understand how quickly they
+intervene when issues occur.
+
+Key Features:
+    - Daily granularity analysis
+    - Breakdown detection using ROAS thresholds
+    - Intervention tracking (PAUSED status or ROAS recovery)
+    - Responsiveness scoring (0-100)
+
+Algorithm:
+    1. Calculate 3-day rolling average ROAS as baseline
+    2. Identify breakdown days when:
+       - Daily ROAS < threshold (default: 1.0)
+       - Daily spend > min_spend (default: 10)
+       - ROAS drop > 20% from rolling average
+
+    3. Track days until intervention:
+       - First PAUSED status after breakdown
+       - OR ROAS recovery to threshold level
+
+    4. Calculate responsiveness score based on delay duration
+
+Scoring System (0-100):
+    - 80-100: Excellent response (same day or next day)
+    - 60-79: Good response (2 days delay)
+    - 40-59: Moderate delay (3-4 days)
+    - 20-39: Poor response (5-7 days)
+    - 0-19: Critical delay (>7 days)
+
+Configuration:
+    - roas_threshold: Minimum acceptable ROAS (default: 1.0)
+    - min_spend: Minimum spend to consider (default: 10)
+    - latency_threshold_days: Maximum acceptable delay (default: 5)
+
+Usage:
+    >>> from src.meta.diagnoser.detectors import LatencyDetector
+    >>> detector = LatencyDetector()
+    >>> issues = detector.detect(data, entity_id="123")
+    >>> for issue in issues:
+    ...     print(f"Score: {issue.score}, Delay: {issue.details['delay_days']} days")
+
+See Also:
+    - FatigueDetector: For creative fatigue detection
+    - DarkHoursDetector: For hourly performance analysis
 """
 
 from __future__ import annotations

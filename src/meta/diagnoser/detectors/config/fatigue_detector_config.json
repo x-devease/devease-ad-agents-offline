@@ -1,0 +1,16 @@
+{
+  "detector_name": "FatigueDetector",
+  "description": "Optimized for high recall (80%)",
+  "thresholds": {
+    "fatigue_freq_threshold": 2.0,
+    "cpa_increase_threshold": 1.05,
+    "min_golden_days": 3,
+    "golden_min_freq": 5,
+    "golden_max_freq": 55,
+    "score_threshold": 50,
+    "window_size_days": 10,
+    "consecutive_days": 3,
+    "cv_threshold": 0.15,
+    "target_roas": 1.0
+  }
+}

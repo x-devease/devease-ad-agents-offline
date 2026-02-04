@@ -1,0 +1,13 @@
+{
+  "detector_name": "DarkHoursDetector",
+  "description": "Optimized for high recall (80%)",
+  "thresholds": {
+    "min_days": 7,
+    "min_spend_ratio_hourly": 0.005,
+    "min_spend_ratio_daily": 0.03,
+    "cvr_threshold_ratio": 0.15,
+    "target_roas": 0.8,
+    "hour_spend_min": 10,
+    "hour_spend_max": 10000
+  }
+}

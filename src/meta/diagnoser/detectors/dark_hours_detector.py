@@ -1,11 +1,62 @@
 """
-Day & Hour Performance Analyzer - Mixed Data Analysis (Score-Based).
+DarkHoursDetector - Time period efficiency analysis using hourly and daily data.
 
-Identifies low-performance time periods using:
-- 24 hours hourly data for time-slot analysis
-- 30 days daily data for day-of-week analysis
+This module implements the DarkHoursDetector class which identifies low-performance
+time periods (hours of day, days of week) to help optimize ad scheduling and budget
+allocation.
 
-Outputs efficiency scores instead of monetary waste.
+Key Features:
+    - Multi-granularity analysis (hourly + daily)
+    - Dead zone identification for hours
+    - Weak day identification for day-of-week
+    - Efficiency scoring (0-100)
+    - Configurable ROAS and conversion rate thresholds
+
+Algorithm:
+    1. Hourly Analysis (using 24h hourly data):
+       - Aggregate metrics by hour (0-23)
+       - Calculate efficiency score per hour:
+         * Spend ratio (hourly spend / total spend)
+         * Conversion rate ratio vs average
+         * Dead zone identification (consecutive low-performance hours)
+       - Identify peak hours and dead zones
+
+    2. Day-of-Week Analysis (using 30d daily data):
+       - Aggregate metrics by day of week (0-6)
+       - Calculate efficiency score per day:
+         * ROAS vs target
+         * Conversion rate vs average
+         * Spend distribution
+       - Identify strong and weak days
+
+    3. Combined Scoring:
+       - Hourly efficiency score (0-100)
+       - Weekly efficiency score (0-100)
+       - Overall efficiency: weighted average
+
+Scoring System (0-100):
+    - 80-100: Excellent optimization (well-targeted)
+    - 60-79: Good - minor inefficiencies (some optimization needed)
+    - 40-59: Moderate - significant inefficiencies (reallocate budget)
+    - 20-39: Poor - major waste (significant optimization needed)
+    - 0-19: Critical - severe waste (urgent optimization needed)
+
+Configuration:
+    - target_roas: Target ROAS threshold (default: 2.0)
+    - cvr_threshold_ratio: Min conversion rate ratio vs average (default: 0.15)
+    - min_spend_ratio_hourly: Min spend ratio for hourly (default: 0.03)
+    - min_spend_ratio_daily: Min spend ratio for daily (default: 0.05)
+
+Usage:
+    >>> from src.meta.diagnoser.detectors import DarkHoursDetector
+    >>> detector = DarkHoursDetector()
+    >>> issues = detector.detect(daily_data, entity_id="123", hourly_data=hourly_data)
+    >>> for issue in issues:
+    ...     print(f"Score: {issue.score}, Type: {issue.details['analysis_type']}")
+
+See Also:
+    - FatigueDetector: For creative fatigue detection
+    - LatencyDetector: For response delay detection
 """
 
 from __future__ import annotations

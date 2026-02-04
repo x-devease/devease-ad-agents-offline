@@ -1,5 +1,40 @@
 """
-Report Generator - Generates diagnosis reports.
+Report Generator - Formats diagnosis reports in multiple formats.
+
+This module provides the ReportGenerator class that converts DiagnosisReport
+objects into various output formats for different use cases.
+
+Key Classes:
+    ReportGenerator: Multi-format report generator
+
+Supported Formats:
+    - JSON: Machine-readable format for API responses and data storage
+    - Markdown: Human-readable format for documentation and chat
+    - HTML: Web dashboard format with styling
+
+Key Features:
+    - Multi-format output from single report object
+    - Localized support (Chinese/English)
+    - Severity-based color coding and formatting
+    - Comprehensive issue and recommendation rendering
+
+Usage:
+    >>> from src.meta.diagnoser.core import ReportGenerator
+    >>> generator = ReportGenerator()
+    >>>
+    >>> # Generate JSON for APIs
+    >>> json_report = generator.generate_json(diagnosis_report)
+    >>>
+    >>> # Generate Markdown for documentation
+    >>> md_report = generator.generate_markdown(diagnosis_report)
+    >>>
+    >>> # Generate HTML for dashboards
+    >>> html_report = generator.generate_html(diagnosis_report)
+
+See Also:
+    - DiagnosisReport: Report data model
+    - Issue: Individual issue representation
+    - Recommendation: Action items
 """
 
 from __future__ import annotations

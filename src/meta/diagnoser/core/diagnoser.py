@@ -1,5 +1,35 @@
 """
-Main Diagnoser - Coordinates diagnosis process.
+Main Diagnoser - Coordinates diagnosis process for Meta ad accounts.
+
+This module provides the primary Diagnoser class that orchestrates the
+entire diagnosis workflow, from data ingestion through issue detection
+to report generation.
+
+Key Classes:
+    Diagnoser: Main coordinator for diagnosis workflow
+
+Key Features:
+    - Multi-level diagnosis: account, campaign, adset
+    - Automatic detector registration and configuration
+    - Comprehensive report generation with IssueSeverity ratings
+    - Integration with IssueDetector for pluggable detection strategies
+
+Usage:
+    >>> from src.meta.diagnoser.core import Diagnoser
+    >>> diagnoser = Diagnoser(config={...})
+    >>> report = diagnoser.diagnose_account(account_id="123", data=data)
+    >>> print(report.summary)
+
+Workflow:
+    1. Initialize Diagnoser with optional configuration
+    2. Load entity performance data
+    3. Run diagnosis at desired level (account/campaign/adset)
+    4. Receive DiagnosisReport with issues and recommendations
+
+See Also:
+    - IssueDetector: Core detection abstraction
+    - ReportGenerator: Report formatting and generation
+    - DetectorFactory: Dynamic detector creation
 """
 
 from __future__ import annotations

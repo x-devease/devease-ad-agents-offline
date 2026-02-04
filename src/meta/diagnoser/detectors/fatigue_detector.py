@@ -1,9 +1,47 @@
 """
-Fatigue Detector - Creative Fatigue Detection (Score-Based, No Lookahead Bias).
+FatigueDetector - Creative fatigue detection using rolling window analysis.
 
-Detects creative fatigue using rolling window approach.
-Only uses historical data available at prediction time.
-Outputs fatigue severity scores instead of monetary loss.
+This module implements the FatigueDetector class which identifies when ad
+creatives are showing signs of fatigue based on performance degradation
+patterns over time.
+
+Key Features:
+    - Rolling window approach (no lookahead bias)
+    - Only uses historical data available at prediction time
+    - Suitable for real-time prediction scenarios
+    - Multi-dimensional scoring: frequency trends, ROAS decline, stability
+
+Algorithm:
+    1. For each day t, analyze data from day [t-window_size : t-1]
+    2. Calculate cumulative frequency within the rolling window
+    3. Identify golden period (peak performance) in the window
+    4. Check if current day shows fatigue signals:
+       - Declining ROAS trend
+       - High cumulative frequency
+       - Performance instability
+    5. Report fatigue only if consecutive days show signals
+
+Scoring System (0-100):
+    - 0-30: Healthy (no fatigue detected)
+    - 30-60: Early signs (monitor closely)
+    - 60-80: Moderate fatigue (consider creative refresh)
+    - 80-100: Severe fatigue (urgent action needed)
+
+Configuration:
+    - window_size_days: Analysis window size (default: 23)
+    - fatigue_freq_threshold: Frequency threshold (default: 2.3)
+    - min_data_points: Minimum data points required (default: 10)
+
+Usage:
+    >>> from src.meta.diagnoser.detectors import FatigueDetector
+    >>> detector = FatigueDetector()
+    >>> issues = detector.detect(data, entity_id="123")
+    >>> for issue in issues:
+    ...     print(f"Score: {issue.score}, Severity: {issue.severity}")
+
+See Also:
+    - LatencyDetector: For conversion latency detection
+    - DarkHoursDetector: For hourly performance analysis
 """
 
 from __future__ import annotations

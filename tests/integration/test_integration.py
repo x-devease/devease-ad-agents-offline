@@ -11,8 +11,8 @@ from pathlib import Path
 from unittest.mock import Mock, MagicMock, patch
 import numpy as np
 
-from src.meta.ad.reviewer.pipeline import VisualQAMatrix
-from src.meta.ad.reviewer.schemas.audit_report import GuardStatus
+from src.meta.ad.qa.pipeline import VisualQAMatrix
+from src.meta.ad.qa.schemas.audit_report import GuardStatus
 
 
 class TestGeneratorIntegration:
@@ -292,7 +292,7 @@ class TestReportAggregation:
     @pytest.fixture
     def sample_reports(self, tmp_path):
         """Create sample audit reports."""
-        from src.meta.ad.reviewer.schemas.audit_report import (
+        from src.meta.ad.qa.schemas.audit_report import (
             AuditReport, GuardStatus, GeometricResult, PerformanceScore
         )
 

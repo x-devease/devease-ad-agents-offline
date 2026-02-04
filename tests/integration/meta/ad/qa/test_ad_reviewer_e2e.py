@@ -12,8 +12,8 @@ import pytest
 import yaml
 from PIL import Image
 
-from src.meta.ad.reviewer.pipeline import VisualQAMatrix
-from src.meta.ad.reviewer.schemas.audit_report import GuardStatus
+from src.meta.ad.qa.pipeline import VisualQAMatrix
+from src.meta.ad.qa.schemas.audit_report import GuardStatus
 
 
 @pytest.fixture

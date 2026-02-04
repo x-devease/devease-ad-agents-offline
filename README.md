@@ -200,9 +200,9 @@ python3 run.py {command} --help
 │       ├── extract_workflow.py  # Feature extraction workflow
 │       ├── tuning_workflow.py   # Tuning workflow
 │       └── allocation_workflow.py # Allocation workflow
-├── config/                      # Configuration files (shared across miner, generator, reviewer)
+├── config/                      # Configuration files (shared across miner, generator, qa)
 │   ├── {customer}/{platform}/   # Shared customer/platform config
-│   │   ├── config.yaml          # SHARED config (miner + generator + reviewer)
+│   │   ├── config.yaml          # SHARED config (miner + generator + qa)
 │   │   └── patterns.yaml        # Ad miner output patterns
 │   ├── agents/                  # Agent configurations
 │   │   └── nano/                # Nano Banana Pro Agent config

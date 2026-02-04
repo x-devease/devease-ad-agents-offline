@@ -8,8 +8,8 @@ import pytest
 import numpy as np
 from pathlib import Path
 
-from src.meta.ad.reviewer.guards.geometric_guard import GeometricGuard
-from src.meta.ad.reviewer.schemas.audit_report import GuardStatus
+from src.meta.ad.qa.guards.geometric_guard import GeometricGuard
+from src.meta.ad.qa.schemas.audit_report import GuardStatus
 
 
 class TestGeometricGuard:
@@ -56,7 +56,7 @@ class TestGeometricGuard:
 
         # Test perfect match (scale_x == scale_y)
         is_valid, delta = guard._check_with_sift._validate_uniform_scaling if hasattr(guard, '_validate_uniform_scaling') else (lambda x, y, t: (abs(x/y - 1) <= t, abs(x/y - 1)))(1.0, 1.0, 0.02)
-        from src.meta.ad.reviewer.utils.geometry_utils import validate_uniform_scaling
+        from src.meta.ad.qa.utils.geometry_utils import validate_uniform_scaling
         is_valid, delta = validate_uniform_scaling(1.0, 1.0, 0.02)
 
         assert is_valid is True

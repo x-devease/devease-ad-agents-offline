@@ -9,8 +9,8 @@ import json
 from pathlib import Path
 from unittest.mock import Mock, MagicMock
 
-from src.meta.ad.reviewer.pipeline import VisualQAMatrix
-from src.meta.ad.reviewer.schemas.audit_report import GuardStatus
+from src.meta.ad.qa.pipeline import VisualQAMatrix
+from src.meta.ad.qa.schemas.audit_report import GuardStatus
 
 
 class TestVisualQAMatrix:
@@ -164,7 +164,7 @@ class TestAuditReport:
 
     def test_report_creation(self):
         """Test creating an audit report."""
-        from src.meta.ad.reviewer.schemas.audit_report import AuditReport
+        from src.meta.ad.qa.schemas.audit_report import AuditReport
 
         report = AuditReport(
             session_id="test_session",
@@ -183,7 +183,7 @@ class TestAuditReport:
 
     def test_report_to_dict(self):
         """Test converting report to dict."""
-        from src.meta.ad.reviewer.schemas.audit_report import AuditReport
+        from src.meta.ad.qa.schemas.audit_report import AuditReport
 
         report = AuditReport(
             session_id="test",
@@ -203,7 +203,7 @@ class TestAuditReport:
 
     def test_report_passed_property(self):
         """Test passed property."""
-        from src.meta.ad.reviewer.schemas.audit_report import AuditReport
+        from src.meta.ad.qa.schemas.audit_report import AuditReport
 
         report = AuditReport(
             session_id="test",

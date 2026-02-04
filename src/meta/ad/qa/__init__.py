@@ -9,7 +9,7 @@ four sequential guards:
 4. PerformanceGuard - Optimization scoring
 
 Usage:
-    from src.meta.ad.reviewer import VisualQAMatrix
+    from src.meta.ad.qa import VisualQAMatrix
 
     # Initialize reviewer with config
     reviewer = VisualQAMatrix(config_path="config/moprobo/facebook/config.yaml")

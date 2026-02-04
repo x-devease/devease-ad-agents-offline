@@ -1,10 +1,10 @@
-# Ad Reviewer Module
+# Ad QA Module
 
 Visual QA & Risk Matrix (4-Guard System) for validating generated ad images.
 
 ## Overview
 
-The Ad Reviewer provides comprehensive quality assurance for generated ad images through four sequential guards:
+The Ad QA module provides comprehensive quality assurance for generated ad images through four sequential guards:
 
 1. **GeometricGuard** - Product integrity validation using SIFT feature matching
 2. **AestheticGuard** - Visual quality checking using VLM
@@ -27,10 +27,10 @@ pip install openai
 
 ```python
 from pathlib import Path
-from src.meta.ad.reviewer import VisualQAMatrix
+from src.meta.ad.qa import VisualQAMatrix
 
-# Initialize reviewer with config
-reviewer = VisualQAMatrix(
+# Initialize QA with config
+qa = VisualQAMatrix(
     config_path="config/moprobo/facebook/config.yaml"
 )
 
@@ -186,19 +186,19 @@ Example report:
 
 ```bash
 # Run all tests
-pytest src/meta/ad/reviewer/tests/
+pytest src/meta/ad/qa/tests/
 
 # Run specific test file
-pytest src/meta/ad/reviewer/tests/test_geometric_guard.py -v
+pytest src/meta/ad/qa/tests/test_geometric_guard.py -v
 
 # Run with coverage
-pytest src/meta/ad/reviewer/tests/ --cov=src/meta/ad/reviewer --cov-report=html
+pytest src/meta/ad/qa/tests/ --cov=src/meta/ad/reviewer --cov-report=html
 ```
 
 ## Module Structure
 
 ```
-src/meta/ad/reviewer/
+src/meta/ad/qa/
 ├── __init__.py
 ├── pipeline.py                    # VisualQAMatrix orchestrator
 ├── guards/

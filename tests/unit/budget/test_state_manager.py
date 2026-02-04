@@ -354,33 +354,44 @@ class TestMonthlyBudgetStateSave:
 
     def test_save_and_load_roundtrip(self, tmp_path):
         """Test save and load roundtrip preserves data."""
+        from unittest.mock import patch
+
         state_path = tmp_path / "monthly_state_2026-01.json"
 
-        # Create and save state
-        state1 = MonthlyBudgetState(
-            customer="test_customer",
-            platform="meta",
-            monthly_budget=10000.0,
-            month="2026-01",
-            state_path=state_path,
-        )
-        state1.add_execution(
-            execution_date=datetime(2026, 1, 1),
-            daily_budget=322.58,
-            allocated=320.0,
-            spent=315.50,
-            num_adsets=45,
-            allocation_file="/tmp/alloc.csv",
-        )
-        state1.save()
+        # Mock datetime to return January 2026
+        mock_date = datetime(2026, 1, 15, 12, 0, 0)
 
-        # Load state
-        state2 = MonthlyBudgetState.load_or_create(
-            customer="test_customer",
-            platform="meta",
-            monthly_budget=10000.0,
-            state_path=state_path,
-        )
+        with patch("src.meta.adset.allocator.budget.state_manager.datetime") as mock_dt:
+            mock_dt.now.return_value = mock_date
+            mock_dt.strptime = datetime.strptime
+            mock_dt.fromisoformat = datetime.fromisoformat
+
+            # Create and save state
+            state1 = MonthlyBudgetState(
+                customer="test_customer",
+                platform="meta",
+                monthly_budget=10000.0,
+                month="2026-01",
+                state_path=state_path,
+                month_start_date=mock_date,
+            )
+            state1.add_execution(
+                execution_date=datetime(2026, 1, 1),
+                daily_budget=322.58,
+                allocated=320.0,
+                spent=315.50,
+                num_adsets=45,
+                allocation_file="/tmp/alloc.csv",
+            )
+            state1.save()
+
+            # Load state
+            state2 = MonthlyBudgetState.load_or_create(
+                customer="test_customer",
+                platform="meta",
+                monthly_budget=10000.0,
+                state_path=state_path,
+            )
 
         # Verify data preserved
         assert state2.tracking["total_spent"] == state1.tracking["total_spent"]

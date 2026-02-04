@@ -428,7 +428,7 @@ class Orchestrator:
         """Record experiment in Memory Agent."""
         # Create a mock judge decision if not provided
         if judge_decision is None:
-            from agents.team.judge_agent import PerformanceReport
+            from .judge_agent import PerformanceReport
             judge_decision = JudgeDecision(
                 approve=False,
                 confidence=0.0,
@@ -494,7 +494,7 @@ class Orchestrator:
 
     def _create_initial_findings(self) -> JudgeFindings:
         """Create initial findings to start the process."""
-        from agents.team.pm_agent import Component, ExperimentPriority
+        from .pm_agent import Component, ExperimentPriority
 
         # Find component with most failures in memory
         stats = self.memory_agent.get_stats()
@@ -519,7 +519,7 @@ class Orchestrator:
 
     def _create_next_findings(self, result: ExperimentResult) -> JudgeFindings:
         """Create findings for next iteration based on result."""
-        from agents.team.pm_agent import Component, ExperimentPriority
+        from .pm_agent import Component, ExperimentPriority
 
         # In real implementation, this would analyze the results
         # and find the next best opportunity

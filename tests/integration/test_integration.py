@@ -52,7 +52,7 @@ class TestGeneratorIntegration:
                     'stop_on_first_fail': True,
                     'log_all_checks': True,
                     'save_reports': True,
-                    'report_dir': 'results/ad/reviewer/'
+                    'report_dir': 'results/ad/qa/'
                 }
             }
         }

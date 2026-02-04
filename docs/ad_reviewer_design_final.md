@@ -21,7 +21,7 @@ The Ad Reviewer evaluates ad creatives across **3 essential dimensions**:
 ## File Structure
 
 ```
-src/meta/ad/reviewer/
+src/meta/ad/qa/
 ├── __init__.py           # Package exports
 ├── reviewer.py           # Main AdReviewer class
 ├── checks.py             # Check functions (brand, safety, quality)
@@ -55,13 +55,13 @@ tests/
 ### 1. Main Reviewer Class
 
 ```python
-# src/meta/ad/reviewer/reviewer.py
+# src/meta/ad/qa/reviewer.py
 
 """
 Ad Reviewer - Simple, focused ad creative evaluation.
 
 Usage:
-    from src.meta.ad.reviewer import AdReviewer
+    from src.meta.ad.qa import AdReviewer
 
     reviewer = AdReviewer(brand="moprobo", region="US")
     result = reviewer.review("creative.jpg")
@@ -339,7 +339,7 @@ class ReviewError(Exception):
 ### 2. Check Functions
 
 ```python
-# src/meta/ad/reviewer/checks.py
+# src/meta/ad/qa/checks.py
 
 """
 Review check functions.
@@ -748,7 +748,7 @@ def _get_quality_recommendations(issues: List[str]) -> List[str]:
 ### 3. GPT-4 Vision Prompts
 
 ```python
-# src/meta/ad/reviewer/prompts.py
+# src/meta/ad/qa/prompts.py
 
 """
 GPT-4 Vision prompts for image analysis.
@@ -823,7 +823,7 @@ Be thorough and specific. Detect all issues, even minor ones.
 ### 4. Data Models
 
 ```python
-# src/meta/ad/reviewer/models.py
+# src/meta/ad/qa/models.py
 
 """
 Data models for review results.
@@ -951,7 +951,7 @@ class ReviewResult:
 ### 5. Package Exports
 
 ```python
-# src/meta/ad/reviewer/__init__.py
+# src/meta/ad/qa/__init__.py
 
 """
 Ad Reviewer Package.
@@ -1069,7 +1069,7 @@ cultural_notes:
 ### Basic Usage
 
 ```python
-from src.meta.ad.reviewer import AdReviewer
+from src.meta.ad.qa import AdReviewer
 
 # Initialize
 reviewer = AdReviewer(brand="moprobo", region="US")
@@ -1137,7 +1137,7 @@ print(f"US: {result.approved}, SA: {result_sa.approved}")
 # tests/test_reviewer.py
 
 import pytest
-from src.meta.ad.reviewer import AdReviewer
+from src.meta.ad.qa import AdReviewer
 
 def test_basic_review():
     """Test basic review functionality."""

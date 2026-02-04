@@ -15,7 +15,7 @@
 ## 1. File Structure
 
 ```
-src/meta/ad/reviewer/
+src/meta/ad/qa/
 ├── __init__.py
 ├── main.py                          # Entry point
 │
@@ -152,7 +152,7 @@ results/ad/reviewer/
 ### 2.1 Main Reviewer Class
 
 ```python
-# src/meta/ad/reviewer/core/reviewer.py
+# src/meta/ad/qa/core/reviewer.py
 
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -731,7 +731,7 @@ class ReviewError(Exception):
 ### 3.1 Review Result
 
 ```python
-# src/meta/ad/reviewer/models/review_result.py
+# src/meta/ad/qa/models/review_result.py
 
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional, Any
@@ -1159,7 +1159,7 @@ class BatchReviewResult:
 ### 3.2 Other Data Models
 
 ```python
-# src/meta/ad/reviewer/models/violation.py
+# src/meta/ad/qa/models/violation.py
 
 from dataclasses import dataclass
 from enum import Enum
@@ -1209,7 +1209,7 @@ class Violation:
         }
 
 
-# src/meta/ad/reviewer/models/criteria_config.py
+# src/meta/ad/qa/models/criteria_config.py
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
@@ -1279,7 +1279,7 @@ class CriteriaConfig:
 ### 4.1 Brand Guidelines Checker
 
 ```python
-# src/meta/ad/reviewer/checkers/brand_guidelines_checker.py
+# src/meta/ad/qa/checkers/brand_guidelines_checker.py
 
 from typing import Dict, List, Any, Optional
 from pathlib import Path
@@ -1769,7 +1769,7 @@ class BrandGuidelinesChecker(BaseChecker):
 ### 4.2 Culture Risk Checker
 
 ```python
-# src/meta/ad/reviewer/checkers/culture_risk_checker.py
+# src/meta/ad/qa/checkers/culture_risk_checker.py
 
 from typing import Dict, List, Any
 import logging

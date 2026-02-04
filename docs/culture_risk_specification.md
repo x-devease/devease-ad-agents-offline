@@ -1225,7 +1225,7 @@ risk_checks:
 ## Implementation: Risk Detection Pipeline
 
 ```python
-# src/meta/ad/reviewer/culture/risk_detector.py
+# src/meta/ad/qa/culture/risk_detector.py
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional

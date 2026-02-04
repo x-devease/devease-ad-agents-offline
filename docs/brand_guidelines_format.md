@@ -1000,7 +1000,7 @@ metadata:
 ## Implementation: Python Data Classes
 
 ```python
-# src/meta/ad/reviewer/models/brand_guidelines.py
+# src/meta/ad/qa/models/brand_guidelines.py
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple, Literal

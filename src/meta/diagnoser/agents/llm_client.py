@@ -521,7 +521,6 @@ Please review the implementation and provide your assessment following the forma
 
     response = llm_client.send_message(system_prompt, user_message)
 
-    import json
     try:
         content = response.content.strip()
         if "```json" in content:

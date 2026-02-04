@@ -17,7 +17,7 @@ This component acts as a quality gate in the creative pipeline, validating outpu
 ### Directory Structure
 
 ```
-src/meta/ad/reviewer/
+src/meta/ad/qa/
 ├── __init__.py
 ├── core/
 │   ├── __init__.py
@@ -1513,7 +1513,7 @@ The ad-reviewer can automatically review outputs from the ad-generator:
 
 ```python
 from src.meta.ad.generator.pipeline.pipeline import CreativePipeline
-from src.meta.ad.reviewer.pipeline.pipeline import ReviewPipeline
+from src.meta.ad.qa.pipeline.pipeline import ReviewPipeline
 
 # Generate creatives
 generator_config = CreativePipelineConfig(
@@ -1548,7 +1548,7 @@ print(f"Approved: {batch_review.approved_count}/{batch_review.total_count}")
 The ad-reviewer evaluates how well miner recommendations were followed:
 
 ```python
-from src.meta.ad.reviewer.pipeline.pipeline import ReviewPipeline
+from src.meta.ad.qa.pipeline.pipeline import ReviewPipeline
 
 # Review creative with miner recommendations
 reviewer = ReviewPipeline(config)

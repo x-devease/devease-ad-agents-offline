@@ -91,6 +91,3 @@ config/*/reference_images/
 # Note: Only root README.md should be tracked, all other docs should be external
 docs/
 examples/
-# Only ignore root-level directories, not src/meta/*
-/ad/
-/agents/

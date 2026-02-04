@@ -84,6 +84,65 @@ reference_images:
   # Fallback to single image if reference directory doesn't exist
   fallback_to_single_image: true
 
+  # Logo reference for identity preservation
+  logo_reference:
+    enabled: true
+    # Path to logo image file (optional, if not specified will try to auto-detect)
+    path: null  # e.g., config/moprobo/product/logo.png
+    # Logo is always added as first reference (highest priority)
+    priority: 0
+
+# Background Library: Material-based background reference selection
+background_library:
+  # Enable background reference selection based on surface_material
+  enabled: true
+
+  # Directory containing background reference images
+  directory: config/moprobo/backgrounds
+
+  # Metadata file mapping surface materials to background files
+  metadata_file: config/moprobo/backgrounds/metadata.yaml
+
+  # Available surface materials (auto-loaded from metadata.yaml)
+  # Examples: Marble, Wood, Concrete, Fabric, Ceramic, Studio White, etc.
+  available_materials: []
+
+  # Fallback background if no material match found
+  fallback_background: studio/white_infinity.png
+
+# Text Overlay: Automatic product description overlay on generated images
+text_overlay_config:
+  # Enable automatic text overlay on generated images
+  enabled: true
+
+  # Path to text overlay templates configuration
+  template_path: config/moprobo/meta/text_overlay_templates.yaml
+
+  # Default template to use if no rules match
+  default_template: minimal
+
+  # Text extraction settings
+  extraction:
+    # Extract product name from prompts
+    extract_product_name: true
+
+    # Extract key features from prompts
+    extract_features: true
+
+    # Maximum number of features to extract
+    max_features: 4
+
+  # Overlay rendering settings
+  rendering:
+    # Enable smart color contrast
+    smart_contrast: true
+
+    # Enable collision detection (avoid product center)
+    collision_detection: true
+
+    # Maximum text coverage as percentage of image area
+    max_coverage: 0.15  # 15%
+
 compositing:
   light_match_mode: soft_light
   light_match_opacity: 0.25

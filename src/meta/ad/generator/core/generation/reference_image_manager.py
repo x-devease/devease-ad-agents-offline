@@ -79,6 +79,7 @@ class ReferenceImageManager:
         self,
         reference_images_dir: Path,
         fallback_image_path: Optional[Path] = None,
+        background_dir: Optional[Path] = None,
     ):
         """
         Initialize reference image manager.
@@ -86,12 +87,16 @@ class ReferenceImageManager:
         Args:
             reference_images_dir: Directory containing reference images
             fallback_image_path: Fallback image if reference dir doesn't exist
+            background_dir: Optional directory containing background reference images
         """
         self.reference_images_dir = Path(reference_images_dir)
         self.fallback_image_path = Path(fallback_image_path) if fallback_image_path else None
+        self.background_dir = Path(background_dir) if background_dir else None
         self.reference_images: Dict[str, ReferenceImage] = {}
+        self.background_images: Dict[str, ReferenceImage] = {}
 
         self._load_reference_images()
+        self._load_background_images()
 
     def _load_reference_images(self) -> None:
         """Scan and categorize reference images from directory."""
@@ -135,16 +140,57 @@ class ReferenceImageManager:
             )
             logger.debug(f"Reference images by category: {categories_by_priority}")
 
+    def _load_background_images(self) -> None:
+        """Load background reference images from directory."""
+        if not self.background_dir:
+            return
+
+        if not self.background_dir.exists():
+            logger.warning(
+                f"Background images directory not found: {self.background_dir}"
+            )
+            return
+
+        # Load metadata
+        metadata_file = self.background_dir / "metadata.yaml"
+        background_metadata = {}
+
+        if metadata_file.exists():
+            import yaml
+            with open(metadata_file, 'r') as f:
+                data = yaml.safe_load(f)
+                backgrounds = data.get('backgrounds', {})
+
+            for bg_path, bg_info in backgrounds.items():
+                full_path = self.background_dir / bg_path
+                if full_path.exists():
+                    # Map material to background
+                    surface_material = bg_info.get('surface_material')
+                    if surface_material:
+                        self.background_images[surface_material] = ReferenceImage(
+                            path=full_path,
+                            angle_category="background",
+                            filename=bg_path,
+                            priority=0,
+                        )
+
+        logger.info(
+            f"Loaded {len(self.background_images)} background images "
+            f"from {self.background_dir}"
+        )
+
     def select_images_for_angle(
         self,
         camera_angle: Optional[str],
+        surface_material: Optional[str] = None,
         max_images: int = 3,
     ) -> List[Path]:
         """
-        Select appropriate reference images for a given camera angle.
+        Select appropriate reference images for a given camera angle and surface material.
 
         Args:
             camera_angle: Camera angle from pattern (e.g., "45-degree")
+            surface_material: Optional surface material for background selection
             max_images: Maximum number of images to return
 
         Returns:
@@ -157,9 +203,19 @@ class ReferenceImageManager:
         )
 
         selected_images = []
-        for category in angle_prefs[:max_images]:
+
+        # First, select product angle references (max 2 images)
+        for category in angle_prefs[:2]:
             if category in self.reference_images:
                 selected_images.append(self.reference_images[category].path)
+
+        # Then, add background reference if surface_material specified
+        if surface_material and surface_material in self.background_images:
+            selected_images.append(self.background_images[surface_material].path)
+            logger.debug(
+                f"Added background reference for '{surface_material}': "
+                f"{self.background_images[surface_material].filename}"
+            )
 
         # Fallback: if no images selected, use fallback_image_path
         if not selected_images and self.fallback_image_path:
@@ -171,7 +227,7 @@ class ReferenceImageManager:
 
         if selected_images:
             logger.info(
-                f"Selected {len(selected_images)} images for angle '{camera_angle}': "
+                f"Selected {len(selected_images)} images for angle '{camera_angle}' "
                 f"{[p.name for p in selected_images]}"
             )
         else:

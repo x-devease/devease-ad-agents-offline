@@ -545,6 +545,18 @@ class PromptBuilder:
         prompt_parts.append("for commercial advertising")
         prompt_parts.append("premium brand presentation")
 
+        # ANTI-HALLUCINATION CONSTRAINTS - Preserve logo and brand identity
+        # These constraints prevent the model from modifying critical brand elements
+        metadata = self.patterns.get("metadata", {})
+        product_name = metadata.get("product", "product")
+
+        prompt_parts.append(f"Brand identity preservation: {product} logo must remain exactly as shown")
+        prompt_parts.append("Do NOT modify product appearance, logo text, or brand colors")
+        prompt_parts.append("Preserve ALL text elements exactly - no text changes or hallucinations")
+        prompt_parts.append("Do NOT create variations or redesigns of the product or packaging")
+        prompt_parts.append("Logo and brand markings must be accurate and legible")
+        prompt_parts.append("Follow brand guidelines exactly - maintain brand integrity")
+
         # Build final prompt - use period separation for clarity
         base_prompt = ". ".join(prompt_parts) + "."
 

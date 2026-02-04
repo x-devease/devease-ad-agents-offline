@@ -109,6 +109,7 @@ class ImageGenerator:
         num_inference_steps: int = 30,
         # Multi-image reference support
         reference_images_dir: Optional[str] = None,
+        background_dir: Optional[str] = None,
         enable_multi_image: bool = False,
     ):
         """
@@ -141,6 +142,8 @@ class ImageGenerator:
                 More steps = better quality but slower. Default 30.
             reference_images_dir: Directory containing product reference images
                 for angle-aware multi-image generation (optional)
+            background_dir: Directory containing background reference images
+                for surface material matching (optional)
             enable_multi_image: Whether to use multiple reference images (default False)
 
         Path Organization:
@@ -260,6 +263,7 @@ class ImageGenerator:
             self.reference_manager = ReferenceImageManager(
                 reference_images_dir=Path(reference_images_dir),
                 fallback_image_path=None,  # Will use source_image_path as fallback
+                background_dir=Path(background_dir) if background_dir else None,
             )
             logger.info(
                 "Multi-image generation enabled: %s reference images loaded from %s",
@@ -361,6 +365,8 @@ class ImageGenerator:
         feature_values: Optional[Dict[str, str]] = None,
         product_context: Optional[str] = None,
         camera_angle: Optional[str] = None,
+        logo_reference_path: Optional[str] = None,
+        features: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
         Generate image from prompt.
@@ -378,6 +384,10 @@ class ImageGenerator:
                 (used to provide detailed descriptions to GPT-4o)
             camera_angle: Optional camera angle for angle-aware reference image selection
                 (e.g., "45-degree", "Eye-Level Shot"). Used with multi-image generation.
+            logo_reference_path: Optional path to logo reference image for identity preservation.
+                Used to prevent logo deformation.
+            features: Optional dict of all features (surface_material, lighting_style, etc.)
+                Used for background reference selection.
 
         Returns:
             Dict with 'success', 'image_path', 'upscaled_path' (if upscaled),
@@ -454,8 +464,12 @@ class ImageGenerator:
         # source_image_path is guaranteed to exist here (validated above)
         # Multi-image selection: use angle-aware reference images if enabled
         if self.enable_multi_image and self.reference_manager:
+            # Extract surface_material from features for background selection
+            surface_material = features.get('surface_material') if features else None
+
             selected_images = self.reference_manager.select_images_for_angle(
                 camera_angle=camera_angle,
+                surface_material=surface_material,  # NEW: Pass surface material
                 max_images=3,
             )
 
@@ -465,9 +479,24 @@ class ImageGenerator:
                     self._encode_image_to_base64(str(img_path))
                     for img_path in selected_images
                 ]
+
+                # Add logo reference if provided (for identity preservation)
+                if logo_reference_path:
+                    try:
+                        logo_data_uri = self._encode_image_to_base64(logo_reference_path)
+                        # Add logo as first reference (highest priority)
+                        image_data_uris.insert(0, logo_data_uri)
+                        logger.info(
+                            f"   Logo reference added: {Path(logo_reference_path).name} "
+                            f"for identity preservation"
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to load logo reference: {e}")
+
                 args["image_urls"] = image_data_uris
                 logger.info(
-                    f"   Using {len(image_data_uris)} reference images for angle '{camera_angle}'"
+                    f"   Using {len(image_data_uris)} reference images for angle '{camera_angle}' "
+                    f"{'(including logo)' if logo_reference_path else ''}"
                 )
             else:
                 # Fallback to single image if no images selected

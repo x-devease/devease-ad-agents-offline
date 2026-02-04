@@ -1,0 +1,100 @@
+# Background Library Metadata
+# 背景图库元数据
+
+backgrounds:
+  # Material surfaces
+  materials/marble_01.png:
+    surface_material: Marble
+    lighting_style: Window Light
+    color_temperature: Warm
+    keywords: [luxury, elegant, premium, polished]
+    description: "Polished white marble with subtle grey veining"
+
+  materials/wood_oak.png:
+    surface_material: Wood
+    lighting_style: Natural Light
+    color_temperature: Warm
+    keywords: [natural, organic, warm, home]
+    description: "Natural oak wood surface with visible grain"
+
+  materials/concrete_grey.png:
+    surface_material: Concrete
+    lighting_style: Studio Lighting
+    color_temperature: Neutral
+    keywords: [industrial, modern, urban, contemporary]
+    description: "Modern industrial concrete with subtle texture"
+
+  materials/fabric_canvas.png:
+    surface_material: Fabric
+    lighting_style: Soft Light
+    color_temperature: Warm
+    keywords: [textile, soft, elegant, neutral]
+    description: "Soft fabric canvas with neutral tones"
+
+  # Environments
+  environments/kitchen_modern.png:
+    surface_material: Marble
+    lighting_style: Window Light
+    color_temperature: Warm
+    keywords: [kitchen, home, interior, lifestyle]
+    description: "Modern kitchen environment with natural light"
+
+  environments/living_room.png:
+    surface_material: Wood
+    lighting_style: Natural Light
+    color_temperature: Warm
+    keywords: [living, room, home, comfort]
+    description: "Cozy living room with warm atmosphere"
+
+  environments/bathroom.png:
+    surface_material: Ceramic
+    lighting_style: Bright Light
+    color_temperature: Cool
+    keywords: [bathroom, clean, fresh, modern]
+    description: "Modern bathroom with bright lighting"
+
+  # Studio backgrounds
+  studio/white_infinity.png:
+    surface_material: Studio White
+    lighting_style: Studio Lighting
+    color_temperature: Neutral
+    keywords: [clean, minimal, professional, seamless]
+    description: "Pure white seamless infinity curve background"
+
+  studio/grey_gradient.png:
+    surface_material: Studio Grey
+    lighting_style: Studio Lighting
+    color_temperature: Neutral
+    keywords: [professional, modern, clean, subtle]
+    description: "Grey gradient background with studio lighting"
+
+  studio/black_sweep.png:
+    surface_material: Studio Black
+    lighting_style: Dramatic Lighting
+    color_temperature: Neutral
+    keywords: [dramatic, contrast, premium, luxury]
+    description: "Black sweep background for dramatic contrast"
+
+# Background selection rules
+selection_rules:
+  # Map surface_material to background files
+  marble:
+    primary: "materials/marble_01.png"
+    alternatives: ["studio/white_infinity.png"]
+
+  wood:
+    primary: "materials/wood_oak.png"
+    alternatives: ["environments/living_room.png"]
+
+  concrete:
+    primary: "materials/concrete_grey.png"
+    alternatives: ["studio/grey_gradient.png"]
+
+  studio_white:
+    primary: "studio/white_infinity.png"
+    alternatives: ["materials/marble_01.png"]
+
+  # Default fallback
+  default:
+    primary: "studio/white_infinity.png"
+    alternatives: []

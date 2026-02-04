@@ -1,0 +1,45 @@
+{
+  "detector_name": "LatencyDetector_120236337512190310",
+  "detector_type": "",
+  "evaluation_date": "2026-02-03T12:46:11.321485",
+  "accuracy": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1_score": 0.0,
+    "true_positives": 0,
+    "false_positives": 0,
+    "true_negatives": 0,
+    "false_negatives": 0
+  },
+  "reliability": {
+    "stability_score": 1,
+    "reproducibility_score": 1.0,
+    "robustness_score": 1.0
+  },
+  "timeliness": {
+    "detection_delay_days": 3.5,
+    "processing_time_ms": 246.15716934204102,
+    "min_data_days": 7
+  },
+  "interpretability": {
+    "transparency_score": 0.0,
+    "readability_score": 0.0,
+    "actionability_score": 0.0
+  },
+  "business_value": {
+    "estimated_savings_usd": 0.0,
+    "improvement_potential": 0.0,
+    "user_satisfaction": 0.0
+  },
+  "overall_score": 36.00768566131592,
+  "grade": "F",
+  "details": {
+    "suggestions": [
+      "\u964d\u4f4e\u8bef\u62a5\u7387\uff1a\u8003\u8651\u63d0\u9ad8\u68c0\u6d4b\u9608\u503c\u6216\u589e\u52a0\u786e\u8ba4\u6761\u4ef6",
+      "\u63d0\u9ad8\u53ec\u56de\u7387\uff1a\u8003\u8651\u964d\u4f4e\u68c0\u6d4b\u9608\u503c\u6216\u589e\u52a0\u654f\u611f\u5ea6",
+      "\u63d0\u9ad8\u900f\u660e\u5ea6\uff1a\u5728\u7ed3\u679c\u4e2d\u6dfb\u52a0\u66f4\u591a\u7b97\u6cd5\u8bf4\u660e\u548c\u63a8\u7406\u8fc7\u7a0b",
+      "\u589e\u5f3a\u53ef\u64cd\u4f5c\u6027\uff1a\u63d0\u4f9b\u66f4\u5177\u4f53\u7684\u4f18\u5316\u5efa\u8bae\u548c\u884c\u52a8\u6b65\u9aa4",
+      "\u63d0\u5347\u4e1a\u52a1\u4ef7\u503c\uff1a\u68c0\u6d4b\u5230\u7684\u95ee\u9898\u5f71\u54cd\u8f83\u5c0f\uff0c\u8003\u8651\u8c03\u6574\u68c0\u6d4b\u76ee\u6807"
+    ]
+  }
+}

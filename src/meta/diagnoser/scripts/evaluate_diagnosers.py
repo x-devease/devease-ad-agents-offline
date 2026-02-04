@@ -27,7 +27,7 @@ def load_metrics(detector_name: str) -> dict:
     if not report_file:
         return None
 
-    report_path = Path("src/meta/diagnoser/judge/reports/moprobo_sliding") / report_file
+    report_path = Path("src/meta/diagnoser/evaluator/reports/moprobo_sliding") / report_file
 
     if not report_path.exists():
         return None

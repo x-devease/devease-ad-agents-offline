@@ -351,6 +351,21 @@ class FatigueDetector(BaseDetector):
         severity_score = result["severity_score"]
         health_score = result["health_score"]
 
+        # Calculate premium loss and missed conversions
+        post_fatigue_start = len(data) - result["post_fatigue_days"]
+        post_fatigue_data = data.iloc[post_fatigue_start:]
+
+        total_spend_fatigue = post_fatigue_data["spend"].sum()
+        total_conversions_fatigue = post_fatigue_data["conversions"].sum()
+
+        # What we would have spent at golden CPA
+        expected_spend = total_conversions_fatigue * result["cpa_gold"]
+        premium_loss = total_spend_fatigue - expected_spend
+
+        # What conversions we would have gotten at same spend
+        expected_conversions = total_spend_fatigue / result["cpa_gold"] if result["cpa_gold"] > 0 else 0
+        missed_conversions = expected_conversions - total_conversions_fatigue
+
         # Determine severity level based on score
         if severity_score >= 80:
             severity = IssueSeverity.CRITICAL
@@ -389,6 +404,8 @@ class FatigueDetector(BaseDetector):
                 "current_cpa": result["current_cpa"],
                 "consecutive_days": result["consecutive_days"],
                 "window_size_days": self.thresholds["window_size_days"],
+                "premium_loss": max(0, premium_loss),
+                "missed_conversions": max(0, missed_conversions),
             },
         )
 

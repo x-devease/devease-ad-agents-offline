@@ -677,6 +677,376 @@ def score_ci_verification(ci_checks):
 - [ ] implementation包含`ci_checks`字段
 - [ ] ci_ready = true
 
+### 6. 评估系统审查 (10%)
+
+**重要性**: Label Generator生成ground truth labels，直接影响precision/recall/F1-score的计算。如果Label Generator有误，整个评估系统失效。
+
+#### 6.1 Label Generator验证
+
+**检查Label Generator配置正确性**:
+
+```python
+def check_label_generator(label_gen_config, experiment_spec):
+    """验证Label Generator配置正确性"""
+    issues = []
+
+    # 检查1: Threshold合理性
+    drop_threshold = label_gen_config.get("drop_threshold", 0.5)
+    if drop_threshold < 0.3:
+        issues.append({
+            "severity": "MEDIUM",
+            "issue": f"drop_threshold={drop_threshold}过低，可能生成过多labels",
+            "recommendation": "建议使用0.5-0.7范围"
+        })
+    elif drop_threshold > 0.8:
+        issues.append({
+            "severity": "HIGH",
+            "issue": f"drop_threshold={drop_threshold}过高，可能漏掉真实问题",
+            "recommendation": "建议使用0.5-0.7范围"
+        })
+
+    # 检查2: Window size合理性
+    window_size = label_gen_config.get("window_size", 7)
+    if window_size < 3:
+        issues.append({
+            "severity": "MEDIUM",
+            "issue": f"window_size={window_size}太小，baseline不稳定",
+            "recommendation": "建议使用>=7天"
+        })
+
+    # 检查3: Lookahead bias（CRITICAL）
+    # Label Generator同样不能有lookahead bias
+    code = inspect.getsource(label_gen_config.get("generator_func", ""))
+    if 'data.iloc[i:i+' in code or 'data.iloc[0:i+' in code:
+        issues.append({
+            "severity": "CRITICAL",
+            "issue": "Label Generator有lookahead bias！使用未来数据生成labels",
+            "fix": "确保rolling window只用历史数据: data.iloc[i-window_size:i]"
+        })
+
+    # 检查4: 与detector阈值一致性
+    detector_thresholds = experiment_spec.get("detector_thresholds", {})
+    label_thresholds = label_gen_config.get("thresholds", {})
+
+    # 例如：detector的cpa_increase_threshold应该与label generator的一致
+    if "cpa_increase_threshold" in detector_thresholds:
+        if "cpa_increase_threshold" in label_thresholds:
+            if abs(detector_thresholds["cpa_increase_threshold"] - label_thresholds["cpa_increase_threshold"]) > 0.01:
+                issues.append({
+                    "severity": "HIGH",
+                    "issue": "Label Generator与detector的阈值不一致",
+                    "details": f"detector: {detector_thresholds['cpa_increase_threshold']}, label_gen: {label_thresholds['cpa_increase_threshold']}",
+                    "fix": "确保使用相同的阈值，否则评估不准确"
+                })
+
+    # 检查5: Label方法合理性
+    label_method = label_gen_config.get("method", "performance_drop")
+    if label_method not in ["performance_drop", "rule_based", "statistical_anomaly", "combined"]:
+        issues.append({
+            "severity": "HIGH",
+            "issue": f"未知的label_method: {label_method}",
+            "recommendation": "使用: performance_drop, rule_based, statistical_anomaly, 或 combined"
+        })
+
+    return issues
+```
+
+**评分标准**:
+```python
+def score_label_generator(checks):
+    base_score = 100
+
+    # CRITICAL: Lookahead bias → 0分
+    if any(c["severity"] == "CRITICAL" for c in checks):
+        return 0
+
+    # HIGH: 阈值不一致/配置不当
+    high_count = sum(1 for c in checks if c["severity"] == "HIGH")
+    base_score -= high_count * 25
+
+    # MEDIUM: 配置可疑
+    medium_count = sum(1 for c in checks if c["severity"] == "MEDIUM")
+    base_score -= medium_count * 10
+
+    return max(base_score, 0)
+```
+
+**具体检查**:
+- [ ] drop_threshold ∈ [0.3, 0.8]（理想值0.5-0.7）
+- [ ] window_size >= 3（理想值>=7）
+- [ ] 无lookahead bias（CRITICAL）
+- [ ] Label Generator与detector阈值一致
+- [ ] Label method是支持的类型
+
+**Label Generator常见问题**:
+
+```python
+# ❌ 错误1: Lookahead bias
+for i in range(len(data)):
+    window = data.iloc[i:i+window_size]  # 包含未来数据！
+    baseline = window.mean()
+    current = data.iloc[i]
+    if current_roas < baseline * 0.5:
+        labels.append({"has_issue": True})
+
+# ✅ 正确1: 只用历史数据
+for i in range(window_size, len(data)):
+    window = data.iloc[i-window_size:i]  # 只用历史
+    baseline = window.mean()
+    current = data.iloc[i]
+    if current_roas < baseline * 0.5:
+        labels.append({"has_issue": True})
+
+# ❌ 错误2: 阈值不一致
+# Detector: cpa_increase_threshold = 1.2
+# Label Generator: cpa_threshold = 1.5 (不一致！)
+
+# ✅ 正确2: 使用相同阈值
+# Detector: cpa_increase_threshold = 1.2
+# Label Generator: cpa_threshold = 1.2 (一致)
+
+# ❌ 错误3: drop_threshold过低
+drop_threshold = 0.2  # 只有20%下降就标注，labels太多
+
+# ✅ 正确3: 合理的阈值
+drop_threshold = 0.5  # 50%下降才标注，更合理
+```
+
+#### 6.2 Metrics计算验证
+
+**验证Metrics计算逻辑正确性**:
+
+```python
+def check_metrics_calculation(metrics_config):
+    """验证Metrics计算正确性"""
+    checks = []
+
+    # 检查1: Precision除零处理
+    precision_code = inspect.getsource(metrics_config.get("precision_func", ""))
+    if "precision" in precision_code.lower():
+        # precision = TP / (TP + FP)
+        if "/ (tp + fp)" in precision_code or "/ (TP + FP)" in precision_code:
+            # 需要检查是否有max()或条件判断
+            if "max(" not in precision_code and "if" not in precision_code:
+                checks.append({
+                    "severity": "MEDIUM",
+                    "issue": "Precision计算可能除零",
+                    "fix": "添加: precision = tp / (tp + fp) if (tp + fp) > 0 else 0"
+                })
+
+    # 检查2: Recall除零处理
+    recall_code = inspect.getsource(metrics_config.get("recall_func", ""))
+    if "recall" in recall_code.lower():
+        # recall = TP / (TP + FN)
+        if "/ (tp + fn)" in recall_code or "/ (TP + FN)" in recall_code:
+            if "max(" not in recall_code and "if" not in recall_code:
+                checks.append({
+                    "severity": "MEDIUM",
+                    "issue": "Recall计算可能除零",
+                    "fix": "添加: recall = tp / (tp + fn) if (tp + fn) > 0 else 0"
+                })
+
+    # 检查3: F1计算处理precision=recall=0
+    f1_code = inspect.getsource(metrics_config.get("f1_func", ""))
+    if "f1" in f1_code.lower():
+        # f1 = 2 * (p * r) / (p + r)
+        # 当p=0且r=0时，分母为0
+        if "p + r" in f1_code or "precision + recall" in f1_code:
+            if "if" not in f1_code and "max(" not in f1_code:
+                checks.append({
+                    "severity": "MEDIUM",
+                    "issue": "F1计算在precision=recall=0时可能除零",
+                    "fix": "添加: if p + r == 0: return 0"
+                })
+
+    # 检查4: 公式正确性
+    # 验证使用的是标准公式
+    # Precision = TP / (TP + FP)
+    # Recall = TP / (TP + FN)
+    # F1 = 2 * P * R / (P + R)
+    standard_formulas = {
+        "precision": "tp / (tp + fp)",
+        "recall": "tp / (tp + fn)",
+        "f1": "2 * precision * recall / (precision + recall)"
+    }
+    # ...验证代码中使用了正确的公式
+
+    return checks
+```
+
+**评分标准**:
+```python
+def score_metrics_calculation(checks):
+    base_score = 100
+
+    # 每个MEDIUM问题 -10分
+    medium_count = sum(1 for c in checks if c["severity"] == "MEDIUM")
+    base_score -= medium_count * 10
+
+    # HIGH问题（如果有）-25分
+    high_count = sum(1 for c in checks if c["severity"] == "HIGH")
+    base_score -= high_count * 25
+
+    return max(base_score, 0)
+```
+
+**具体检查**:
+- [ ] Precision处理除零: `if tp + fp > 0`
+- [ ] Recall处理除零: `if tp + fn > 0`
+- [ ] F1处理precision+recall=0
+- [ ] 使用标准公式
+- [ ] 无数据泄露（labels不使用detector结果）
+
+#### 6.3 Sanity Check验证
+
+**运行测试验证评估系统**:
+
+```python
+def run_evaluation_system_sanity_check(evaluator, test_cases=None):
+    """
+    运行评估系统sanity check
+
+    验证metrics计算的正确性
+    """
+    if test_cases is None:
+        test_cases = [
+            # 测试用例1: 正常情况
+            {
+                "name": "normal_case",
+                "tp": 10, "fp": 2, "fn": 5, "tn": 100,
+                "expected": {
+                    "precision": 10 / (10 + 2),  # 0.833
+                    "recall": 10 / (10 + 5),     # 0.667
+                    "f1": 2 * (0.833 * 0.667) / (0.833 + 0.667)  # 0.737
+                }
+            },
+            # 测试用例2: TP=0（无预测为正）
+            {
+                "name": "no_positive_predictions",
+                "tp": 0, "fp": 10, "fn": 5, "tn": 100,
+                "expected": {
+                    "precision": 0.0,
+                    "recall": 0.0,
+                    "f1": 0.0
+                }
+            },
+            # 测试用例3: TP=FP=0（完美TN）
+            {
+                "name": "perfect_tn",
+                "tp": 0, "fp": 0, "fn": 10, "tn": 100,
+                "expected": {
+                    "precision": 0.0,  # 或NaN
+                    "recall": 0.0,
+                    "f1": 0.0
+                }
+            },
+            # 测试用例4: 完美分类
+            {
+                "name": "perfect_classification",
+                "tp": 10, "fp": 0, "fn": 0, "tn": 100,
+                "expected": {
+                    "precision": 1.0,
+                    "recall": 1.0,
+                    "f1": 1.0
+                }
+            }
+        ]
+
+    results = []
+    for test_case in test_cases:
+        try:
+            # 运行metrics计算
+            calculated = evaluator.calculate_metrics(
+                tp=test_case["tp"],
+                fp=test_case["fp"],
+                fn=test_case["fn"],
+                tn=test_case["tn"]
+            )
+
+            # 验证结果
+            passed = True
+            errors = []
+            for metric in ["precision", "recall", "f1"]:
+                expected = test_case["expected"][metric]
+                actual = calculated[metric]
+                if abs(expected - actual) > 0.01:  # 允许1%误差
+                    passed = False
+                    errors.append(f"{metric}: expected={expected:.3f}, actual={actual:.3f}")
+
+            results.append({
+                "test_case": test_case["name"],
+                "passed": passed,
+                "errors": errors
+            })
+
+        except Exception as e:
+            results.append({
+                "test_case": test_case["name"],
+                "passed": False,
+                "errors": [f"Exception: {str(e)}"]
+            })
+
+    # 汇总结果
+    all_passed = all(r["passed"] for r in results)
+    pass_count = sum(1 for r in results if r["passed"])
+    total_count = len(results)
+
+    return {
+        "all_passed": all_passed,
+        "pass_rate": pass_count / total_count if total_count > 0 else 0,
+        "results": results,
+        "status": "PASS" if all_passed else "FAIL"
+    }
+```
+
+**评分标准**:
+```python
+def score_sanity_check(sanity_result):
+    if sanity_result["status"] == "PASS":
+        return 100
+    else:
+        # 根据通过率给分
+        return int(sanity_result["pass_rate"] * 100)
+```
+
+**Sanity Check输出格式**:
+```json
+{
+  "sanity_check": {
+    "status": "PASS",
+    "pass_rate": 1.0,
+    "results": [
+      {
+        "test_case": "normal_case",
+        "passed": true,
+        "errors": []
+      },
+      {
+        "test_case": "no_positive_predictions",
+        "passed": true,
+        "errors": []
+      },
+      {
+        "test_case": "perfect_tn",
+        "passed": true,
+        "errors": []
+      },
+      {
+        "test_case": "perfect_classification",
+        "passed": true,
+        "errors": []
+      }
+    ]
+  }
+}
+```
+
+**具体检查**:
+- [ ] 运行了>=4个测试用例
+- [ ] 所有测试用例通过
+- [ ] 测试覆盖edge cases（TP=0, FP=0, 完美分类）
+- [ ] Metrics计算误差<1%
+
 ---
 
 ## 审查效率指南
@@ -689,17 +1059,20 @@ def score_ci_verification(ci_checks):
 ### 快速拒绝策略
 如果发现以下任一情况，**立即拒绝**，跳过详细审查：
 - 硬编码实体ID或window编号
-- Lookahead bias模式
+- Lookahead bias模式（detector或label generator）
 - 破坏DEFAULT_THRESHOLDS结构
 - CI检查失败
 - 修改核心检测逻辑
+- **Label Generator有lookahead bias** ⭐ 新增
+- **Label Generator与detector阈值不一致** ⭐ 新增
 
 ### 渐进式审查
 1. **Tier 1检查**（30秒）- Critical问题
    - 硬编码？
-   - Lookahead bias？
+   - Lookahead bias（detector或label generator）？
    - 结构破坏？
    - CI失败？
+   - **Label Generator配置不当？** ⭐ 新增
 
    如果任一 = YES → 立即拒绝
 
@@ -707,6 +1080,7 @@ def score_ci_verification(ci_checks):
    - 修改多个参数？
    - 阈值超出范围？
    - 过拟合风险？
+   - **Label Generator与detector阈值不一致？** ⭐ 新增
 
    如果任一 = YES → 深入审查
 
@@ -714,6 +1088,7 @@ def score_ci_verification(ci_checks):
    - PEP 8？
    - 注释完整性？
    - diff大小？
+   - **Metrics计算是否有除零风险？** ⭐ 新增
 
    影响最终分数，但不一定拒绝
 
@@ -754,8 +1129,14 @@ def score_ci_verification(ci_checks):
       "ci_verification": {
         "status": "PASS",
         "score": 100,
-        "weight": 0.20,
+        "weight": 0.18,
         "details": "✓ make test: PASS\n✓ make lint: PASS (0 errors)\n✓ make coverage-check: PASS\n✓ ci_ready: true"
+      },
+      "evaluation_system": {
+        "status": "PASS",
+        "score": 95,
+        "weight": 0.12,
+        "details": "✓ Label Generator: 无lookahead bias\n✓ Threshold一致性: PASS\n✓ Metrics计算: 验证通过\n⚠ Sanity check: 3/4 通过"
       }
     }
   },
@@ -811,7 +1192,8 @@ def score_ci_verification(ci_checks):
 3. 逻辑安全：无CRITICAL风险
 4. 代码质量：score >= 70
 5. **CI验证：PASS** ⭐
-6. 总分：>= 75分
+6. **评估系统验证：无CRITICAL** ⭐ 新增
+7. 总分：>= 75分
 
 ### REJECT条件（任一满足）
 1. **硬编码实体ID** → 立即拒绝
@@ -821,18 +1203,26 @@ def score_ci_verification(ci_checks):
 5. **破坏DEFAULT_THRESHOLDS结构** → 立即拒绝
 6. **修改多个参数** → 拒绝（违反单一变量原则）
 7. **CI检查失败** → 拒绝 ⭐
-8. **总分 < 70** → 拒绝
+8. **Label Generator有lookahead bias** → 拒绝 ⭐ 新增
+9. **评估系统CRITICAL问题** → 拒绝 ⭐ 新增
+10. **总分 < 70** → 拒绝
 
 ### 决策树
 ```
 IF 有硬编码 OR lookahead bias:
     return "REJECTED" (critical violation)
 
+IF Label Generator有lookahead bias:
+    return "REJECTED" (evaluation system critical issue)
+
 IF 修改多个参数 OR 破坏结构:
     return "REJECTED" (spec violation)
 
 IF CI检查失败:
     return "REJECTED" (CI must pass)
+
+IF 评估系统CRITICAL问题:
+    return "REJECTED" (evaluation system failure)
 
 IF 总分 < 70:
     return "REJECTED" (poor quality)
@@ -940,6 +1330,55 @@ ELSE:
 }
 ```
 
+### REJECTED模板（Label Generator问题）⭐ 新增
+```json
+{
+  "feedback": {
+    "overall": "评估系统CRITICAL问题：Label Generator有lookahead bias",
+    "strengths": ["架构正确", "逻辑安全"],
+    "concerns": [
+      "CRITICAL: Label Generator使用未来数据生成labels",
+      "Line 156: data.iloc[i:i+window_size] 包含未来数据",
+      "这将导致整个评估系统失效，所有指标不可信"
+    ],
+    "suggestions": [
+      "修改Label Generator: data.iloc[i:i+window_size] → data.iloc[i-window_size:i]",
+      "确保只用历史数据生成baseline",
+      "参考reviewer prompt section 6.1 (Label Generator验证)"
+    ],
+    "for_memory": {
+      "action": "LOG_CRITICAL",
+      "tags": ["rejected", "label_generator_lookahead_bias", "critical_evaluation_issue"]
+    }
+  }
+}
+```
+
+### REJECTED模板（阈值不一致）⭐ 新增
+```json
+{
+  "feedback": {
+    "overall": "评估系统HIGH问题：Label Generator与detector阈值不一致",
+    "strengths": ["架构正确", "无lookahead bias"],
+    "concerns": [
+      "HIGH: Label Generator与detector使用不同阈值",
+      "Detector cpa_increase_threshold: 1.2",
+      "Label Generator cpa_threshold: 1.5",
+      "这会导致评估不准确，无法正确反映detector性能"
+    ],
+    "suggestions": [
+      "统一Label Generator与detector的阈值",
+      "在PM Spec中明确指定label_generator的thresholds",
+      "确保两者使用相同阈值进行评估"
+    ],
+    "for_memory": {
+      "action": "LOG_FAILURE",
+      "tags": ["rejected", "threshold_mismatch", "evaluation_issue"]
+    }
+  }
+}
+```
+
 ---
 
 ## 拒绝理由模板
@@ -956,7 +1395,11 @@ REJECTION_REASONS = {
     "POOR_CODE_QUALITY": "代码质量不达标（score<70），需要重构",
     "MISSING_COMMENTS": "缺少必要的注释说明",
     "LARGE_DIFF": f"代码diff过大（{N}行），违反小步快跑原则",
-    "CI_FAILURE": "CI检查未通过，所有CI检查必须PASS"  ⭐
+    "CI_FAILURE": "CI检查未通过，所有CI检查必须PASS",
+    "LABEL_GENERATOR_LOOKAHEAD_BIAS": "Label Generator有lookahead bias，评估系统失效",  ⭐ 新增
+    "LABEL_GENERATOR_THRESHOLD_MISMATCH": "Label Generator与detector阈值不一致，评估不准确",  ⭐ 新增
+    "METRICS_CALCULATION_ERROR": "Metrics计算有误（除零/公式错误），评估结果不可信",  ⭐ 新增
+    "SANITY_CHECK_FAILURE": "评估系统sanity check失败，metrics计算验证未通过"  ⭐ 新增
 }
 ```
 
@@ -1120,14 +1563,15 @@ cpa_threshold = 1.2  # Descriptive name
 
 | 维度 | 权重 | PASS标准 | 说明 |
 |------|------|----------|------|
-| 架构一致性 | 20% | 保持不变 | 不能修改类结构、方法签名 |
-| 合规性 | 25% | 零容忍 | 硬编码、作弊立即拒绝 |
-| 逻辑安全 | 20% | 无critical | lookahead bias立即拒绝 |
-| 代码质量 | 15% | >=70分 | PEP 8、注释、diff大小 |
-| CI验证 | 20% | 全部通过 | 所有CI检查必须PASS ⭐ |
+| 架构一致性 | 18% | 保持不变 | 不能修改类结构、方法签名 |
+| 合规性 | 22% | 零容忍 | 硬编码、作弊立即拒绝 |
+| 逻辑安全 | 18% | 无critical | lookahead bias立即拒绝 |
+| 代码质量 | 12% | >=70分 | PEP 8、注释、diff大小 |
+| CI验证 | 18% | 全部通过 | 所有CI检查必须PASS ⭐ |
+| 评估系统审查 | 12% | 无critical | Label Generator/Metrics验证 ⭐ 新增 |
 
 **总分**: 各项加权平均
-**决策**: PASS if >= 75分 AND 无critical issue AND CI全部通过
+**决策**: PASS if >= 75分 AND 无critical issue AND CI全部通过 AND 评估系统验证通过
 
 ---
 
@@ -1315,9 +1759,13 @@ chmod +x .git/hooks/pre-commit
 - [ ] 验证了implementation完整性
 - [ ] 查询了Memory获取历史上下文
 - [ ] 检查了所有4个关键风险
-- [ ] 运行了5个维度的检查
+- [ ] 运行了6个维度的检查（包括评估系统）⭐ 新增
 - [ ] 计算了加权总分
 - [ ] 确认CI全部通过
+- [ ] **验证了Label Generator无lookahead bias** ⭐ 新增
+- [ ] **验证了Label Generator与detector阈值一致** ⭐ 新增
+- [ ] **验证了Metrics计算的除零处理** ⭐ 新增
+- [ ] **运行了Sanity Check测试** ⭐ 新增
 - [ ] 使用了结构化feedback模板
 - [ ] 为Judge准备了for_judge信息
 - [ ] 为Memory准备了归档信息

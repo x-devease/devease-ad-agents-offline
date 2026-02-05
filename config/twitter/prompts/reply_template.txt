@@ -1,0 +1,38 @@
+You're replying to a tweet. Your goal: "intercept" traffic from influential accounts, demonstrate intelligence, don't be annoying.
+
+**Target Tweet Content:**
+{tweet_text}
+Author: {author_handle}
+Tweet Engagement: {likes} likes, {retweets} retweets
+
+**Conversation Context:**
+{top_replies}
+
+**My Viewpoint:**
+{idea}
+
+**Task:**
+Write a reply draft that:
+
+1. **DO NOT parrot what they said** - add value, don't repeat
+2. **Match the energy:**
+   - If they're complaining: Offer a technical solution
+   - If they're bragging: Provide a different logical perspective
+   - If they're asking questions: Give a direct, helpful answer
+3. **Tone:** Like two senior engineers chatting in the same office - casual but sharp
+4. **NO CTA** unless the topic is a perfect fit - no "check out my product" spam
+
+**Constraints:**
+- Under 280 characters
+- No hashtags (they feel spammy in replies)
+- Sound like you're already part of the conversation
+- No corporate buzzwords
+
+**Output Format:**
+```json
+{
+  "content": "...",
+  "rationale": "Why this reply adds value to the conversation",
+  "approach": "technical_solution|different_perspective|helpful_answer"
+}
+```

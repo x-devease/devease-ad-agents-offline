@@ -1,0 +1,79 @@
+# Twitter Growth Agent Configuration
+
+agent:
+  name: "twitter_growth_agent"
+  version: "1.0.0"
+
+# LLM Settings
+llm:
+  model: "gpt-4o"
+  temperature: 0.8
+  max_tokens: 500
+  num_drafts: 3
+  use_few_shot: true
+  golden_examples_path: "config/twitter/golden_examples.json"
+
+# Browser Settings
+browser:
+  headless: false  # Show browser for debugging
+  slow_mo: 100  # Slow down actions by 100ms
+  timeout: 30000
+  user_data_dir: null  # Use default Chrome profile or specify path
+
+# Human Interaction
+ui:
+  human_confirmation: true
+  show_rationale: true
+  enable_editing: true
+
+# Anti-Detection
+anti_bot:
+  typing_delay_min: 50  # ms per character
+  typing_delay_max: 150
+  random_pauses: true
+  action_delay_min: 2  # seconds
+  action_delay_max: 8
+
+# Analytics
+analytics:
+  enabled: true
+  check_metrics_after: 3600  # seconds (1 hour)
+  metrics_history_file: "data/twitter/metrics.json"
+
+# Task Monitoring
+monitoring:
+  poll_interval: 10  # seconds
+  watch_file_changes: true
+  max_concurrent_tasks: 1
+
+# Prompt Templates
+prompt_templates:
+  default:
+    post: "config/twitter/prompts/post_template.txt"
+    reply: "config/twitter/prompts/reply_template.txt"
+    dm: "config/twitter/prompts/dm_template.txt"
+
+  custom_templates:
+    spicy_v1:
+      system: "You are particularly bold today. Take strong positions."
+      temperature: 0.9
+
+    spicy_v2:
+      system: "You are feeling provocative. Challenge conventional wisdom."
+      temperature: 1.0
+      max_tokens: 280
+
+    balanced:
+      system: "Be measured and analytical. Let data speak."
+      temperature: 0.7
+
+    conservative:
+      system: "Be cautious and professional. Avoid controversy."
+      temperature: 0.5
+
+# Learning Settings
+learning:
+  enable_self_correction: true
+  feedback_history_file: "data/twitter/feedback_history.json"
+  min_feedback_samples: 10  # Start learning after 10 data points
+  prompt_update_interval: 50  # Update system prompt every 50 tasks

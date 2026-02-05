@@ -1,0 +1,27 @@
+# Twitter Growth Tasks
+# Add new tasks to the list. Agent will process PENDING tasks.
+
+tasks:
+  - id: task_001
+    type: POST
+    idea: "分享今天 Judge Model 发现的一个离谱案例：某电商在 3 点全投了垃圾流量，浪费 $500。"
+    style: "犀利吐槽，硬核数据"
+    status: PENDING
+
+  - id: task_002
+    type: REPLY_TWEET
+    target_url: "https://x.com/elonmusk/status/123456"
+    idea: "针对他说的 AI 效率，提一下我们的自编码组织已经实现了 0 人力维护插件。"
+    style: "幽默，像老朋友聊天，不要像推销"
+    status: PENDING
+
+  - id: task_003
+    type: REPLY_DM
+    handle: "ad_agency_boss"
+    idea: "回复他关于插件定价的问题，说我们可以给内测期 Partner 50% 分成。"
+    style: "专业，诚恳"
+    status: PENDING
+
+global_settings:
+  human_confirmation: true
+  anti_bot_delay: [2, 8]

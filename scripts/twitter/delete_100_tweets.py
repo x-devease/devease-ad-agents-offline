@@ -167,6 +167,12 @@ def delete_tweet(page, tweet_url, index):
 
 def main():
     """Main execution."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Delete 100 latest tweets")
+    parser.add_argument("--yes", action="store_true", help="Skip confirmation prompts")
+    args = parser.parse_args()
+
     print("\n" + "=" * 80)
     print("Delete & Un-repost 100 Latest Tweets")
     print("=" * 80)
@@ -180,7 +186,10 @@ def main():
     print("  • Screenshots saved before each deletion")
     print()
 
-    input("Press Enter to continue or Ctrl+C to cancel...")
+    if not args.yes:
+        input("Press Enter to continue or Ctrl+C to cancel...")
+    else:
+        print("--yes flag set, proceeding automatically...")
     print()
 
     with sync_playwright() as p:
@@ -211,7 +220,12 @@ def main():
             print(f"  {tweet['index']}. {tweet['content']}")
 
         print()
-        input("Press Enter to start deletion or Ctrl+C to cancel...")
+
+        if not args.yes:
+            input("Press Enter to start deletion or Ctrl+C to cancel...")
+        else:
+            print("Starting deletion automatically (--yes flag)...")
+
         print()
 
         # Process tweets

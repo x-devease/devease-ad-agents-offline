@@ -527,12 +527,11 @@ llm:
   max_tokens: 500
   num_drafts: 3
   use_few_shot: true
-  golden_examples_path: "config/twitter/golden_examples.json"
+  # Golden examples are now defined inline in config/tasks.yaml
 
 # Learning Settings
 learning:
   enable_self_correction: true
-  feedback_history_file: "data/twitter/feedback_history.json"
   min_feedback_samples: 10  # Start learning after 10 data points
   prompt_update_interval: 50  # Update system prompt every 50 tasks
 ```

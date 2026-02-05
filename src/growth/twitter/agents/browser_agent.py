@@ -520,3 +520,160 @@ class BrowserAgent:
 
         finally:
             self._stop_browser()
+
+    def delete_tweet(self, tweet_url: str) -> BrowserActionResult:
+        """
+        Delete a tweet.
+
+        Args:
+            tweet_url: URL of tweet to delete
+
+        Returns:
+            BrowserActionResult with success status
+        """
+        try:
+            self._start_browser()
+
+            logger.info(f"Navigating to tweet: {tweet_url}")
+            self.page.goto(tweet_url, wait_until="networkidle")
+
+            self._random_delay(2, 3)
+
+            # Click on the more menu (three dots)
+            more_button = self.page.wait_for_selector('[data-testid="caret"]', timeout=10000)
+            more_button.click()
+
+            self._random_delay(0.5, 1)
+
+            # Wait for dropdown menu and click delete
+            # Note: The menu item might be in a different position
+            delete_button = self.page.wait_for_selector('text=Delete', timeout=5000)
+
+            if delete_button:
+                delete_button.click()
+
+                # Confirm deletion
+                self._random_delay(0.5, 1)
+
+                # Look for confirmation button
+                confirm_button = self.page.wait_for_selector('[data-testid="confirmationSheetConfirm"]', timeout=5000)
+
+                if confirm_button:
+                    # Take screenshot before deleting
+                    screenshot = self._take_screenshot("pre_delete")
+
+                    self._random_delay(0.5, 1)
+
+                    confirm_button.click()
+
+                    # Wait for deletion to complete
+                    self._random_delay(2, 3)
+
+                    logger.info(f"Tweet deleted successfully: {tweet_url}")
+
+                    # Take screenshot after deletion
+                    self._take_screenshot("post_delete")
+
+                    return BrowserActionResult(
+                        success=True,
+                        message="Tweet deleted successfully",
+                        screenshot_path=screenshot
+                    )
+                else:
+                    return BrowserActionResult(
+                        success=False,
+                        message="Could not find confirmation button",
+                        error="Confirmation button not found"
+                    )
+            else:
+                return BrowserActionResult(
+                    success=False,
+                    message="Could not find delete option",
+                    error="Delete button not found in menu"
+                )
+
+        except Exception as e:
+            logger.error(f"Failed to delete tweet: {e}")
+            screenshot = self._take_screenshot("error_delete")
+
+            return BrowserActionResult(
+                success=False,
+                message="Failed to delete tweet",
+                screenshot_path=screenshot,
+                error=str(e)
+            )
+
+        finally:
+            self._stop_browser()
+
+    def list_own_tweets(self, count: int = 10) -> List[Dict[str, str]]:
+        """
+        List your own tweets with URLs and content.
+
+        Args:
+            count: Number of recent tweets to retrieve
+
+        Returns:
+            List of dicts with tweet_url, content, date
+        """
+        try:
+            self._start_browser()
+
+            logger.info("Fetching your own tweets...")
+
+            # Navigate to your profile
+            self.page.goto("https://twitter.com/home", wait_until="networkidle")
+            self._random_delay(2, 3)
+
+            # Go to profile page
+            profile_button = self.page.query_selector('[data-testid="UserDescription"]')
+            # Alternative: navigate to your profile directly
+            self.page.goto("https://twitter.com/home", wait_until="networkidle")
+
+            # Click on your profile icon
+            self._random_delay(1, 2)
+            profile_icon = self.page.query_selector('[data-testid="UserAvatar"]')
+            if profile_icon:
+                profile_icon.click()
+                self._random_delay(0.5, 1)
+
+                # Click on profile link in dropdown
+                profile_link = self.page.query_selector('a[href*="/status"]')
+                if profile_link:
+                    profile_link.click()
+                    self._random_delay(2, 3)
+
+            tweets = []
+            tweet_elems = self.page.query_selector_all('[data-testid="tweet"]')[:count]
+
+            for i, tweet_elem in enumerate(tweet_elems):
+                # Get tweet URL
+                tweet_link = tweet_elem.query_selector('a[href*="/status/"]')
+                tweet_url = tweet_link.get_attribute("href") if tweet_link else ""
+                if tweet_url and not tweet_url.startswith("http"):
+                    tweet_url = "https://twitter.com" + tweet_url
+
+                # Get tweet text
+                tweet_text_elem = tweet_elem.query_selector('[data-testid="tweetText"]')
+                content = tweet_text_elem.inner_text() if tweet_text_elem else ""
+
+                # Get tweet time/date
+                time_elem = tweet_elem.query_selector('time')
+                date = time_elem.get_attribute("datetime") if time_elem else ""
+
+                tweets.append({
+                    "tweet_url": tweet_url,
+                    "content": content[:100] + "..." if len(content) > 100 else content,
+                    "date": date
+                })
+
+            logger.info(f"Found {len(tweets)} tweets")
+
+            return tweets
+
+        except Exception as e:
+            logger.error(f"Failed to list tweets: {e}")
+            return []
+
+        finally:
+            self._stop_browser()

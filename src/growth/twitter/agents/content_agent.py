@@ -6,6 +6,7 @@ Generates tweet/DM drafts using OpenAI GPT-4.
 
 import json
 import logging
+import yaml
 from typing import List, Optional
 from pathlib import Path
 
@@ -141,7 +142,7 @@ class ContentAgent:
         """
         # Load appropriate prompt template
         template_path = self._get_template_path(task.type)
-        template = self._load_template(template_path)
+        template = self._load_template(template_path, task.type)
 
         # Build context data
         context_data = {
@@ -182,25 +183,26 @@ class ContentAgent:
         return prompt
 
     def _get_template_path(self, task_type) -> Path:
-        """Get path to appropriate prompt template."""
-        base_path = Path("config/twitter/prompts")
+        """Get path to unified config file."""
+        return Path("src/growth/twitter/config/tasks.yaml")
 
-        if task_type == task_type.POST:
-            return base_path / "post_template.txt"
-        elif task_type == task_type.REPLY_TWEET:
-            return base_path / "reply_template.txt"
-        elif task_type == task_type.REPLY_DM:
-            return base_path / "dm_template.txt"
-        else:
-            return base_path / "post_template.txt"
-
-    def _load_template(self, template_path: Path) -> str:
-        """Load prompt template from file."""
+    def _load_template(self, template_path: Path, task_type) -> str:
+        """Load prompt template from unified config file."""
         try:
             with open(template_path, 'r') as f:
-                return f.read()
+                config = yaml.safe_load(f)
+
+            # Get appropriate template based on task type
+            if task_type == task_type.POST:
+                return config.get('templates', {}).get('post', '')
+            elif task_type == task_type.REPLY_TWEET:
+                return config.get('templates', {}).get('reply', '')
+            elif task_type == task_type.REPLY_DM:
+                return config.get('templates', {}).get('dm', '')
+            else:
+                return self._get_default_template()
         except FileNotFoundError:
-            logger.warning(f"Template not found: {template_path}, using default")
+            logger.warning(f"Config not found: {template_path}, using default")
             return self._get_default_template()
 
     def _get_default_template(self) -> str:
@@ -221,10 +223,12 @@ Return JSON format with content and rationale."""
     def _load_golden_examples(self) -> dict:
         """Load golden examples for few-shot learning."""
         try:
-            examples_path = Path("config/twitter/golden_examples.json")
-            if examples_path.exists():
-                with open(examples_path, 'r') as f:
-                    return json.load(f)
+            config_path = Path("src/growth/twitter/config/tasks.yaml")
+            if config_path.exists():
+                with open(config_path, 'r') as f:
+                    config = yaml.safe_load(f)
+                    examples = config.get('golden_examples', [])
+                    return {"examples": examples, "system_prompt": "You are Xin, a technical AI expert."}
         except Exception as e:
             logger.warning(f"Failed to load golden examples: {e}")
         return {}
@@ -240,6 +244,25 @@ Return JSON format with content and rationale."""
             List of TwitterDraft objects
         """
         try:
+            # Extract JSON from markdown code blocks if present
+            import re
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+            if json_match:
+                response = json_match.group(1)
+            elif '```' in response:
+                # Try to extract content between code blocks
+                lines = response.split('\n')
+                json_lines = []
+                in_code_block = False
+                for line in lines:
+                    if line.strip().startswith('```'):
+                        in_code_block = not in_code_block
+                        continue
+                    if in_code_block:
+                        json_lines.append(line)
+                if json_lines:
+                    response = '\n'.join(json_lines)
+
             # Try to parse as JSON
             data = json.loads(response)
 
@@ -267,9 +290,9 @@ Return JSON format with content and rationale."""
                     )
                 ]
 
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             # Fallback: treat entire response as content
-            logger.warning("Failed to parse LLM response as JSON, using raw content")
+            logger.warning(f"Failed to parse LLM response as JSON: {e}, using raw content")
             return [
                 TwitterDraft(
                     content=response.strip(),

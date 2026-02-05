@@ -1,6 +1,11 @@
 # Twitter Growth Tasks
 # Add new tasks to the list. Agent will process PENDING tasks.
 
+settings:
+  owner: "Anthony"
+  human_confirmation: true
+  anti_bot_jitter: [3, 8]
+
 tasks:
   - id: task_001
     type: POST
@@ -21,6 +26,20 @@ tasks:
     idea: "回复他关于插件定价的问题，说我们可以给内测期 Partner 50% 分成。"
     style: "专业，诚恳"
     status: PENDING
+
+  - id: "dm_agency_coaches"
+    type: DM
+    intent: "Super Affiliate Pitch"
+    draft: |
+      Yo [Name], been tracking your agency takes.
+
+      We built a white-label AI Ad Autopilot that's lowkey a cheat code for closing clients. It spits out a branded audit in 30s—one of our partners just jumped their win rate by 30% using it.
+
+      Thinking your students would love the 'alpha'. I'll set you up with a free Mentor Account and a 30% lifetime comms link (standard is 20%) if you want to share it.
+
+      Want a peek?
+
+      - Anthony
 
 global_settings:
   human_confirmation: true

@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from pathlib import Path
 
 
 class TaskType(Enum):
@@ -138,6 +139,7 @@ class TwitterConfig:
     Configuration settings for the Twitter agent.
 
     Attributes:
+        tasks_path: Path to tasks.yaml file
         human_confirmation: Require user approval before posting
         anti_bot_delay: Min and max seconds for delays between actions
         num_drafts: Number of drafts to generate per task
@@ -145,6 +147,7 @@ class TwitterConfig:
         max_retries: Maximum retry attempts for failed operations
         enable_analytics: Track performance metrics
     """
+    tasks_path: Optional[Path] = None
     human_confirmation: bool = True
     anti_bot_delay: tuple = (2, 8)
     num_drafts: int = 3

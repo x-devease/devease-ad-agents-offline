@@ -152,6 +152,9 @@ Environment Configuration:
     # 5. Nano Banana Pro Agent
     _add_nano_subcommand(subparsers)
 
+    # 6. Twitter Growth Agent
+    _add_twitter_subcommand(subparsers)
+
     args = parser.parse_args()
 
     # Apply global configuration
@@ -1757,6 +1760,206 @@ def _cmd_nano(args):
 
     except Exception as err:
         logger.exception("Nano agent failed: %s", err)
+        return 1
+
+
+def _add_twitter_subcommand(subparsers):
+    """Add twitter subcommand for Twitter Growth Agent."""
+    parser = subparsers.add_parser(
+        "twitter",
+        help="Twitter Growth Agent - Automate Twitter content and engagement",
+        description="""
+Twitter Growth Agent for automated content creation and engagement.
+
+Modes:
+- run: Process all pending tasks from tasks.yaml
+- single: Process a single task by ID
+- interactive: Continuous monitoring mode
+- generate: Generate drafts only (no posting)
+- report: Generate performance report
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    parser.add_argument(
+        "mode",
+        choices=["run", "single", "interactive", "generate", "report"],
+        help="Twitter agent mode",
+    )
+
+    parser.add_argument(
+        "--task-id",
+        type=str,
+        default=None,
+        help="Task ID to process (for single mode)",
+    )
+
+    parser.add_argument(
+        "--max-tasks",
+        type=int,
+        default=None,
+        help="Maximum number of tasks to process (for run mode)",
+    )
+
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="config/agents/twitter_config.yaml",
+        help="Path to Twitter config file",
+    )
+
+    parser.add_argument(
+        "--headless",
+        action="store_true",
+        default=True,
+        help="Run browser in headless mode (default: True)",
+    )
+
+    parser.add_argument(
+        "--no-headless",
+        dest="headless",
+        action="store_false",
+        help="Run browser with visible window",
+    )
+
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Skip all confirmation prompts (use with caution)",
+    )
+
+    parser.set_defaults(func=_cmd_twitter)
+
+
+def _cmd_twitter(args):
+    """Handle twitter command for Twitter Growth Agent."""
+    logger.info("=" * 70)
+    logger.info("TWITTER: Growth Agent (%s mode)", args.mode)
+    logger.info("=" * 70)
+
+    try:
+        from src.growth.twitter.agents.orchestrator import TwitterOrchestrator
+        from src.growth.twitter.core.key_manager import KeyManager
+        from src.growth.twitter.core.yaml_parser import YAMLTaskParser
+        from src.growth.twitter.core.memory import MemorySystem
+        from pathlib import Path
+
+        # Load keys
+        key_manager = KeyManager()
+        keys = key_manager.load_keys()
+
+        # Load config
+        from src.growth.twitter.core.types import TwitterConfig
+        import yaml
+
+        config_path = Path(args.config)
+        with open(config_path) as f:
+            config_data = yaml.safe_load(f)
+
+        config = TwitterConfig(
+            llm_model=config_data['llm']['model'],
+            tasks_path=Path("config/twitter/tasks.yaml"),
+        )
+
+        # Initialize memory system
+        memory = MemorySystem()
+
+        # Initialize orchestrator
+        orchestrator = TwitterOrchestrator(
+            keys=keys,
+            config=config,
+            memory=memory,
+            headless=args.headless
+        )
+
+        if args.mode == "run":
+            # Process all pending tasks
+            logger.info("Processing pending tasks...")
+            results = orchestrator.run_batch(max_tasks=args.max_tasks, skip_confirmation=args.yes)
+
+            logger.info("=" * 70)
+            logger.info("SUCCESS: Batch processing complete!")
+            logger.info("Processed %d tasks", len(results))
+            logger.info("=" * 70)
+
+            return 0
+
+        elif args.mode == "single":
+            # Process single task
+            if not args.task_id:
+                logger.error("--task-id is required for single mode")
+                return 1
+
+            task_parser = YAMLTaskParser(str(config.tasks_path), config)
+            tasks = task_parser.load_tasks()
+
+            task = next((t for t in tasks if t.id == args.task_id), None)
+            if not task:
+                logger.error("Task not found: %s", args.task_id)
+                return 1
+
+            result = orchestrator.run_single_task(task)
+
+            if result.get('status') == 'completed':
+                logger.info("=" * 70)
+                logger.info("SUCCESS: Task complete!")
+                logger.info("Tweet URL: %s", result.get('tweet_url'))
+                logger.info("=" * 70)
+                return 0
+            else:
+                logger.error("Task failed: %s", result.get('error'))
+                return 1
+
+        elif args.mode == "interactive":
+            # Continuous monitoring mode
+            orchestrator.interactive_mode()
+            return 0
+
+        elif args.mode == "generate":
+            # Generate drafts only (no posting)
+            logger.info("Generating drafts (no posting)...")
+
+            task_parser = YAMLTaskParser(str(config.tasks_path), config)
+            tasks = task_parser.load_tasks()
+
+            if not tasks:
+                logger.info("No pending tasks")
+                return 0
+
+            for task in tasks[:args.max_tasks] if args.max_tasks else tasks:
+                logger.info("\nGenerating drafts for task %s...", task.id)
+
+                drafts = orchestrator.content_agent.generate_drafts(task)
+
+                logger.info("Generated %d drafts:", len(drafts))
+                for i, draft in enumerate(drafts, 1):
+                    logger.info("  %d. %s", i, draft.content[:100])
+
+            logger.info("=" * 70)
+            logger.info("SUCCESS: Draft generation complete!")
+            logger.info("=" * 70)
+
+            return 0
+
+        elif args.mode == "report":
+            # Generate performance report
+            logger.info("Generating performance report...")
+
+            report_path = orchestrator.generate_report()
+
+            logger.info("=" * 70)
+            logger.info("SUCCESS: Report generated!")
+            logger.info("Report: %s", report_path)
+            logger.info("=" * 70)
+
+            return 0
+
+        else:
+            logger.error("Unknown mode: %s", args.mode)
+            return 1
+
+    except Exception as err:
+        logger.exception("Twitter agent failed: %s", err)
         return 1
 
 

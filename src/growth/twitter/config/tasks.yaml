@@ -1,0 +1,238 @@
+# ============================================================================
+# TWITTER GROWTH CONFIGURATION
+# Unified config file for all Twitter automation
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Global Settings
+# ----------------------------------------------------------------------------
+settings:
+  owner: "Anthony"
+  human_confirmation: true
+  anti_bot_delay: [2, 8]  # Min, max seconds between actions
+  anti_bot_jitter: [3, 8]
+
+# ----------------------------------------------------------------------------
+# Prompt Templates
+# ----------------------------------------------------------------------------
+templates:
+  # Reply Tweet Template
+  reply: |
+    You're replying to a tweet. Your goal: "intercept" traffic from influential accounts, demonstrate intelligence, don't be annoying.
+
+    **Target Tweet Content:**
+    {tweet_text}
+    Author: {author_handle}
+    Tweet Engagement: {likes} likes, {retweets} retweets
+
+    **Conversation Context:**
+    {top_replies}
+
+    **My Viewpoint:**
+    {idea}
+
+    **Task:**
+    Write a reply draft that:
+
+    1. **DO NOT parrot what they said** - add value, don't repeat
+    2. **Match the energy:**
+       - If they're complaining: Offer a technical solution
+       - If they're bragging: Provide a different logical perspective
+       - If they're asking questions: Give a direct, helpful answer
+    3. **Tone:** Like two senior engineers chatting in the same office - casual but sharp
+    4. **NO CTA** unless the topic is a perfect fit - no "check out my product" spam
+
+    **Constraints:**
+    - Under 280 characters
+    - No hashtags (they feel spammy in replies)
+    - Sound like you're already part of the conversation
+    - No corporate buzzwords
+
+    **Output Format:**
+    ```json
+    {
+      "content": "...",
+      "rationale": "Why this reply adds value to the conversation",
+      "approach": "technical_solution|different_perspective|helpful_answer"
+    }
+    ```
+
+  # Post Tweet Template
+  post: |
+    Generate 3 different draft versions based on the following:
+
+    **Idea:** {idea}
+    **Style Context:** {style}
+    **Data Support (if available):** {internal_data}
+
+    **Requirements:**
+    1. **Version 1 (Spicy):** Directly call out industry pain points, with some sarcasm. Be provocative.
+    2. **Version 2 (Hardcore):** Pure technical/data-driven. Show off capabilities.
+    3. **Version 3 (Observation):** Start with an interesting industry observation, naturally lead to DevEase.
+
+    **Constraints:**
+    - Each draft must be under 280 characters
+    - Include relevant hashtags (max 2-3)
+    - No corporate speak or buzzwords (forbidden: "transforming", "unlocking", "comprehensive", "empowering", "leveraging", "revolutionary")
+    - Sound authentic and conversational
+    - Use numbers and concrete examples
+    - Be specific, not abstract
+
+    **Output Format:**
+    Return JSON with this structure:
+    ```json
+    {{
+      "drafts": [
+        {{
+          "version": "spicy",
+          "content": "...",
+          "rationale": "Why this approach works",
+          "tone": "detected_tone",
+          "hashtags": ["tag1", "tag2"],
+          "character_count": 123
+        }},
+        ...
+      ]
+    }}
+    ```
+
+  # DM Template
+  dm: |
+    You're sending a DM to convert a potential partner. Goal: Quick conversion, build trust, don't waste their time.
+
+    **Target User:**
+    Handle: {handle}
+    Bio: {bio}
+    Recent Activity: {last_5_tweets}
+
+    **My Task:**
+    {idea}
+
+    **Task:**
+    Write a concise DM that:
+
+    1. **First sentence:** Directly respond to their need or reference their recent tweet (show you did your homework)
+    2. **Second sentence:** Drop our value proposition (e.g., "Partner 50% revenue share", "0-maintenance plugin", etc.)
+    3. **No fluff:** If they're an Agency Boss, be direct - no pleasantries needed
+
+    **Tone Guidelines:**
+    - For technical founders: Be precise, use data
+    - For agency bosses: Be direct, focus on revenue
+    - For marketers: Focus on efficiency and results
+
+    **Constraints:**
+    - Under 500 characters
+    - No emojis unless it feels natural
+    - One clear CTA or question to start conversation
+
+    **Output Format:**
+    ```json
+    {
+      "content": "...",
+      "rationale": "Why this approach works for this specific user type",
+      "personalization_elements": ["referenced their tweet about X", "noticed they're Y type"]
+    }
+    ```
+
+# ----------------------------------------------------------------------------
+# Coach Discovery Seeds (for find_coaches.py)
+# ----------------------------------------------------------------------------
+coach_seeds:
+  # Cold Email & Lead Gen
+  - blackhatwizardd
+  - alxberman
+  - andrehaykaljr
+  - coldemailwizard
+  - NickAbraham12
+  - EricNowo
+  - OneJKMolina
+
+  # DTC & Ad Performance
+  - iamshackelford
+  - Binghott
+  - herrmanndigital
+  - ecomchasedimond
+  - DenneyDara
+  - codyplofker
+  - rabahrahil
+  - social_savannah
+
+  # General Agency Scaling
+  - joelkaplan
+  - raviabuvala
+  - Tyson_4D
+  - jordan_ross_8F
+  - jacobtuwiner
+  - wizofecom
+
+# ----------------------------------------------------------------------------
+# Golden Examples (few-shot learning for content generation)
+# ----------------------------------------------------------------------------
+golden_examples:
+  - id: "example_001"
+    type: POST
+    content: "The problem with most AI coding assistants: they hallucinate APIs that don't exist. Spent 2 hours debugging a fictional library yesterday. We need strict RAG until we fix the hallucination problem."
+    rationale: "Technical pain point, authentic experience, calls out real issue"
+    tone: "frustrated_technical"
+    hashtags: ["AI", "DevTools"]
+    engagement: "high"
+
+  - id: "example_002"
+    type: REPLY
+    content: "Totally. The real question isn't 'can AI do it?' but 'should we?' Automation without oversight is just fast chaos."
+    rationale: "Adds philosophical layer to technical discussion, memorable framing"
+    tone: "thoughtful"
+    approach: "different_perspective"
+
+  - id: "example_003"
+    type: POST
+    content: "Hot take: 90% of 'scaling problems' are actually 'we never built a solid foundation in the first place'. Throwing infrastructure at bad architecture just creates expensive bad architecture."
+    rationale: "Controversial opinion, data-backed claim, specific problem"
+    tone: "spicy"
+    hashtags: ["DevOps", "Architecture"]
+    engagement: "medium"
+
+# ----------------------------------------------------------------------------
+# Task Queue
+# ----------------------------------------------------------------------------
+tasks:
+  - id: task_001
+    type: POST
+    idea: "分享今天 Judge Model 发现的一个离谱案例：某电商在 3 点全投了垃圾流量，浪费 $500。"
+    style: "犀利吐槽，硬核数据"
+    status: PENDING
+
+  - id: task_002
+    type: REPLY_TWEET
+    target_url: "https://x.com/elonmusk/status/123456"
+    idea: "针对他说的 AI 效率，提一下我们的自编码组织已经实现了 0 人力维护插件。"
+    style: "幽默，像老朋友聊天，不要像推销"
+    status: PENDING
+
+  - id: task_003
+    type: REPLY_DM
+    handle: "ad_agency_boss"
+    idea: "回复他关于插件定价的问题，说我们可以给内测期 Partner 50% 分成。"
+    style: "专业，诚恳"
+    status: PENDING
+
+  - id: "dm_agency_coaches"
+    type: DM
+    intent: "Super Affiliate Pitch"
+    draft: |
+      Yo [Name], been tracking your agency takes.
+
+      We built a white-label AI Ad Autopilot that's lowkey a cheat code for closing clients. It spits out a branded audit in 30s—one of our partners just jumped their win rate by 30% using it.
+
+      Thinking your students would love the 'alpha'. I'll set you up with a free Mentor Account and a 30% lifetime comms link (standard is 20%) if you want to share it.
+
+      Want a peek?
+
+      - Anthony
+
+# ----------------------------------------------------------------------------
+# Global Settings (Legacy - for backward compatibility)
+# ----------------------------------------------------------------------------
+global_settings:
+  human_confirmation: true
+  anti_bot_delay: [2, 8]

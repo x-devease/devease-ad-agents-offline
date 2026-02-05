@@ -1,0 +1,62 @@
+# Shopify Store Discovery & Profiling System Configuration
+
+# Certificate Transparency Log Settings
+ct_logs:
+  api_url: "https://crt.sh"
+  lookback_days: 1  # How many days back to search
+  batch_size: 100
+  delay_between_requests: 2  # seconds
+
+# Shopify API Settings
+shopify:
+  products_endpoint: "/products.json"
+  limit: 250
+  timeout: 10
+  max_retries: 3
+
+# Meta Ad Library Settings
+meta:
+  ad_library_url: "https://www.facebook.com/ads/library/"
+  base_search_url: "https://www.facebook.com/ads/library/?q={domain}&ad_type=all"
+  headless: true
+  timeout: 30000
+  user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+
+# Contact Enrichment APIs
+apis:
+  apollo:
+    base_url: "https://api.apollo.io/v1/people/match"
+    headers_key: "APOLLO_API_KEY"
+  hunter:
+    base_url: "https://api.hunter.io/v2/domain-search"
+    headers_key: "HUNTER_API_KEY"
+
+# Scoring Thresholds
+scoring:
+  min_sku_count: 10
+  min_ad_count: 3
+  min_ad_active_days: 7
+  velocity_window_days: 30
+  weights:
+    sku_count: 0.2
+    ad_count: 0.3
+    ad_active_days: 0.2
+    launch_velocity: 0.3
+
+# Task Generation
+tasks:
+  daily_top_leads: 20
+  task_types:
+    - TWITTER_REPLY
+    - EMAIL_OUTREACH
+    - LINKEDIN_MESSAGE
+
+# File Paths
+paths:
+  data_dir: "./data"
+  new_domains: "./data/new_domains.csv"
+  store_profiles: "./data/store_profiles.json"
+  ad_intent: "./data/ad_intent.json"
+  final_targets: "./data/final_targets.json"
+  tasks: "./data/tasks.yaml"
+  processed_domains: "./data/processed_domains.txt"

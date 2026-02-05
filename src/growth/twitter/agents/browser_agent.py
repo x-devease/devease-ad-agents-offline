@@ -90,8 +90,14 @@ class BrowserAgent:
         )
 
         # Add session cookies if available
-        if self.keys.twitter_session_cookies:
-            self.context.add_cookies(self.keys.twitter_session_cookies)
+        if self.keys.twitter_cookies_path:
+            import json
+            cookies_path = Path(self.keys.twitter_cookies_path)
+            if cookies_path.exists():
+                with open(cookies_path, 'r') as f:
+                    cookies = json.load(f)
+                    self.context.add_cookies(cookies)
+                    logger.info(f"Loaded {len(cookies)} session cookies")
 
         # Create page
         self.page = self.context.new_page()

@@ -20,17 +20,17 @@ Generate 3 different draft versions based on the following:
 **Output Format:**
 Return JSON with this structure:
 ```json
-{
+{{
   "drafts": [
-    {
+    {{
       "version": "spicy",
       "content": "...",
       "rationale": "Why this approach works",
       "tone": "detected_tone",
       "hashtags": ["tag1", "tag2"],
       "character_count": 123
-    },
+    }},
     ...
   ]
-}
+}}
 ```

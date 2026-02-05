@@ -240,6 +240,25 @@ Return JSON format with content and rationale."""
             List of TwitterDraft objects
         """
         try:
+            # Extract JSON from markdown code blocks if present
+            import re
+            json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', response, re.DOTALL)
+            if json_match:
+                response = json_match.group(1)
+            elif '```' in response:
+                # Try to extract content between code blocks
+                lines = response.split('\n')
+                json_lines = []
+                in_code_block = False
+                for line in lines:
+                    if line.strip().startswith('```'):
+                        in_code_block = not in_code_block
+                        continue
+                    if in_code_block:
+                        json_lines.append(line)
+                if json_lines:
+                    response = '\n'.join(json_lines)
+
             # Try to parse as JSON
             data = json.loads(response)
 
@@ -267,9 +286,9 @@ Return JSON format with content and rationale."""
                     )
                 ]
 
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             # Fallback: treat entire response as content
-            logger.warning("Failed to parse LLM response as JSON, using raw content")
+            logger.warning(f"Failed to parse LLM response as JSON: {e}, using raw content")
             return [
                 TwitterDraft(
                     content=response.strip(),

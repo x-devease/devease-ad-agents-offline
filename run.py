@@ -1822,6 +1822,12 @@ Modes:
         help="Run browser with visible window",
     )
 
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Skip all confirmation prompts (use with caution)",
+    )
+
     parser.set_defaults(func=_cmd_twitter)
 
 
@@ -1869,7 +1875,7 @@ def _cmd_twitter(args):
         if args.mode == "run":
             # Process all pending tasks
             logger.info("Processing pending tasks...")
-            results = orchestrator.run_batch(max_tasks=args.max_tasks)
+            results = orchestrator.run_batch(max_tasks=args.max_tasks, skip_confirmation=args.yes)
 
             logger.info("=" * 70)
             logger.info("SUCCESS: Batch processing complete!")

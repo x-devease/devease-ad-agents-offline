@@ -150,12 +150,13 @@ class TwitterOrchestrator:
             logger.error(f"Task {task.id} failed: {e}")
             return self._fail_task(task, str(e))
 
-    def run_batch(self, max_tasks: Optional[int] = None) -> List[Dict[str, Any]]:
+    def run_batch(self, max_tasks: Optional[int] = None, skip_confirmation: bool = False) -> List[Dict[str, Any]]:
         """
         Execute all pending tasks in batch.
 
         Args:
             max_tasks: Maximum number of tasks to process (None = all)
+            skip_confirmation: Skip batch start confirmation (for automation)
 
         Returns:
             List of result dicts
@@ -171,9 +172,10 @@ class TwitterOrchestrator:
             return []
 
         # Confirm batch start
-        if not self.ui_agent.confirm_batch_start(tasks):
-            logger.info("Batch processing cancelled by user")
-            return []
+        if not skip_confirmation:
+            if not self.ui_agent.confirm_batch_start(tasks):
+                logger.info("Batch processing cancelled by user")
+                return []
 
         results = []
         for i, task in enumerate(tasks, 1):

@@ -521,6 +521,52 @@ class BrowserAgent:
         finally:
             self._stop_browser()
 
+    def delete_tweets_batch(self, tweet_urls: List[str], delay_range: tuple = (30, 60)) -> List[BrowserActionResult]:
+        """
+        Delete multiple tweets with anti-rate-limiting delays.
+
+        Args:
+            tweet_urls: List of tweet URLs to delete
+            delay_range: Min/max seconds between deletions (default: 30-60s)
+
+        Returns:
+            List of BrowserActionResult for each deletion
+        """
+        results = []
+        total = len(tweet_urls)
+
+        logger.info(f"Preparing to delete {total} tweets")
+        logger.info(f"Delay range: {delay_range[0]}-{delay_range[1]}s between deletions")
+        logger.info(f"Estimated time: {total * delay_range[1] // 60} minutes")
+
+        # Start browser once for all deletions
+        self._start_browser()
+
+        try:
+            for i, tweet_url in enumerate(tweet_urls, 1):
+                logger.info(f"Deleting tweet {i}/{total}: {tweet_url}")
+
+                result = self._delete_tweet_single(tweet_url, keep_browser=True)
+                results.append(result)
+
+                if result.success:
+                    logger.info(f"✓ Deleted tweet {i}/{total}")
+                else:
+                    logger.warning(f"✗ Failed to delete tweet {i}/{total}: {result.error}")
+
+                # Add delay between deletions (rate limiting)
+                if i < total:  # Don't delay after last one
+                    import random
+                    import time
+                    delay = random.uniform(delay_range[0], delay_range[1])
+                    logger.info(f"⏸️  Waiting {delay:.1f}s before next deletion (anti-rate-limit)")
+                    time.sleep(delay)
+
+            return results
+
+        finally:
+            self._stop_browser()
+
     def delete_tweet(self, tweet_url: str) -> BrowserActionResult:
         """
         Delete a tweet.
@@ -531,9 +577,24 @@ class BrowserAgent:
         Returns:
             BrowserActionResult with success status
         """
-        try:
-            self._start_browser()
+        self._start_browser()
+        result = self._delete_tweet_single(tweet_url, keep_browser=False)
+        if not result.keep_browser:
+            self._stop_browser()
+        return result
 
+    def _delete_tweet_single(self, tweet_url: str, keep_browser: bool = False) -> BrowserActionResult:
+        """
+        Delete a single tweet (internal method, can keep browser open).
+
+        Args:
+            tweet_url: URL of tweet to delete
+            keep_browser: If True, don't stop browser after deletion
+
+        Returns:
+            BrowserActionResult with success status
+        """
+        try:
             logger.info(f"Navigating to tweet: {tweet_url}")
             self.page.goto(tweet_url, wait_until="networkidle")
 
@@ -574,37 +635,42 @@ class BrowserAgent:
                     # Take screenshot after deletion
                     self._take_screenshot("post_delete")
 
-                    return BrowserActionResult(
+                    result = BrowserActionResult(
                         success=True,
                         message="Tweet deleted successfully",
                         screenshot_path=screenshot
                     )
+                    result.keep_browser = keep_browser
+                    return result
                 else:
-                    return BrowserActionResult(
+                    result = BrowserActionResult(
                         success=False,
                         message="Could not find confirmation button",
                         error="Confirmation button not found"
                     )
+                    result.keep_browser = keep_browser
+                    return result
             else:
-                return BrowserActionResult(
+                result = BrowserActionResult(
                     success=False,
                     message="Could not find delete option",
                     error="Delete button not found in menu"
                 )
+                result.keep_browser = keep_browser
+                return result
 
         except Exception as e:
             logger.error(f"Failed to delete tweet: {e}")
             screenshot = self._take_screenshot("error_delete")
 
-            return BrowserActionResult(
+            result = BrowserActionResult(
                 success=False,
                 message="Failed to delete tweet",
                 screenshot_path=screenshot,
                 error=str(e)
             )
-
-        finally:
-            self._stop_browser()
+            result.keep_browser = keep_browser
+            return result
 
     def list_own_tweets(self, count: int = 10) -> List[Dict[str, str]]:
         """

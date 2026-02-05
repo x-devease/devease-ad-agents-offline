@@ -1,0 +1,22 @@
+{
+  "failure_id": "fail_FatigueDetector_20260204_154545",
+  "timestamp": "2026-02-04T15:45:45.176820",
+  "detector": "FatigueDetector",
+  "approach": "{\"title\": \"Test\", \"detector\": \"FatigueDetector\", \"changes\": []}",
+  "result": {
+    "decision": "FAIL",
+    "metrics": {
+      "f1_score": 0.7,
+      "lift": {
+        "f1_score": -0.02
+      }
+    }
+  },
+  "root_cause": "Unknown",
+  "lessons": [],
+  "tags": [
+    "unknown",
+    "rolled_back",
+    "failure"
+  ]
+}

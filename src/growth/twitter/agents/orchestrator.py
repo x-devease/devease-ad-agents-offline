@@ -58,7 +58,7 @@ class TwitterOrchestrator:
         self.ui_agent = UIAgent(keys, config)
 
         # Task management
-        self.task_parser = YAMLTaskParser(config.tasks_path)
+        self.task_parser = YAMLTaskParser(str(config.tasks_path), config)
 
         logger.info("Twitter Orchestrator initialized")
 

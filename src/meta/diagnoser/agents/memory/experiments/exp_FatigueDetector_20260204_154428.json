@@ -1,0 +1,13 @@
+{
+  "detector": "FatigueDetector",
+  "spec": {
+    "title": "Test experiment",
+    "changes": []
+  },
+  "outcome": "SUCCESS",
+  "timestamp": "2026-02-04T15:44:28.898291",
+  "tags": [
+    "threshold_tuning"
+  ],
+  "experiment_id": "exp_FatigueDetector_20260204_154428"
+}

@@ -1884,7 +1884,7 @@ def _cmd_twitter(args):
                 logger.error("--task-id is required for single mode")
                 return 1
 
-            task_parser = YAMLTaskParser(config.tasks_path)
+            task_parser = YAMLTaskParser(str(config.tasks_path), config)
             tasks = task_parser.load_tasks()
 
             task = next((t for t in tasks if t.id == args.task_id), None)
@@ -1913,7 +1913,7 @@ def _cmd_twitter(args):
             # Generate drafts only (no posting)
             logger.info("Generating drafts (no posting)...")
 
-            task_parser = YAMLTaskParser(config.tasks_path)
+            task_parser = YAMLTaskParser(str(config.tasks_path), config)
             tasks = task_parser.load_tasks()
 
             if not tasks:

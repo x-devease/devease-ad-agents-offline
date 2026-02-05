@@ -61,6 +61,11 @@ wandb/
 .env
 .env.local
 
+# DevEase keys & secrets (Twitter Growth Agent)
+.devease/keys
+*.cookies.json
+~/.devease/
+
 # Temporary files
 *.tmp
 *.temp

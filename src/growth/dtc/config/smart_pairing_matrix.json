@@ -583,6 +583,86 @@
         ["Car seat", "Rotational"],
         ["Diaper backpack", "Hands free"]
       ]
+    },
+    "DIY_BEAUTY_SALON": {
+      "description": "At-home alternatives to expensive salon treatments (Nails/Lashes/Hair)",
+      "pain_point": "High churn rate if application is difficult, constant need for new viral styles",
+      "outreach_template": "tutorial_funnel_audit",
+      "search_combinations": [
+        ["Press on nails", "Reusable"],
+        ["Press on nails", "Lasts 2 weeks"],
+        ["DIY lash extensions", "Under lash"],
+        ["DIY lash extensions", "Salon quality"],
+        ["Glueless wig", "Wear and go"],
+        ["Human hair extensions", "Clip in"],
+        ["Polygel kit", "Beginner friendly"],
+        ["Dip powder nail kit", "No UV light"],
+        ["Hair topper", "Thinning hair solution"]
+      ]
+    },
+    "MODERN_GARDENING": {
+      "description": "Indoor plants & hydroponics for urban millennials",
+      "pain_point": "Shipping live plants (damage claims), educating users on 'not killing it'",
+      "outreach_template": "education_retention_audit",
+      "search_combinations": [
+        ["Indoor plant delivery", "Arrive alive guarantee"],
+        ["Hydroponic garden", "Countertop"],
+        ["Grow light", "Full spectrum"],
+        ["Self watering pot", "Vacation mode"],
+        ["Rare plants", "Variegated"],
+        ["Mushroom grow kit", "Harvest in days"],
+        ["Compost bin", "Kitchen counter"],
+        ["Vertical garden", "Space saving"],
+        ["Heirloom seeds", "Non GMO"]
+      ]
+    },
+    "TRAVEL_HACKER": {
+      "description": "Gear for efficient packing & organized travel",
+      "pain_point": "Visualizing 'how much fits', extremely seasonal (Summer/Holiday spikes)",
+      "outreach_template": "viral_video_hook_audit",
+      "search_combinations": [
+        ["Compression packing cubes", "Save space"],
+        ["Travel backpack", "Clamshell opening"],
+        ["Toiletry bag", "Hanging"],
+        ["Passport holder", "RFID blocking"],
+        ["Travel pillow", "Neck support"],
+        ["Carry on luggage", "Expandable"],
+        ["Garment bag", "Wrinkle free"],
+        ["Travel adapter", "Universal"],
+        ["Anti theft bag", "Slash proof"]
+      ]
+    },
+    "PET_HEALTH_SPECIFIC": {
+      "description": "Targeted supplements/gear for specific pet ailments (Anxiety/Joints)",
+      "pain_point": "Compliance (medical claims), building trust vs Vet prescriptions",
+      "outreach_template": "social_proof_trust_audit",
+      "search_combinations": [
+        ["Dog anxiety vest", "Thunder jacket"],
+        ["Calming chews", "Separation anxiety"],
+        ["Hemp oil for dogs", "Joint pain"],
+        ["Hip and joint supplement", "Glucosamine"],
+        ["Dog probiotic", "Itchy skin"],
+        ["Paw balm", "Cracked paws"],
+        ["Cat dental powder", "Fresh breath"],
+        ["Dog ramp", "For bed"],
+        ["Recovery collar", "Cone alternative"]
+      ]
+    },
+    "SPIRITUAL_WELLNESS": {
+      "description": "Modern mysticism & mindfulness products",
+      "pain_point": "High emotional reliance, purely visual/vibe-based sales",
+      "outreach_template": "emotional_resonance_audit",
+      "search_combinations": [
+        ["Crystal candle", "Manifestation"],
+        ["Tarot deck", "Indie"],
+        ["Meditation cushion", "Buckwheat"],
+        ["Singing bowl", "Chakra healing"],
+        ["Astrology jewelry", "Birth chart"],
+        ["Sage bundle", "Smudge kit"],
+        ["Gratitude journal", "Mindfulness"],
+        ["Essential oil diffuser", "Waterless"],
+        ["Weighted eye mask", "Relaxation"]
+      ]
     }
   },
   "exclude_keywords": [

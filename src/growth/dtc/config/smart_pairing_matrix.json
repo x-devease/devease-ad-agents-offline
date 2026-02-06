@@ -329,6 +329,54 @@
         ["Lift chair", "Zero gravity"],
         ["Senior cell phone", "Easy to use"]
       ]
+    },
+    "AUTO_LIFESTYLE": {
+      "description": "Car accessories & detailing for enthusiasts",
+      "pain_point": "High return rates due to fitment issues, proving 'premium' quality",
+      "outreach_template": "fitment_guarantee_audit",
+      "search_combinations": [
+        ["Custom car mats", "Perfect fit guarantee"],
+        ["Custom car mats", "All weather protection"],
+        ["Car detailing kit", "Ceramic coating"],
+        ["Car detailing kit", "Professional shine"],
+        ["LED car lights", "Easy install"],
+        ["Car organizer", "Trunk organizer"],
+        ["Seat covers", "Custom fit"],
+        ["Roof rack", "Adventure ready"],
+        ["Dash cam", "4K recording"]
+      ]
+    },
+    "MENS_GROOMING": {
+      "description": "Niche grooming tools for beard, body, and baldness",
+      "pain_point": "Ad fatigue on 'humorous' ads, high competition from Manscaped",
+      "outreach_template": "hook_retention_audit",
+      "search_combinations": [
+        ["Beard growth kit", "Guaranteed results"],
+        ["Beard straightener", "Tame the beast"],
+        ["Electric groin trimmer", "Nick free"],
+        ["Electric groin trimmer", "Skin safe technology"],
+        ["Bald head shaver", "Smooth shave"],
+        ["Bald head shaver", "No bumps"],
+        ["Solid cologne", "Smell great"],
+        ["Men's skincare set", "Simple routine"],
+        ["Anti gray hair", "Natural look"]
+      ]
+    },
+    "ART_WALL": {
+      "description": "DTC wall art, frames, and home decor",
+      "pain_point": "Visualizing size/scale online, high shipping costs for large items",
+      "outreach_template": "visual_roas_audit",
+      "search_combinations": [
+        ["Canvas wall art", "Museum quality"],
+        ["Canvas wall art", "Ready to hang"],
+        ["Metal prints", "High definition"],
+        ["Gallery wall set", "Easy template"],
+        ["Digital picture frame", "Share photos instantly"],
+        ["Large wall art", "Statement piece"],
+        ["Map print", "Custom coordinates"],
+        ["Neon sign", "Custom text"],
+        ["Acoustic panels", "Sound dampening art"]
+      ]
     }
   },
   "exclude_keywords": [

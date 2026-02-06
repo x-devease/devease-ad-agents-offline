@@ -1,0 +1,177 @@
+{
+  "strategies": {
+    "LTV_HUNTERS": {
+      "description": "High-LTV consumable brands with subscription models",
+      "pain_point": "High CPA, low retention = death",
+      "outreach_template": "subscription_churn_audit",
+      "search_combinations": [
+        ["Mushroom coffee", "Subscribe & Save"],
+        ["Mushroom coffee", "Cancel anytime"],
+        ["Mushroom coffee", "Subscription save"],
+        ["Nootropics", "Subscribe & Save"],
+        ["Nootropics", "Cancel anytime"],
+        ["Probiotics", "Subscribe & Save"],
+        ["Probiotics", "Monthly delivery"],
+        ["Protein powder", "Subscribe & Save"],
+        ["Collagen", "Subscribe & Save"],
+        ["Raw dog food", "Subscribe & Save"],
+        ["Human-grade", "Subscribe & Save"],
+        ["Cat litter subscription", "Subscribe & Save"],
+        ["Freeze dried", "Auto-refill"],
+        ["Diapers", "Subscribe & Save"],
+        ["Baby formula", "Subscribe & Save"],
+        ["Baby formula", "Monthly delivery"]
+      ]
+    },
+    "HIGH_TICKET": {
+      "description": "High-AOV durable goods requiring trust",
+      "pain_point": "Long decision cycle, low conversion",
+      "outreach_template": "high_ticket_retargeting_audit",
+      "search_combinations": [
+        ["Ergonomic chair", "Lifetime warranty"],
+        ["Standing desk", "Lifetime warranty"],
+        ["Memory foam", "100 day trial"],
+        ["Cold plunge", "Lifetime warranty"],
+        ["Cold plunge", "100 day trial"],
+        ["Sauna blanket", "100 day trial"],
+        ["Golf simulator", "Financing available"],
+        ["3D printer", "Lifetime warranty"]
+      ]
+    },
+    "DISRUPTOR_ATTACK": {
+      "description": "Disruptive brands attacking incumbents",
+      "pain_point": "High education cost, ad burnout",
+      "outreach_template": "creative_fatigue_audit",
+      "search_combinations": [
+        ["Merino wool", "Why I switched"],
+        ["Merino wool", "Better than"],
+        ["Barefoot shoes", "Why I switched"],
+        ["Barefoot shoes", "Stop wearing"],
+        ["Vegan skincare", "Ditch the"],
+        ["Clean beauty", "The alternative to"],
+        ["Non-alcoholic", "Old way vs New way"],
+        ["Plant based meat", "Vs regular"]
+      ]
+    },
+    "VIRAL_SCALE": {
+      "description": "UGC-driven viral products",
+      "pain_point": "Fast creative burnout, needs constant fresh content",
+      "outreach_template": "creative_hook_audit",
+      "search_combinations": [
+        ["Retinol", "As seen on Shark Tank"],
+        ["LED mask", "TikTok made me buy it"],
+        ["Micro-current", "Viral on"],
+        ["Hair growth", "Game changer"],
+        ["Acne patch", "Holy grail"],
+        ["Weighted blanket", "As seen on Shark Tank"],
+        ["Shapewear", "TikTok made me buy it"],
+        ["Galaxy projector", "Viral on"]
+      ]
+    },
+    "PAIN_SOLVER": {
+      "description": "Problem-solution products targeting specific physical pains",
+      "pain_point": "High ad rejection rate, sensitive compliance needs",
+      "outreach_template": "compliance_audit",
+      "search_combinations": [
+        ["Plantar fasciitis", "Instant relief"],
+        ["Plantar fasciitis", "Doctor recommended"],
+        ["Back pain", "Stop suffering"],
+        ["Posture corrector", "Pain free"],
+        ["Blue light blocking", "Headache relief"],
+        ["Snoring solution", "Better sleep"],
+        ["Knee brace", "Support and relief"],
+        ["Migraine", "Natural relief"],
+        ["Eczema", "Soothing relief"],
+        ["Compression socks", "Swelling relief"]
+      ]
+    },
+    "GIFTING_CUSTOM": {
+      "description": "High-AOV personalized goods with seasonal spikes",
+      "pain_point": "Complex funnel, inventory risk on custom items",
+      "outreach_template": "seasonal_roas",
+      "search_combinations": [
+        ["Custom neon sign", "Personalize yours"],
+        ["Custom neon sign", "Wedding gift"],
+        ["Engraved watch", "Perfect gift"],
+        ["Custom pet portrait", "For her"],
+        ["Custom pet portrait", "For him"],
+        ["Star map", "Anniversary gift"],
+        ["Name necklace", "Custom made"],
+        ["Personalized jewelry", "Order by"],
+        ["Leather bag", "Monogram"],
+        ["Photo book", "Valentine's Day"]
+      ]
+    },
+    "SYSTEM_SELLER": {
+      "description": "Lifestyle brands selling 'Starter Kits' + Refills",
+      "pain_point": "Low retention on 2nd purchase (Refill drop-off)",
+      "outreach_template": "bundle_upsell",
+      "search_combinations": [
+        ["Non-toxic cleaning", "Starter kit"],
+        ["Refillable soap", "Starter set"],
+        ["Safety razor", "Switch to"],
+        ["Safety razor", "Starter kit"],
+        ["Gel nail kit", "Complete system"],
+        ["Matcha set", "Starter set"],
+        ["Cocktail kit", "Everything you need"],
+        ["Smart garden", "Starter kit"],
+        ["Home gym", "Complete system"]
+      ]
+    },
+    "AGGRESSIVE_OFFER": {
+      "description": "Brands running heavy promotions (Cash flow priority)",
+      "pain_point": "Low ROAS, inventory pressure, high urgency",
+      "outreach_template": "roas_emergency",
+      "search_combinations": [
+        ["Leggings", "BOGO"],
+        ["Leggings", "Buy 1 Get 1"],
+        ["Activewear", "Warehouse Sale"],
+        ["Skincare", "Flash Sale"],
+        ["Bedding", "Last chance"],
+        ["Sneakers", "Ending soon"],
+        ["Jewelry", "24 hours left"],
+        ["Swimwear", "Clearance"],
+        ["Supplements", "Limited time offer"]
+      ]
+    }
+  },
+  "exclude_keywords": [
+    "Amazon", "Etsy", "eBay", "Walmart", "Target", "Wayfair",
+    "Temu", "Shein", "AliExpress", "DHgate",
+    "Affiliate", "Earn money", "Passive income", "Get rich quick",
+    "Course", "Masterclass", "Webinar", "Coaching", "Training", "Tutorial",
+    "Agency", "Consultant", "Consulting", "Service provider",
+    "Crypto", "Forex", "Betting", "Casino", "Gambling", "Lottery",
+    "GoFundMe", "Kickstarter", "Indiegogo", "Patreon", "Donation",
+    "gstatic", "googleusercontent", "googleapis", "doubleclick", "googlesyndication",
+    "facebook", "instagram", "tiktok", "youtube", "twitter", "pinterest", "linkedin", "reddit",
+    "MLM", "Multi-level marketing", "Pyramid scheme", "Business opportunity", "Work from home"
+  ],
+  "signals": {
+    "risk_reversal": {
+      "keywords": ["guarantee", "free return", "money back", "risk-free", "trial"],
+      "description": "Product confidence indicators",
+      "weight": 1
+    },
+    "bundle_offers": {
+      "keywords": ["bundle", "save", "set", "kit", "pack"],
+      "description": "Bundle purchase indicators",
+      "weight": 1
+    },
+    "social_proof": {
+      "keywords": ["review", "star", "rated", "customer", "testimonia"],
+      "description": "Social validation signals",
+      "weight": 1
+    },
+    "urgency": {
+      "keywords": ["limited", "only", "sale end", "today", "expire"],
+      "description": "Urgency creation tactics",
+      "weight": 1
+    },
+    "shopify": {
+      "keywords": ["cdn.shopify.com", "shopify.theme"],
+      "description": "Shopify platform markers",
+      "weight": 1
+    }
+  }
+}

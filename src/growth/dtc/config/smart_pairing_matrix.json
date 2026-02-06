@@ -866,6 +866,54 @@
         ["Candle making kit", "Soy wax"],
         ["Rug tufting", "Starter gun"]
       ]
+    },
+    "MENOPAUSE_REVOLUTION": {
+      "description": "Products targeting perimenopause/menopause (High spending power demographic)",
+      "pain_point": "Trust issues with 'snake oil', needing science-backed education",
+      "outreach_template": "empathy_education_audit",
+      "search_combinations": [
+        ["Menopause supplement", "Hot flash relief"],
+        ["Menopause supplement", "Hormone balance"],
+        ["Cooling pajamas", "Night sweats"],
+        ["Cooling sheets", "Temperature regulating"],
+        ["Vaginal dryness", "Hormone free"],
+        ["Hair thinning", "Women over 40"],
+        ["Collagen for women", "Mature skin"],
+        ["Portable fan", "Hot flashes"],
+        ["Weight management", "Metabolism boost"]
+      ]
+    },
+    "EV_ACCESSORIES": {
+      "description": "Aftermarket parts for Tesla/Rivian (Cult-like following)",
+      "pain_point": "Demonstrating 'OEM quality' fit, high competition on Amazon",
+      "outreach_template": "community_niche_audit",
+      "search_combinations": [
+        ["Tesla floor mats", "All weather"],
+        ["Tesla floor mats", "3D fit"],
+        ["Tesla organizer", "Center console"],
+        ["EV charger", "Level 2"],
+        ["Tesla mattress", "Camping mode"],
+        ["Rivian accessories", "Off road"],
+        ["Screen protector", "Tempered glass"],
+        ["Wheel covers", "Range efficiency"],
+        ["Yoke steering wheel", "Custom install"]
+      ]
+    },
+    "MUSICAL_FLOW": {
+      "description": "Instruments & gear for hobbyist musicians (High passion)",
+      "pain_point": "Sound quality visualization (how to show sound?), high return shipping costs",
+      "outreach_template": "audio_visual_audit",
+      "search_combinations": [
+        ["Guitar pedal", "Boutique"],
+        ["Guitar pedal", "True bypass"],
+        ["Smart guitar", "Learn to play"],
+        ["MIDI controller", "Beat making"],
+        ["Ukulele kit", "Beginner"],
+        ["Digital piano", "Weighted keys"],
+        ["In-ear monitors", "Musician"],
+        ["Acoustic panels", "Home studio"],
+        ["Violin set", "Student"]
+      ]
     }
   },
   "exclude_keywords": [

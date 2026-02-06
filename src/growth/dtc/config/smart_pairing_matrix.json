@@ -377,6 +377,84 @@
         ["Neon sign", "Custom text"],
         ["Acoustic panels", "Sound dampening art"]
       ]
+    },
+    "CROSS_BORDER_TECH": {
+      "description": "Shenzhen-style consumer electronics (High specs, aggressive pricing)",
+      "pain_point": "Localization issues ('Chinglish' copy), low trust, high CPM vs big brands",
+      "outreach_template": "localization_trust_audit",
+      "search_combinations": [
+        ["Portable monitor", "Work from anywhere"],
+        ["Portable monitor", "Second screen"],
+        ["Mini PC", "Powerful performance"],
+        ["Mini PC", "Windows 11 pro"],
+        ["GaN charger", "Fast charge"],
+        ["GaN charger", "Compact size"],
+        ["Docking station", "Triple display"],
+        ["Mechanical keyboard", "Hot swappable"],
+        ["Rugged phone", "Indestructible"],
+        ["Thermal camera", "Night vision"],
+        ["Projector", "Native 1080p"],
+        ["Projector", "4K support"]
+      ]
+    },
+    "E_MOBILITY_CHINA": {
+      "description": "E-bikes & Scooters (Heavily dominated by Chinese supply chain)",
+      "pain_point": "Safety concerns (battery fires), shipping logistics, competitive ad costs",
+      "outreach_template": "trust_safety_audit",
+      "search_combinations": [
+        ["E-bike", "Long range"],
+        ["E-bike", "Fat tire"],
+        ["E-bike", "Foldable"],
+        ["Electric scooter", "Commuter"],
+        ["Electric scooter", "Dual motor"],
+        ["Electric skateboard", "All terrain"],
+        ["E-moped", "No license needed"],
+        ["Bike conversion kit", "Easy install"]
+      ]
+    },
+    "SMART_ROBOTICS": {
+      "description": "Home automation robots (Vacuums, Mowers, Pool cleaners)",
+      "pain_point": "Explaining complex tech simply, differentiating from Roborock/iRobot",
+      "outreach_template": "feature_benefit_audit",
+      "search_combinations": [
+        ["Robot vacuum", "Self emptying"],
+        ["Robot vacuum", "Mop and vacuum"],
+        ["Robot vacuum", "Lidar navigation"],
+        ["Robot mop", "Self cleaning"],
+        ["Window cleaner robot", "Automatic"],
+        ["Pool cleaner robot", "Cordless"],
+        ["Pool cleaner robot", "Wall climbing"],
+        ["Robot lawn mower", "Wire free"],
+        ["Robot lawn mower", "GPS navigation"]
+      ]
+    },
+    "MAKER_TOOLS": {
+      "description": "3D Printing & Laser Engraving (The 'Bambu Lab' effect)",
+      "pain_point": "Niche audience targeting, community management overload",
+      "outreach_template": "community_scale_audit",
+      "search_combinations": [
+        ["3D printer", "High speed"],
+        ["3D printer", "Multi color"],
+        ["3D printer", "Auto leveling"],
+        ["Laser engraver", "Diode laser"],
+        ["Laser engraver", "Cut wood"],
+        ["CNC machine", "Desktop"],
+        ["Vinyl cutter", "Precise cut"],
+        ["Resin printer", "8K resolution"]
+      ]
+    },
+    "ENERGY_STORAGE": {
+      "description": "Portable Power Stations & Solar (EcoFlow/Jackery competitors)",
+      "pain_point": "High CAC, seasonal demand (hurricane/camping), trust in battery safety",
+      "outreach_template": "scenario_based_audit",
+      "search_combinations": [
+        ["Portable power station", "LifePO4"],
+        ["Portable power station", "Solar generator"],
+        ["Solar panel", "Foldable"],
+        ["Home backup battery", "Blackout protection"],
+        ["Off grid power", "Van life"],
+        ["Solar generator", "Emergency power"]
+      ]
     }
   },
   "exclude_keywords": [

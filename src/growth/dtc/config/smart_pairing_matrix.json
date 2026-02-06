@@ -281,6 +281,54 @@
         ["Moisture wicking shirt", "Anti odor"],
         ["Safety glasses", "Anti fog"]
       ]
+    },
+    "DTC_RENO": {
+      "description": "Home improvement materials sold directly to DIYers",
+      "pain_point": "Sampling difficulty (Color/Texture), fear of messing up",
+      "outreach_template": "sampling_funnel_audit",
+      "search_combinations": [
+        ["Peel and stick wallpaper", "Renter friendly"],
+        ["Peel and stick wallpaper", "Damage free"],
+        ["Low VOC paint", "No smell"],
+        ["Curtain rod", "No drill"],
+        ["Cabinet hardware", "Solid brass"],
+        ["Vinyl flooring", "Easy install"],
+        ["Smart lock", "Keyless entry"],
+        ["Backsplash tile", "Peel and stick"],
+        ["Modular shelving", "Tool free assembly"]
+      ]
+    },
+    "ANALOG_FOCUS": {
+      "description": "High-end planners, journals, and writing tools (Anti-digital)",
+      "pain_point": "Q1 peak followed by high churn, competing with free apps",
+      "outreach_template": "retention_habit_audit",
+      "search_combinations": [
+        ["Goal planner", "Best year yet"],
+        ["Daily journal", "Mental clarity"],
+        ["Productivity planner", "Undated"],
+        ["Fountain pen", "Gold nib"],
+        ["Notebook", "Tomoe river paper"],
+        ["Desk organizer", "Minimalist setup"],
+        ["Gratitude journal", "5 minutes a day"],
+        ["Habit tracker", "Build discipline"],
+        ["Premium stationery", "Japanese paper"]
+      ]
+    },
+    "AGE_TECH": {
+      "description": "Modern health devices for aging boomers (Silver Economy)",
+      "pain_point": "Overcoming stigma ('Old people products'), trust/FDA clearance",
+      "outreach_template": "trust_credibility_audit",
+      "search_combinations": [
+        ["OTC hearing aid", "FDA registered"],
+        ["OTC hearing aid", "Invisible fit"],
+        ["Medical alert watch", "Fall detection"],
+        ["Medical alert watch", "No monthly fee"],
+        ["Mobility scooter", "Travel friendly"],
+        ["Reading glasses", "Blue light blocking"],
+        ["Walk in tub", "Safety features"],
+        ["Lift chair", "Zero gravity"],
+        ["Senior cell phone", "Easy to use"]
+      ]
     }
   },
   "exclude_keywords": [

@@ -233,6 +233,54 @@
         ["Manuka honey", "MGO certified"],
         ["Olive oil", "Single origin"]
       ]
+    },
+    "LUXURY_ALTERNATIVE": {
+      "description": "High-end jewelry & fashion at accessible price points",
+      "pain_point": "Trust barrier ('Is it real?'), overcoming 'cheap' perception",
+      "outreach_template": "brand_perception_audit",
+      "search_combinations": [
+        ["Moissanite ring", "Passes diamond tester"],
+        ["Moissanite ring", "Conflict free"],
+        ["Lab grown diamond", "Vs mined"],
+        ["Gold vermeil", "Water resistant"],
+        ["Tarnish free jewelry", "Lifetime color warranty"],
+        ["Italian leather", "Direct to consumer"],
+        ["Cashmere sweater", "Grade A"],
+        ["Silk pajamas", "Washable silk"],
+        ["Designer dupe", "Inspired by"]
+      ]
+    },
+    "INTIMATE_COMFORT": {
+      "description": "Underwear & Loungewear focusing on body positivity/comfort",
+      "pain_point": "Fit challenges (high returns), sensitive imagery (ad bans)",
+      "outreach_template": "sizing_funnel_audit",
+      "search_combinations": [
+        ["Wireless bra", "No underwire"],
+        ["Wireless bra", "Support without wire"],
+        ["Smoothing bodysuit", "All day wear"],
+        ["Anti-chafing", "Thigh rescue"],
+        ["Seamless underwear", "No panty line"],
+        ["Leakproof underwear", "Period proof"],
+        ["Nursing bra", "Easy access"],
+        ["Maternity leggings", "Grow with you"],
+        ["Bralette", "Lift and support"]
+      ]
+    },
+    "RUGGED_WORKWEAR": {
+      "description": "DTC brands targeting blue-collar workers & trades",
+      "pain_point": "Proving durability online, high competition from Carhartt/legacy",
+      "outreach_template": "durability_proof_audit",
+      "search_combinations": [
+        ["Work boots", "No break in"],
+        ["Work boots", "Toe protection"],
+        ["Work pants", "Ripstop"],
+        ["Work pants", "Knee pads"],
+        ["Utility jacket", "Water repellent"],
+        ["Indestructible shoes", "Steel toe"],
+        ["Tactical pants", "Stretch fabric"],
+        ["Moisture wicking shirt", "Anti odor"],
+        ["Safety glasses", "Anti fog"]
+      ]
     }
   },
   "exclude_keywords": [

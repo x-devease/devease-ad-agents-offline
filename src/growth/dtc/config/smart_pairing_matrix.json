@@ -183,6 +183,56 @@
         ["Skin tightening", "Non-invasive"],
         ["Hair loss laser", "Regrow hair"]
       ]
+    },
+    "NICHE_OBSESSION": {
+      "description": "High-passion hobbyist communities (EDC, Tech, Sport)",
+      "pain_point": "Community skepticism, ads looking too 'corporate' vs authentic",
+      "outreach_template": "community_trust_audit",
+      "search_combinations": [
+        ["Mechanical keyboard", "Hot swappable"],
+        ["Mechanical keyboard", "Gasket mount"],
+        ["EDC wallet", "Minimalist"],
+        ["EDC gear", "Titanium"],
+        ["Pickleball paddle", "Carbon fiber"],
+        ["Pickleball paddle", "USAPA approved"],
+        ["Sim racing", "Direct drive"],
+        ["Golf training aid", "Fix your slice"],
+        ["3D printer filament", "High speed"],
+        ["Detailing kit", "Ceramic coating"]
+      ]
+    },
+    "ECO_SWAP": {
+      "description": "Brands replacing single-use plastics with sustainable alternatives",
+      "pain_point": "Higher price point friction, 'Greenwashing' skepticism",
+      "outreach_template": "value_proposition_audit",
+      "search_combinations": [
+        ["Biodegradable phone case", "Compostable"],
+        ["Bamboo toilet paper", "Plastic free"],
+        ["Bamboo toilet paper", "Tree free"],
+        ["Laundry detergent sheets", "Plastic free"],
+        ["Solid cologne", "Travel friendly"],
+        ["Shampoo bar", "Zero waste"],
+        ["Reusable water bottle", "Self cleaning"],
+        ["Period underwear", "Sustainable switch"],
+        ["Compost bin", "Odor free"]
+      ]
+    },
+    "BETTER_PANTRY": {
+      "description": "Food & Beverage innovation (Keto, Vegan, Allergy-free)",
+      "pain_point": "Taste skepticism ('Does it taste like cardboard?'), low AOV sampling",
+      "outreach_template": "sampler_funnel_audit",
+      "search_combinations": [
+        ["Low carb pasta", "Tastes like real"],
+        ["Keto cereal", "No sugar"],
+        ["Keto cereal", "High protein"],
+        ["Vegan cheese", "Melts like dairy"],
+        ["Plant based meat", "Clean label"],
+        ["Gluten free flour", "1 to 1 baking"],
+        ["Alcohol free beer", "Great taste"],
+        ["Hot sauce", "Small batch"],
+        ["Manuka honey", "MGO certified"],
+        ["Olive oil", "Single origin"]
+      ]
     }
   },
   "exclude_keywords": [

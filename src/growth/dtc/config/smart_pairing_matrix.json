@@ -663,6 +663,85 @@
         ["Essential oil diffuser", "Waterless"],
         ["Weighted eye mask", "Relaxation"]
       ]
+    },
+    "FUNCTIONAL_SIP": {
+      "description": "Non-alcoholic & functional beverages (Sober curious movement)",
+      "pain_point": "High shipping weight costs, educating on 'feeling' vs 'getting drunk'",
+      "outreach_template": "subscription_trial_audit",
+      "search_combinations": [
+        ["Non-alcoholic spirit", "No hangover"],
+        ["Non-alcoholic wine", "Taste of real"],
+        ["Functional soda", "Low sugar"],
+        ["Functional soda", "Gut health"],
+        ["Adaptogen drink", "Calm focus"],
+        ["Kava drink", "Social buzz"],
+        ["Mushroom tea", "Coffee alternative"],
+        ["Electrolyte mix", "Rapid hydration"],
+        ["Sparkling water", "Variety pack"]
+      ]
+    },
+    "MENS_ACCESSORIES": {
+      "description": "Men's jewelry & EDC carry items (High growth niche)",
+      "pain_point": "Visual differentiation (everyone sells chains), proving quality online",
+      "outreach_template": "lifestyle_branding_audit",
+      "search_combinations": [
+        ["Men's gold chain", "Lifetime warranty"],
+        ["Men's rings", "Tungsten"],
+        ["Men's rings", "Signet"],
+        ["Men's bracelet", "Minimalist"],
+        ["Leather wallet", "Full grain"],
+        ["Card holder", "Slim profile"],
+        ["Watch roll", "Travel case"],
+        ["Sunglasses", "Polarized"],
+        ["Blue light glasses", "Digital strain"]
+      ]
+    },
+    "MODERN_PREPPER": {
+      "description": "Emergency preparedness gear marketed to suburban families",
+      "pain_point": "Fear-mongering vs Preparation balance, high AOV trust barrier",
+      "outreach_template": "trust_authority_audit",
+      "search_combinations": [
+        ["Emergency food kit", "25 year shelf life"],
+        ["Emergency food kit", "Freeze dried"],
+        ["Water filtration", "Survival straw"],
+        ["Water filtration", "Remove virus"],
+        ["Faraday bag", "EMP protection"],
+        ["Faraday bag", "Privacy pouch"],
+        ["Tactical flashlight", "Self defense"],
+        ["First aid kit", "Trauma ready"],
+        ["Solar radio", "Emergency crank"]
+      ]
+    },
+    "FOOT_HEALTH": {
+      "description": "Footwear solving specific medical/comfort issues (Podiatry niche)",
+      "pain_point": "High return rates due to fit, needing to look stylish vs 'orthopedic'",
+      "outreach_template": "comfort_guarantee_audit",
+      "search_combinations": [
+        ["Wide toe box shoes", "Natural movement"],
+        ["Wide toe box shoes", "Bunions"],
+        ["Plantar fasciitis shoes", "Arch support"],
+        ["Orthopedic sandals", "Pain relief"],
+        ["Recovery slides", "After sport"],
+        ["Compression socks", "Circulation"],
+        ["Barefoot boots", "Zero drop"],
+        ["Insoles", "Custom mold"],
+        ["Heel pain", "Cushioning"]
+      ]
+    },
+    "VIRAL_CLEAN": {
+      "description": "Cleaning gadgets that are visually 'satisfying' (TikTok favorites)",
+      "pain_point": "One-trick pony product risk, needing constant viral video output",
+      "outreach_template": "viral_demo_audit",
+      "search_combinations": [
+        ["Portable carpet cleaner", "Stain remover"],
+        ["Steam mop", "Chemical free"],
+        ["Electric spin scrubber", "Bathroom cleaning"],
+        ["Lint remover", "Fabric shaver"],
+        ["Pet hair remover", "Reusable roller"],
+        ["Grout pen", "Tile restore"],
+        ["Ultrasonic cleaner", "Jewelry cleaner"],
+        ["Keyboard vacuum", "Desk setup"]
+      ]
     }
   },
   "exclude_keywords": [

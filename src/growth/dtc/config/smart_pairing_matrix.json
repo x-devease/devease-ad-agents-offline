@@ -133,6 +133,56 @@
         ["Swimwear", "Clearance"],
         ["Supplements", "Limited time offer"]
       ]
+    },
+    "MODERN_PARENTING": {
+      "description": "High-spending parents focused on development & safety",
+      "pain_point": "Trust anxiety, high CAC due to competitive 'mom' demographic",
+      "outreach_template": "trust_safety_audit",
+      "search_combinations": [
+        ["Montessori play kit", "Developmental"],
+        ["Montessori play kit", "Age appropriate"],
+        ["Organic baby clothes", "GOTS certified"],
+        ["Organic baby clothes", "Non-toxic"],
+        ["Baby sleep sack", "Safe sleep"],
+        ["Baby sleep sack", "Pediatrician recommended"],
+        ["Diaper bag", "Functional"],
+        ["Baby carrier", "Ergonomic support"],
+        ["Postpartum recovery", "OBGYN approved"],
+        ["Lactation support", "Boost supply"]
+      ]
+    },
+    "OUTDOOR_ADVENTURE": {
+      "description": "Gear for overlanding, camping, and specialized travel",
+      "pain_point": "Seasonal inventory cliffs, explaining technical specs visually",
+      "outreach_template": "visual_storytelling_audit",
+      "search_combinations": [
+        ["Roof top tent", "Adventure ready"],
+        ["Roof top tent", "Off grid"],
+        ["Portable power station", "Off grid"],
+        ["Camping gear", "Ultralight"],
+        ["Hiking boots", "Waterproof guarantee"],
+        ["Travel backpack", "One bag travel"],
+        ["Travel backpack", "Lifetime guarantee"],
+        ["Tactical gear", "Mil-spec"],
+        ["Cooler", "Keeps ice"],
+        ["Outdoor blanket", "Weatherproof"]
+      ]
+    },
+    "AT_HOME_CLINIC": {
+      "description": "Beauty devices replacing professional spa treatments",
+      "pain_point": "Skepticism barrier (Does it work?), high education cost",
+      "outreach_template": "efficacy_proof_audit",
+      "search_combinations": [
+        ["IPL hair removal", "Permanent results"],
+        ["IPL hair removal", "Pain free"],
+        ["Laser hair removal", "At home"],
+        ["Microdermabrasion", "Professional results"],
+        ["Teeth whitening kit", "Dentist quality"],
+        ["Teeth whitening kit", "Sensitivity free"],
+        ["LED face mask", "Clinical results"],
+        ["Skin tightening", "Non-invasive"],
+        ["Hair loss laser", "Regrow hair"]
+      ]
     }
   },
   "exclude_keywords": [

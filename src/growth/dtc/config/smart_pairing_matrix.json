@@ -455,6 +455,71 @@
         ["Off grid power", "Van life"],
         ["Solar generator", "Emergency power"]
       ]
+    },
+    "CREATOR_STUDIO": {
+      "description": "Gear for streamers, podcasters, and content creators",
+      "pain_point": "Proving ROI to amateur creators, competitive keywords vs Amazon cheap knockoffs",
+      "outreach_template": "studio_setup_audit",
+      "search_combinations": [
+        ["Podcast microphone", "Studio quality"],
+        ["Podcast microphone", "Broadcast quality"],
+        ["Streaming light", "Soft box"],
+        ["Key light", "No glare"],
+        ["Teleprompter", "For ipad"],
+        ["Acoustic panels", "Sound proofing"],
+        ["Green screen", "Collapsible"],
+        ["Vlogging camera", "4K recording"],
+        ["Capture card", "Zero latency"],
+        ["Monitor arm", "Heavy duty"]
+      ]
+    },
+    "CULINARY_UPGRADE": {
+      "description": "High-end kitchenware for home chefs (HexClad/Kamikoto competitors)",
+      "pain_point": "Visual differentiation (everything looks like a pan), proving price-to-value",
+      "outreach_template": "visual_appetite_audit",
+      "search_combinations": [
+        ["Damascus knife", "Razor sharp"],
+        ["Damascus knife", "Hand forged"],
+        ["Carbon steel pan", "Non stick seasoning"],
+        ["Carbon steel pan", "Heirloom quality"],
+        ["Sous vide", "Restaurant quality"],
+        ["Pizza oven", "Outdoor cooking"],
+        ["Pizza oven", "Neapolitan style"],
+        ["Espresso machine", "Barista quality"],
+        ["Chef apron", "Waxed canvas"],
+        ["Coffee grinder", "Burr set"]
+      ]
+    },
+    "INTIMATE_WELLNESS": {
+      "description": "Sexual wellness & feminine care (High compliance risk)",
+      "pain_point": "Constant ad rejections (Compliance), account bans, low CTR due to vague copy",
+      "outreach_template": "compliance_safety_audit",
+      "search_combinations": [
+        ["Personal massager", "Body safe silicone"],
+        ["Personal massager", "Discrete shipping"],
+        ["Kegel trainer", "Pelvic floor"],
+        ["Kegel trainer", "Doctor recommended"],
+        ["Lubricant", "Natural ingredients"],
+        ["Lubricant", "Ph balanced"],
+        ["Menstrual cup", "Eco friendly switch"],
+        ["Period disc", "Mess free"],
+        ["Fertility tracker", "Ovulation prediction"]
+      ]
+    },
+    "HYDRATION_CULTURE": {
+      "description": "Premium water bottles & filtration (Stanley/Yeti competitors)",
+      "pain_point": "Market saturation, differentiating beyond just 'keeping ice cold'",
+      "outreach_template": "viral_color_audit",
+      "search_combinations": [
+        ["Insulated tumbler", "Keeps ice 2 days"],
+        ["Insulated tumbler", "Leak proof"],
+        ["Gallon water bottle", "Motivational"],
+        ["Gallon water bottle", "BPA free"],
+        ["Water filter pitcher", "Removes lead"],
+        ["Water filter pitcher", "Alkaline"],
+        ["Hydrogen water", "Antioxidant"],
+        ["Sparkling water maker", "Co2 exchange"]
+      ]
     }
   },
   "exclude_keywords": [

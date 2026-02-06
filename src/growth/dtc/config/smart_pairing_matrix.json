@@ -520,6 +520,69 @@
         ["Hydrogen water", "Antioxidant"],
         ["Sparkling water maker", "Co2 exchange"]
       ]
+    },
+    "STEM_EDUCATION": {
+      "description": "Educational toys & subscriptions focusing on coding/science (Anti-screen time)",
+      "pain_point": "Parental guilt over screen time, fear of child falling behind",
+      "outreach_template": "education_retention_audit",
+      "search_combinations": [
+        ["STEM kit", "Subscription box"],
+        ["STEM kit", "Curriculum aligned"],
+        ["Coding robot", "Screen free"],
+        ["Coding robot", "Learn to code"],
+        ["Audio player", "Screen free story"],
+        ["Audio player", "Kids podcast"],
+        ["Science kit", "Monthly delivery"],
+        ["Montessori shelf", "Toy rotation"],
+        ["Educational tablet", "Parental control"]
+      ]
+    },
+    "AESTHETIC_PLAY": {
+      "description": "High-ticket play furniture that looks good in a living room (The 'Nugget' clones)",
+      "pain_point": "Ugly plastic toys ruining home decor, need for indoor energy release",
+      "outreach_template": "visual_aesthetics_audit",
+      "search_combinations": [
+        ["Play couch", "Washable covers"],
+        ["Play couch", "Infinite configurations"],
+        ["Pikler triangle", "Gross motor skills"],
+        ["Pikler triangle", "Foldable"],
+        ["Climbing arch", "Montessori gym"],
+        ["Kids table set", "Modern design"],
+        ["Teepee tent", "Indoor camping"],
+        ["Wooden play kitchen", "Non toxic paint"],
+        ["Balance board", "Open ended play"]
+      ]
+    },
+    "KIDS_NUTRITION": {
+      "description": "Clean vitamins & snacks for picky eaters",
+      "pain_point": "Mealtime battles, sugar overload, 'hidden hunger' anxiety",
+      "outreach_template": "health_trust_audit",
+      "search_combinations": [
+        ["Kids multivitamin", "Sugar free"],
+        ["Kids multivitamin", "Gummy free"],
+        ["Probiotics for kids", "Gut health"],
+        ["Elderberry syrup", "Immune support"],
+        ["Picky eater", "Hidden veggies"],
+        ["Kids protein shake", "Clean ingredients"],
+        ["Baby food", "Heavy metal tested"],
+        ["Baby food", "Fresh delivery"],
+        ["Toddler snacks", "No added sugar"]
+      ]
+    },
+    "SUPER_MOBILITY": {
+      "description": "High-end strollers & wagons (The 'Status Symbol' gear)",
+      "pain_point": "Travel hassle with multiple kids, social status signaling",
+      "outreach_template": "lifestyle_video_audit",
+      "search_combinations": [
+        ["Stroller wagon", "All terrain"],
+        ["Stroller wagon", "Fits 4 kids"],
+        ["Travel stroller", "Overhead bin"],
+        ["Travel stroller", "One hand fold"],
+        ["Double stroller", "Side by side"],
+        ["Hiking carrier", "Child backpack"],
+        ["Car seat", "Rotational"],
+        ["Diaper backpack", "Hands free"]
+      ]
     }
   },
   "exclude_keywords": [

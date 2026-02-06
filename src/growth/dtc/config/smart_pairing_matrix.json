@@ -804,6 +804,68 @@
         ["Shoe dryer", "Odor removal"],
         ["Ultrasonic cleaner", "Stain removal"]
       ]
+    },
+    "WEDDING_ECONOMY": {
+      "description": "DTC Wedding goods (Bridesmaids, Groomsmen, Decor)",
+      "pain_point": "High anxiety (must be perfect), coordination sizing for groups",
+      "outreach_template": "group_order_funnel_audit",
+      "search_combinations": [
+        ["Bridesmaid dresses", "Try at home"],
+        ["Bridesmaid dresses", "Color swatch"],
+        ["Groomsmen gifts", "Bulk discount"],
+        ["Groomsmen gifts", "Personalized set"],
+        ["Wedding decor", "Resell value"],
+        ["Artificial flowers", "Real touch"],
+        ["Wedding signage", "Custom acrylic"],
+        ["Engagement ring", "Home preview"],
+        ["Wedding favors", "Customized"]
+      ]
+    },
+    "FAITH_BASED": {
+      "description": "Christian/Religious apparel & lifestyle (Massive US Market)",
+      "pain_point": "Scaling beyond 'church groups' to broad market, balancing profit vs mission",
+      "outreach_template": "community_mission_audit",
+      "search_combinations": [
+        ["Christian apparel", "Faith over fear"],
+        ["Christian apparel", "Modern design"],
+        ["Bible journal", "Study tool"],
+        ["Bible journal", "Annotating"],
+        ["Faith jewelry", "Mustard seed"],
+        ["Christian home decor", "Scripture wall art"],
+        ["Devotional book", "Daily wisdom"],
+        ["Worship gear", "Guitar strap"]
+      ]
+    },
+    "OPTICAL_DIRECT": {
+      "description": "Prescription eyewear & contacts (Warby Parker clones)",
+      "pain_point": "Trust in prescription accuracy, difficulty of 'virtual try-on' conversion",
+      "outreach_template": "virtual_tryon_audit",
+      "search_combinations": [
+        ["Prescription glasses", "Try at home"],
+        ["Prescription glasses", "Blue light"],
+        ["Progressive lenses", "Digital freeform"],
+        ["Reading glasses", "Anti glare"],
+        ["Contact lenses", "Subscription"],
+        ["Contact lenses", "Daily disposables"],
+        ["Sunglasses", "Prescription ready"],
+        ["Sports glasses", "Impact resistant"]
+      ]
+    },
+    "CRAFT_MAKER_ARTS": {
+      "description": "Adult crafting kits (Knitting, Painting, Pottery)",
+      "pain_point": "Selling the 'outcome' not the supplies, high churn if instructions are bad",
+      "outreach_template": "tutorial_retention_audit",
+      "search_combinations": [
+        ["Knitting kit", "Merino wool"],
+        ["Knitting kit", "Beginner friendly"],
+        ["Paint by number", "For adults"],
+        ["Paint by number", "Custom photo"],
+        ["Pottery kit", "Air dry clay"],
+        ["Pottery kit", "No kiln needed"],
+        ["Embroidery kit", "Modern pattern"],
+        ["Candle making kit", "Soy wax"],
+        ["Rug tufting", "Starter gun"]
+      ]
     }
   },
   "exclude_keywords": [

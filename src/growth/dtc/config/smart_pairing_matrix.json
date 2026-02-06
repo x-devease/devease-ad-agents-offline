@@ -742,6 +742,68 @@
         ["Ultrasonic cleaner", "Jewelry cleaner"],
         ["Keyboard vacuum", "Desk setup"]
       ]
+    },
+    "CLEAN_TECH_HOME": {
+      "description": "High-performance vacuums & floor care (Dyson competitors)",
+      "pain_point": "Demonstrating suction power/battery life vs big brands, handling returns",
+      "outreach_template": "demo_performance_audit",
+      "search_combinations": [
+        ["Cordless vacuum", "Pet hair"],
+        ["Cordless vacuum", "HEPA filter"],
+        ["Wet dry vacuum", "Self cleaning"],
+        ["Wet dry vacuum", "Mop and vacuum"],
+        ["Stick vacuum", "Lightweight"],
+        ["Carpet cleaner", "Professional results"],
+        ["Carpet cleaner", "Remove stains"],
+        ["Steam cleaner", "Chemical free"],
+        ["Upholstery cleaner", "Portable"]
+      ]
+    },
+    "AIR_WATER_PURE": {
+      "description": "Air purifiers, humidifiers & water systems (Health-conscious home)",
+      "pain_point": "Invisible results (users can't 'see' clean air), trust in filter efficacy",
+      "outreach_template": "science_visualization_audit",
+      "search_combinations": [
+        ["HEPA air purifier", "Allergy relief"],
+        ["HEPA air purifier", "Wildfire smoke"],
+        ["Smart humidifier", "Mold free"],
+        ["Smart humidifier", "For baby"],
+        ["Dehumidifier", "Energy efficient"],
+        ["Dehumidifier", "Basement"],
+        ["Countertop RO system", "No installation"],
+        ["Water filter", "Reverse osmosis"],
+        ["Shower filter", "Hair health"]
+      ]
+    },
+    "KITCHEN_ELECTRICS": {
+      "description": "Countertop appliances that claim 'counter space' status",
+      "pain_point": "Kitchen real estate (size objections), noisy operation concerns",
+      "outreach_template": "lifestyle_integration_audit",
+      "search_combinations": [
+        ["Nugget ice maker", "Countertop"],
+        ["Nugget ice maker", "Chewable ice"],
+        ["Air fryer oven", "Rotisserie"],
+        ["Smart oven", "App controlled"],
+        ["Espresso machine", "Compact"],
+        ["Coffee grinder", "Anti static"],
+        ["Electric kettle", "Gooseneck"],
+        ["Compacter bin", "Odor control"],
+        ["Countertop dishwasher", "No hookup"]
+      ]
+    },
+    "LAUNDRY_CARE": {
+      "description": "Niche fabric care devices (Steaming > Ironing trend)",
+      "pain_point": "Educating users on usage, replacing traditional appliances",
+      "outreach_template": "usage_education_audit",
+      "search_combinations": [
+        ["Clothes steamer", "No ironing"],
+        ["Clothes steamer", "Travel size"],
+        ["Fabric shaver", "Rechargeable"],
+        ["Portable washer", "Camping"],
+        ["Portable dryer", "Apartment friendly"],
+        ["Shoe dryer", "Odor removal"],
+        ["Ultrasonic cleaner", "Stain removal"]
+      ]
     }
   },
   "exclude_keywords": [

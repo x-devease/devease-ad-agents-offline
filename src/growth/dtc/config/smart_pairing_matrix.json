@@ -927,32 +927,5 @@
     "gstatic", "googleusercontent", "googleapis", "doubleclick", "googlesyndication",
     "facebook", "instagram", "tiktok", "youtube", "twitter", "pinterest", "linkedin", "reddit",
     "MLM", "Multi-level marketing", "Pyramid scheme", "Business opportunity", "Work from home"
-  ],
-  "signals": {
-    "risk_reversal": {
-      "keywords": ["guarantee", "free return", "money back", "risk-free", "trial"],
-      "description": "Product confidence indicators",
-      "weight": 1
-    },
-    "bundle_offers": {
-      "keywords": ["bundle", "save", "set", "kit", "pack"],
-      "description": "Bundle purchase indicators",
-      "weight": 1
-    },
-    "social_proof": {
-      "keywords": ["review", "star", "rated", "customer", "testimonia"],
-      "description": "Social validation signals",
-      "weight": 1
-    },
-    "urgency": {
-      "keywords": ["limited", "only", "sale end", "today", "expire"],
-      "description": "Urgency creation tactics",
-      "weight": 1
-    },
-    "shopify": {
-      "keywords": ["cdn.shopify.com", "shopify.theme"],
-      "description": "Shopify platform markers",
-      "weight": 1
-    }
-  }
+  ]
 }

@@ -1,0 +1,931 @@
+{
+  "strategies": {
+    "LTV_HUNTERS": {
+      "description": "High-LTV consumable brands with subscription models",
+      "pain_point": "High CPA, low retention = death",
+      "outreach_template": "subscription_churn_audit",
+      "search_combinations": [
+        ["Mushroom coffee", "Subscribe & Save"],
+        ["Mushroom coffee", "Cancel anytime"],
+        ["Mushroom coffee", "Subscription save"],
+        ["Nootropics", "Subscribe & Save"],
+        ["Nootropics", "Cancel anytime"],
+        ["Probiotics", "Subscribe & Save"],
+        ["Probiotics", "Monthly delivery"],
+        ["Protein powder", "Subscribe & Save"],
+        ["Collagen", "Subscribe & Save"],
+        ["Raw dog food", "Subscribe & Save"],
+        ["Human-grade", "Subscribe & Save"],
+        ["Cat litter subscription", "Subscribe & Save"],
+        ["Freeze dried", "Auto-refill"],
+        ["Diapers", "Subscribe & Save"],
+        ["Baby formula", "Subscribe & Save"],
+        ["Baby formula", "Monthly delivery"]
+      ]
+    },
+    "HIGH_TICKET": {
+      "description": "High-AOV durable goods requiring trust",
+      "pain_point": "Long decision cycle, low conversion",
+      "outreach_template": "high_ticket_retargeting_audit",
+      "search_combinations": [
+        ["Ergonomic chair", "Lifetime warranty"],
+        ["Standing desk", "Lifetime warranty"],
+        ["Memory foam", "100 day trial"],
+        ["Cold plunge", "Lifetime warranty"],
+        ["Cold plunge", "100 day trial"],
+        ["Sauna blanket", "100 day trial"],
+        ["Golf simulator", "Financing available"],
+        ["3D printer", "Lifetime warranty"]
+      ]
+    },
+    "DISRUPTOR_ATTACK": {
+      "description": "Disruptive brands attacking incumbents",
+      "pain_point": "High education cost, ad burnout",
+      "outreach_template": "creative_fatigue_audit",
+      "search_combinations": [
+        ["Merino wool", "Why I switched"],
+        ["Merino wool", "Better than"],
+        ["Barefoot shoes", "Why I switched"],
+        ["Barefoot shoes", "Stop wearing"],
+        ["Vegan skincare", "Ditch the"],
+        ["Clean beauty", "The alternative to"],
+        ["Non-alcoholic", "Old way vs New way"],
+        ["Plant based meat", "Vs regular"]
+      ]
+    },
+    "VIRAL_SCALE": {
+      "description": "UGC-driven viral products",
+      "pain_point": "Fast creative burnout, needs constant fresh content",
+      "outreach_template": "creative_hook_audit",
+      "search_combinations": [
+        ["Retinol", "As seen on Shark Tank"],
+        ["LED mask", "TikTok made me buy it"],
+        ["Micro-current", "Viral on"],
+        ["Hair growth", "Game changer"],
+        ["Acne patch", "Holy grail"],
+        ["Weighted blanket", "As seen on Shark Tank"],
+        ["Shapewear", "TikTok made me buy it"],
+        ["Galaxy projector", "Viral on"]
+      ]
+    },
+    "PAIN_SOLVER": {
+      "description": "Problem-solution products targeting specific physical pains",
+      "pain_point": "High ad rejection rate, sensitive compliance needs",
+      "outreach_template": "compliance_audit",
+      "search_combinations": [
+        ["Plantar fasciitis", "Instant relief"],
+        ["Plantar fasciitis", "Doctor recommended"],
+        ["Back pain", "Stop suffering"],
+        ["Posture corrector", "Pain free"],
+        ["Blue light blocking", "Headache relief"],
+        ["Snoring solution", "Better sleep"],
+        ["Knee brace", "Support and relief"],
+        ["Migraine", "Natural relief"],
+        ["Eczema", "Soothing relief"],
+        ["Compression socks", "Swelling relief"]
+      ]
+    },
+    "GIFTING_CUSTOM": {
+      "description": "High-AOV personalized goods with seasonal spikes",
+      "pain_point": "Complex funnel, inventory risk on custom items",
+      "outreach_template": "seasonal_roas",
+      "search_combinations": [
+        ["Custom neon sign", "Personalize yours"],
+        ["Custom neon sign", "Wedding gift"],
+        ["Engraved watch", "Perfect gift"],
+        ["Custom pet portrait", "For her"],
+        ["Custom pet portrait", "For him"],
+        ["Star map", "Anniversary gift"],
+        ["Name necklace", "Custom made"],
+        ["Personalized jewelry", "Order by"],
+        ["Leather bag", "Monogram"],
+        ["Photo book", "Valentine's Day"]
+      ]
+    },
+    "SYSTEM_SELLER": {
+      "description": "Lifestyle brands selling 'Starter Kits' + Refills",
+      "pain_point": "Low retention on 2nd purchase (Refill drop-off)",
+      "outreach_template": "bundle_upsell",
+      "search_combinations": [
+        ["Non-toxic cleaning", "Starter kit"],
+        ["Refillable soap", "Starter set"],
+        ["Safety razor", "Switch to"],
+        ["Safety razor", "Starter kit"],
+        ["Gel nail kit", "Complete system"],
+        ["Matcha set", "Starter set"],
+        ["Cocktail kit", "Everything you need"],
+        ["Smart garden", "Starter kit"],
+        ["Home gym", "Complete system"]
+      ]
+    },
+    "AGGRESSIVE_OFFER": {
+      "description": "Brands running heavy promotions (Cash flow priority)",
+      "pain_point": "Low ROAS, inventory pressure, high urgency",
+      "outreach_template": "roas_emergency",
+      "search_combinations": [
+        ["Leggings", "BOGO"],
+        ["Leggings", "Buy 1 Get 1"],
+        ["Activewear", "Warehouse Sale"],
+        ["Skincare", "Flash Sale"],
+        ["Bedding", "Last chance"],
+        ["Sneakers", "Ending soon"],
+        ["Jewelry", "24 hours left"],
+        ["Swimwear", "Clearance"],
+        ["Supplements", "Limited time offer"]
+      ]
+    },
+    "MODERN_PARENTING": {
+      "description": "High-spending parents focused on development & safety",
+      "pain_point": "Trust anxiety, high CAC due to competitive 'mom' demographic",
+      "outreach_template": "trust_safety_audit",
+      "search_combinations": [
+        ["Montessori play kit", "Developmental"],
+        ["Montessori play kit", "Age appropriate"],
+        ["Organic baby clothes", "GOTS certified"],
+        ["Organic baby clothes", "Non-toxic"],
+        ["Baby sleep sack", "Safe sleep"],
+        ["Baby sleep sack", "Pediatrician recommended"],
+        ["Diaper bag", "Functional"],
+        ["Baby carrier", "Ergonomic support"],
+        ["Postpartum recovery", "OBGYN approved"],
+        ["Lactation support", "Boost supply"]
+      ]
+    },
+    "OUTDOOR_ADVENTURE": {
+      "description": "Gear for overlanding, camping, and specialized travel",
+      "pain_point": "Seasonal inventory cliffs, explaining technical specs visually",
+      "outreach_template": "visual_storytelling_audit",
+      "search_combinations": [
+        ["Roof top tent", "Adventure ready"],
+        ["Roof top tent", "Off grid"],
+        ["Portable power station", "Off grid"],
+        ["Camping gear", "Ultralight"],
+        ["Hiking boots", "Waterproof guarantee"],
+        ["Travel backpack", "One bag travel"],
+        ["Travel backpack", "Lifetime guarantee"],
+        ["Tactical gear", "Mil-spec"],
+        ["Cooler", "Keeps ice"],
+        ["Outdoor blanket", "Weatherproof"]
+      ]
+    },
+    "AT_HOME_CLINIC": {
+      "description": "Beauty devices replacing professional spa treatments",
+      "pain_point": "Skepticism barrier (Does it work?), high education cost",
+      "outreach_template": "efficacy_proof_audit",
+      "search_combinations": [
+        ["IPL hair removal", "Permanent results"],
+        ["IPL hair removal", "Pain free"],
+        ["Laser hair removal", "At home"],
+        ["Microdermabrasion", "Professional results"],
+        ["Teeth whitening kit", "Dentist quality"],
+        ["Teeth whitening kit", "Sensitivity free"],
+        ["LED face mask", "Clinical results"],
+        ["Skin tightening", "Non-invasive"],
+        ["Hair loss laser", "Regrow hair"]
+      ]
+    },
+    "NICHE_OBSESSION": {
+      "description": "High-passion hobbyist communities (EDC, Tech, Sport)",
+      "pain_point": "Community skepticism, ads looking too 'corporate' vs authentic",
+      "outreach_template": "community_trust_audit",
+      "search_combinations": [
+        ["Mechanical keyboard", "Hot swappable"],
+        ["Mechanical keyboard", "Gasket mount"],
+        ["EDC wallet", "Minimalist"],
+        ["EDC gear", "Titanium"],
+        ["Pickleball paddle", "Carbon fiber"],
+        ["Pickleball paddle", "USAPA approved"],
+        ["Sim racing", "Direct drive"],
+        ["Golf training aid", "Fix your slice"],
+        ["3D printer filament", "High speed"],
+        ["Detailing kit", "Ceramic coating"]
+      ]
+    },
+    "ECO_SWAP": {
+      "description": "Brands replacing single-use plastics with sustainable alternatives",
+      "pain_point": "Higher price point friction, 'Greenwashing' skepticism",
+      "outreach_template": "value_proposition_audit",
+      "search_combinations": [
+        ["Biodegradable phone case", "Compostable"],
+        ["Bamboo toilet paper", "Plastic free"],
+        ["Bamboo toilet paper", "Tree free"],
+        ["Laundry detergent sheets", "Plastic free"],
+        ["Solid cologne", "Travel friendly"],
+        ["Shampoo bar", "Zero waste"],
+        ["Reusable water bottle", "Self cleaning"],
+        ["Period underwear", "Sustainable switch"],
+        ["Compost bin", "Odor free"]
+      ]
+    },
+    "BETTER_PANTRY": {
+      "description": "Food & Beverage innovation (Keto, Vegan, Allergy-free)",
+      "pain_point": "Taste skepticism ('Does it taste like cardboard?'), low AOV sampling",
+      "outreach_template": "sampler_funnel_audit",
+      "search_combinations": [
+        ["Low carb pasta", "Tastes like real"],
+        ["Keto cereal", "No sugar"],
+        ["Keto cereal", "High protein"],
+        ["Vegan cheese", "Melts like dairy"],
+        ["Plant based meat", "Clean label"],
+        ["Gluten free flour", "1 to 1 baking"],
+        ["Alcohol free beer", "Great taste"],
+        ["Hot sauce", "Small batch"],
+        ["Manuka honey", "MGO certified"],
+        ["Olive oil", "Single origin"]
+      ]
+    },
+    "LUXURY_ALTERNATIVE": {
+      "description": "High-end jewelry & fashion at accessible price points",
+      "pain_point": "Trust barrier ('Is it real?'), overcoming 'cheap' perception",
+      "outreach_template": "brand_perception_audit",
+      "search_combinations": [
+        ["Moissanite ring", "Passes diamond tester"],
+        ["Moissanite ring", "Conflict free"],
+        ["Lab grown diamond", "Vs mined"],
+        ["Gold vermeil", "Water resistant"],
+        ["Tarnish free jewelry", "Lifetime color warranty"],
+        ["Italian leather", "Direct to consumer"],
+        ["Cashmere sweater", "Grade A"],
+        ["Silk pajamas", "Washable silk"],
+        ["Designer dupe", "Inspired by"]
+      ]
+    },
+    "INTIMATE_COMFORT": {
+      "description": "Underwear & Loungewear focusing on body positivity/comfort",
+      "pain_point": "Fit challenges (high returns), sensitive imagery (ad bans)",
+      "outreach_template": "sizing_funnel_audit",
+      "search_combinations": [
+        ["Wireless bra", "No underwire"],
+        ["Wireless bra", "Support without wire"],
+        ["Smoothing bodysuit", "All day wear"],
+        ["Anti-chafing", "Thigh rescue"],
+        ["Seamless underwear", "No panty line"],
+        ["Leakproof underwear", "Period proof"],
+        ["Nursing bra", "Easy access"],
+        ["Maternity leggings", "Grow with you"],
+        ["Bralette", "Lift and support"]
+      ]
+    },
+    "RUGGED_WORKWEAR": {
+      "description": "DTC brands targeting blue-collar workers & trades",
+      "pain_point": "Proving durability online, high competition from Carhartt/legacy",
+      "outreach_template": "durability_proof_audit",
+      "search_combinations": [
+        ["Work boots", "No break in"],
+        ["Work boots", "Toe protection"],
+        ["Work pants", "Ripstop"],
+        ["Work pants", "Knee pads"],
+        ["Utility jacket", "Water repellent"],
+        ["Indestructible shoes", "Steel toe"],
+        ["Tactical pants", "Stretch fabric"],
+        ["Moisture wicking shirt", "Anti odor"],
+        ["Safety glasses", "Anti fog"]
+      ]
+    },
+    "DTC_RENO": {
+      "description": "Home improvement materials sold directly to DIYers",
+      "pain_point": "Sampling difficulty (Color/Texture), fear of messing up",
+      "outreach_template": "sampling_funnel_audit",
+      "search_combinations": [
+        ["Peel and stick wallpaper", "Renter friendly"],
+        ["Peel and stick wallpaper", "Damage free"],
+        ["Low VOC paint", "No smell"],
+        ["Curtain rod", "No drill"],
+        ["Cabinet hardware", "Solid brass"],
+        ["Vinyl flooring", "Easy install"],
+        ["Smart lock", "Keyless entry"],
+        ["Backsplash tile", "Peel and stick"],
+        ["Modular shelving", "Tool free assembly"]
+      ]
+    },
+    "ANALOG_FOCUS": {
+      "description": "High-end planners, journals, and writing tools (Anti-digital)",
+      "pain_point": "Q1 peak followed by high churn, competing with free apps",
+      "outreach_template": "retention_habit_audit",
+      "search_combinations": [
+        ["Goal planner", "Best year yet"],
+        ["Daily journal", "Mental clarity"],
+        ["Productivity planner", "Undated"],
+        ["Fountain pen", "Gold nib"],
+        ["Notebook", "Tomoe river paper"],
+        ["Desk organizer", "Minimalist setup"],
+        ["Gratitude journal", "5 minutes a day"],
+        ["Habit tracker", "Build discipline"],
+        ["Premium stationery", "Japanese paper"]
+      ]
+    },
+    "AGE_TECH": {
+      "description": "Modern health devices for aging boomers (Silver Economy)",
+      "pain_point": "Overcoming stigma ('Old people products'), trust/FDA clearance",
+      "outreach_template": "trust_credibility_audit",
+      "search_combinations": [
+        ["OTC hearing aid", "FDA registered"],
+        ["OTC hearing aid", "Invisible fit"],
+        ["Medical alert watch", "Fall detection"],
+        ["Medical alert watch", "No monthly fee"],
+        ["Mobility scooter", "Travel friendly"],
+        ["Reading glasses", "Blue light blocking"],
+        ["Walk in tub", "Safety features"],
+        ["Lift chair", "Zero gravity"],
+        ["Senior cell phone", "Easy to use"]
+      ]
+    },
+    "AUTO_LIFESTYLE": {
+      "description": "Car accessories & detailing for enthusiasts",
+      "pain_point": "High return rates due to fitment issues, proving 'premium' quality",
+      "outreach_template": "fitment_guarantee_audit",
+      "search_combinations": [
+        ["Custom car mats", "Perfect fit guarantee"],
+        ["Custom car mats", "All weather protection"],
+        ["Car detailing kit", "Ceramic coating"],
+        ["Car detailing kit", "Professional shine"],
+        ["LED car lights", "Easy install"],
+        ["Car organizer", "Trunk organizer"],
+        ["Seat covers", "Custom fit"],
+        ["Roof rack", "Adventure ready"],
+        ["Dash cam", "4K recording"]
+      ]
+    },
+    "MENS_GROOMING": {
+      "description": "Niche grooming tools for beard, body, and baldness",
+      "pain_point": "Ad fatigue on 'humorous' ads, high competition from Manscaped",
+      "outreach_template": "hook_retention_audit",
+      "search_combinations": [
+        ["Beard growth kit", "Guaranteed results"],
+        ["Beard straightener", "Tame the beast"],
+        ["Electric groin trimmer", "Nick free"],
+        ["Electric groin trimmer", "Skin safe technology"],
+        ["Bald head shaver", "Smooth shave"],
+        ["Bald head shaver", "No bumps"],
+        ["Solid cologne", "Smell great"],
+        ["Men's skincare set", "Simple routine"],
+        ["Anti gray hair", "Natural look"]
+      ]
+    },
+    "ART_WALL": {
+      "description": "DTC wall art, frames, and home decor",
+      "pain_point": "Visualizing size/scale online, high shipping costs for large items",
+      "outreach_template": "visual_roas_audit",
+      "search_combinations": [
+        ["Canvas wall art", "Museum quality"],
+        ["Canvas wall art", "Ready to hang"],
+        ["Metal prints", "High definition"],
+        ["Gallery wall set", "Easy template"],
+        ["Digital picture frame", "Share photos instantly"],
+        ["Large wall art", "Statement piece"],
+        ["Map print", "Custom coordinates"],
+        ["Neon sign", "Custom text"],
+        ["Acoustic panels", "Sound dampening art"]
+      ]
+    },
+    "CROSS_BORDER_TECH": {
+      "description": "Shenzhen-style consumer electronics (High specs, aggressive pricing)",
+      "pain_point": "Localization issues ('Chinglish' copy), low trust, high CPM vs big brands",
+      "outreach_template": "localization_trust_audit",
+      "search_combinations": [
+        ["Portable monitor", "Work from anywhere"],
+        ["Portable monitor", "Second screen"],
+        ["Mini PC", "Powerful performance"],
+        ["Mini PC", "Windows 11 pro"],
+        ["GaN charger", "Fast charge"],
+        ["GaN charger", "Compact size"],
+        ["Docking station", "Triple display"],
+        ["Mechanical keyboard", "Hot swappable"],
+        ["Rugged phone", "Indestructible"],
+        ["Thermal camera", "Night vision"],
+        ["Projector", "Native 1080p"],
+        ["Projector", "4K support"]
+      ]
+    },
+    "E_MOBILITY_CHINA": {
+      "description": "E-bikes & Scooters (Heavily dominated by Chinese supply chain)",
+      "pain_point": "Safety concerns (battery fires), shipping logistics, competitive ad costs",
+      "outreach_template": "trust_safety_audit",
+      "search_combinations": [
+        ["E-bike", "Long range"],
+        ["E-bike", "Fat tire"],
+        ["E-bike", "Foldable"],
+        ["Electric scooter", "Commuter"],
+        ["Electric scooter", "Dual motor"],
+        ["Electric skateboard", "All terrain"],
+        ["E-moped", "No license needed"],
+        ["Bike conversion kit", "Easy install"]
+      ]
+    },
+    "SMART_ROBOTICS": {
+      "description": "Home automation robots (Vacuums, Mowers, Pool cleaners)",
+      "pain_point": "Explaining complex tech simply, differentiating from Roborock/iRobot",
+      "outreach_template": "feature_benefit_audit",
+      "search_combinations": [
+        ["Robot vacuum", "Self emptying"],
+        ["Robot vacuum", "Mop and vacuum"],
+        ["Robot vacuum", "Lidar navigation"],
+        ["Robot mop", "Self cleaning"],
+        ["Window cleaner robot", "Automatic"],
+        ["Pool cleaner robot", "Cordless"],
+        ["Pool cleaner robot", "Wall climbing"],
+        ["Robot lawn mower", "Wire free"],
+        ["Robot lawn mower", "GPS navigation"]
+      ]
+    },
+    "MAKER_TOOLS": {
+      "description": "3D Printing & Laser Engraving (The 'Bambu Lab' effect)",
+      "pain_point": "Niche audience targeting, community management overload",
+      "outreach_template": "community_scale_audit",
+      "search_combinations": [
+        ["3D printer", "High speed"],
+        ["3D printer", "Multi color"],
+        ["3D printer", "Auto leveling"],
+        ["Laser engraver", "Diode laser"],
+        ["Laser engraver", "Cut wood"],
+        ["CNC machine", "Desktop"],
+        ["Vinyl cutter", "Precise cut"],
+        ["Resin printer", "8K resolution"]
+      ]
+    },
+    "ENERGY_STORAGE": {
+      "description": "Portable Power Stations & Solar (EcoFlow/Jackery competitors)",
+      "pain_point": "High CAC, seasonal demand (hurricane/camping), trust in battery safety",
+      "outreach_template": "scenario_based_audit",
+      "search_combinations": [
+        ["Portable power station", "LifePO4"],
+        ["Portable power station", "Solar generator"],
+        ["Solar panel", "Foldable"],
+        ["Home backup battery", "Blackout protection"],
+        ["Off grid power", "Van life"],
+        ["Solar generator", "Emergency power"]
+      ]
+    },
+    "CREATOR_STUDIO": {
+      "description": "Gear for streamers, podcasters, and content creators",
+      "pain_point": "Proving ROI to amateur creators, competitive keywords vs Amazon cheap knockoffs",
+      "outreach_template": "studio_setup_audit",
+      "search_combinations": [
+        ["Podcast microphone", "Studio quality"],
+        ["Podcast microphone", "Broadcast quality"],
+        ["Streaming light", "Soft box"],
+        ["Key light", "No glare"],
+        ["Teleprompter", "For ipad"],
+        ["Acoustic panels", "Sound proofing"],
+        ["Green screen", "Collapsible"],
+        ["Vlogging camera", "4K recording"],
+        ["Capture card", "Zero latency"],
+        ["Monitor arm", "Heavy duty"]
+      ]
+    },
+    "CULINARY_UPGRADE": {
+      "description": "High-end kitchenware for home chefs (HexClad/Kamikoto competitors)",
+      "pain_point": "Visual differentiation (everything looks like a pan), proving price-to-value",
+      "outreach_template": "visual_appetite_audit",
+      "search_combinations": [
+        ["Damascus knife", "Razor sharp"],
+        ["Damascus knife", "Hand forged"],
+        ["Carbon steel pan", "Non stick seasoning"],
+        ["Carbon steel pan", "Heirloom quality"],
+        ["Sous vide", "Restaurant quality"],
+        ["Pizza oven", "Outdoor cooking"],
+        ["Pizza oven", "Neapolitan style"],
+        ["Espresso machine", "Barista quality"],
+        ["Chef apron", "Waxed canvas"],
+        ["Coffee grinder", "Burr set"]
+      ]
+    },
+    "INTIMATE_WELLNESS": {
+      "description": "Sexual wellness & feminine care (High compliance risk)",
+      "pain_point": "Constant ad rejections (Compliance), account bans, low CTR due to vague copy",
+      "outreach_template": "compliance_safety_audit",
+      "search_combinations": [
+        ["Personal massager", "Body safe silicone"],
+        ["Personal massager", "Discrete shipping"],
+        ["Kegel trainer", "Pelvic floor"],
+        ["Kegel trainer", "Doctor recommended"],
+        ["Lubricant", "Natural ingredients"],
+        ["Lubricant", "Ph balanced"],
+        ["Menstrual cup", "Eco friendly switch"],
+        ["Period disc", "Mess free"],
+        ["Fertility tracker", "Ovulation prediction"]
+      ]
+    },
+    "HYDRATION_CULTURE": {
+      "description": "Premium water bottles & filtration (Stanley/Yeti competitors)",
+      "pain_point": "Market saturation, differentiating beyond just 'keeping ice cold'",
+      "outreach_template": "viral_color_audit",
+      "search_combinations": [
+        ["Insulated tumbler", "Keeps ice 2 days"],
+        ["Insulated tumbler", "Leak proof"],
+        ["Gallon water bottle", "Motivational"],
+        ["Gallon water bottle", "BPA free"],
+        ["Water filter pitcher", "Removes lead"],
+        ["Water filter pitcher", "Alkaline"],
+        ["Hydrogen water", "Antioxidant"],
+        ["Sparkling water maker", "Co2 exchange"]
+      ]
+    },
+    "STEM_EDUCATION": {
+      "description": "Educational toys & subscriptions focusing on coding/science (Anti-screen time)",
+      "pain_point": "Parental guilt over screen time, fear of child falling behind",
+      "outreach_template": "education_retention_audit",
+      "search_combinations": [
+        ["STEM kit", "Subscription box"],
+        ["STEM kit", "Curriculum aligned"],
+        ["Coding robot", "Screen free"],
+        ["Coding robot", "Learn to code"],
+        ["Audio player", "Screen free story"],
+        ["Audio player", "Kids podcast"],
+        ["Science kit", "Monthly delivery"],
+        ["Montessori shelf", "Toy rotation"],
+        ["Educational tablet", "Parental control"]
+      ]
+    },
+    "AESTHETIC_PLAY": {
+      "description": "High-ticket play furniture that looks good in a living room (The 'Nugget' clones)",
+      "pain_point": "Ugly plastic toys ruining home decor, need for indoor energy release",
+      "outreach_template": "visual_aesthetics_audit",
+      "search_combinations": [
+        ["Play couch", "Washable covers"],
+        ["Play couch", "Infinite configurations"],
+        ["Pikler triangle", "Gross motor skills"],
+        ["Pikler triangle", "Foldable"],
+        ["Climbing arch", "Montessori gym"],
+        ["Kids table set", "Modern design"],
+        ["Teepee tent", "Indoor camping"],
+        ["Wooden play kitchen", "Non toxic paint"],
+        ["Balance board", "Open ended play"]
+      ]
+    },
+    "KIDS_NUTRITION": {
+      "description": "Clean vitamins & snacks for picky eaters",
+      "pain_point": "Mealtime battles, sugar overload, 'hidden hunger' anxiety",
+      "outreach_template": "health_trust_audit",
+      "search_combinations": [
+        ["Kids multivitamin", "Sugar free"],
+        ["Kids multivitamin", "Gummy free"],
+        ["Probiotics for kids", "Gut health"],
+        ["Elderberry syrup", "Immune support"],
+        ["Picky eater", "Hidden veggies"],
+        ["Kids protein shake", "Clean ingredients"],
+        ["Baby food", "Heavy metal tested"],
+        ["Baby food", "Fresh delivery"],
+        ["Toddler snacks", "No added sugar"]
+      ]
+    },
+    "SUPER_MOBILITY": {
+      "description": "High-end strollers & wagons (The 'Status Symbol' gear)",
+      "pain_point": "Travel hassle with multiple kids, social status signaling",
+      "outreach_template": "lifestyle_video_audit",
+      "search_combinations": [
+        ["Stroller wagon", "All terrain"],
+        ["Stroller wagon", "Fits 4 kids"],
+        ["Travel stroller", "Overhead bin"],
+        ["Travel stroller", "One hand fold"],
+        ["Double stroller", "Side by side"],
+        ["Hiking carrier", "Child backpack"],
+        ["Car seat", "Rotational"],
+        ["Diaper backpack", "Hands free"]
+      ]
+    },
+    "DIY_BEAUTY_SALON": {
+      "description": "At-home alternatives to expensive salon treatments (Nails/Lashes/Hair)",
+      "pain_point": "High churn rate if application is difficult, constant need for new viral styles",
+      "outreach_template": "tutorial_funnel_audit",
+      "search_combinations": [
+        ["Press on nails", "Reusable"],
+        ["Press on nails", "Lasts 2 weeks"],
+        ["DIY lash extensions", "Under lash"],
+        ["DIY lash extensions", "Salon quality"],
+        ["Glueless wig", "Wear and go"],
+        ["Human hair extensions", "Clip in"],
+        ["Polygel kit", "Beginner friendly"],
+        ["Dip powder nail kit", "No UV light"],
+        ["Hair topper", "Thinning hair solution"]
+      ]
+    },
+    "MODERN_GARDENING": {
+      "description": "Indoor plants & hydroponics for urban millennials",
+      "pain_point": "Shipping live plants (damage claims), educating users on 'not killing it'",
+      "outreach_template": "education_retention_audit",
+      "search_combinations": [
+        ["Indoor plant delivery", "Arrive alive guarantee"],
+        ["Hydroponic garden", "Countertop"],
+        ["Grow light", "Full spectrum"],
+        ["Self watering pot", "Vacation mode"],
+        ["Rare plants", "Variegated"],
+        ["Mushroom grow kit", "Harvest in days"],
+        ["Compost bin", "Kitchen counter"],
+        ["Vertical garden", "Space saving"],
+        ["Heirloom seeds", "Non GMO"]
+      ]
+    },
+    "TRAVEL_HACKER": {
+      "description": "Gear for efficient packing & organized travel",
+      "pain_point": "Visualizing 'how much fits', extremely seasonal (Summer/Holiday spikes)",
+      "outreach_template": "viral_video_hook_audit",
+      "search_combinations": [
+        ["Compression packing cubes", "Save space"],
+        ["Travel backpack", "Clamshell opening"],
+        ["Toiletry bag", "Hanging"],
+        ["Passport holder", "RFID blocking"],
+        ["Travel pillow", "Neck support"],
+        ["Carry on luggage", "Expandable"],
+        ["Garment bag", "Wrinkle free"],
+        ["Travel adapter", "Universal"],
+        ["Anti theft bag", "Slash proof"]
+      ]
+    },
+    "PET_HEALTH_SPECIFIC": {
+      "description": "Targeted supplements/gear for specific pet ailments (Anxiety/Joints)",
+      "pain_point": "Compliance (medical claims), building trust vs Vet prescriptions",
+      "outreach_template": "social_proof_trust_audit",
+      "search_combinations": [
+        ["Dog anxiety vest", "Thunder jacket"],
+        ["Calming chews", "Separation anxiety"],
+        ["Hemp oil for dogs", "Joint pain"],
+        ["Hip and joint supplement", "Glucosamine"],
+        ["Dog probiotic", "Itchy skin"],
+        ["Paw balm", "Cracked paws"],
+        ["Cat dental powder", "Fresh breath"],
+        ["Dog ramp", "For bed"],
+        ["Recovery collar", "Cone alternative"]
+      ]
+    },
+    "SPIRITUAL_WELLNESS": {
+      "description": "Modern mysticism & mindfulness products",
+      "pain_point": "High emotional reliance, purely visual/vibe-based sales",
+      "outreach_template": "emotional_resonance_audit",
+      "search_combinations": [
+        ["Crystal candle", "Manifestation"],
+        ["Tarot deck", "Indie"],
+        ["Meditation cushion", "Buckwheat"],
+        ["Singing bowl", "Chakra healing"],
+        ["Astrology jewelry", "Birth chart"],
+        ["Sage bundle", "Smudge kit"],
+        ["Gratitude journal", "Mindfulness"],
+        ["Essential oil diffuser", "Waterless"],
+        ["Weighted eye mask", "Relaxation"]
+      ]
+    },
+    "FUNCTIONAL_SIP": {
+      "description": "Non-alcoholic & functional beverages (Sober curious movement)",
+      "pain_point": "High shipping weight costs, educating on 'feeling' vs 'getting drunk'",
+      "outreach_template": "subscription_trial_audit",
+      "search_combinations": [
+        ["Non-alcoholic spirit", "No hangover"],
+        ["Non-alcoholic wine", "Taste of real"],
+        ["Functional soda", "Low sugar"],
+        ["Functional soda", "Gut health"],
+        ["Adaptogen drink", "Calm focus"],
+        ["Kava drink", "Social buzz"],
+        ["Mushroom tea", "Coffee alternative"],
+        ["Electrolyte mix", "Rapid hydration"],
+        ["Sparkling water", "Variety pack"]
+      ]
+    },
+    "MENS_ACCESSORIES": {
+      "description": "Men's jewelry & EDC carry items (High growth niche)",
+      "pain_point": "Visual differentiation (everyone sells chains), proving quality online",
+      "outreach_template": "lifestyle_branding_audit",
+      "search_combinations": [
+        ["Men's gold chain", "Lifetime warranty"],
+        ["Men's rings", "Tungsten"],
+        ["Men's rings", "Signet"],
+        ["Men's bracelet", "Minimalist"],
+        ["Leather wallet", "Full grain"],
+        ["Card holder", "Slim profile"],
+        ["Watch roll", "Travel case"],
+        ["Sunglasses", "Polarized"],
+        ["Blue light glasses", "Digital strain"]
+      ]
+    },
+    "MODERN_PREPPER": {
+      "description": "Emergency preparedness gear marketed to suburban families",
+      "pain_point": "Fear-mongering vs Preparation balance, high AOV trust barrier",
+      "outreach_template": "trust_authority_audit",
+      "search_combinations": [
+        ["Emergency food kit", "25 year shelf life"],
+        ["Emergency food kit", "Freeze dried"],
+        ["Water filtration", "Survival straw"],
+        ["Water filtration", "Remove virus"],
+        ["Faraday bag", "EMP protection"],
+        ["Faraday bag", "Privacy pouch"],
+        ["Tactical flashlight", "Self defense"],
+        ["First aid kit", "Trauma ready"],
+        ["Solar radio", "Emergency crank"]
+      ]
+    },
+    "FOOT_HEALTH": {
+      "description": "Footwear solving specific medical/comfort issues (Podiatry niche)",
+      "pain_point": "High return rates due to fit, needing to look stylish vs 'orthopedic'",
+      "outreach_template": "comfort_guarantee_audit",
+      "search_combinations": [
+        ["Wide toe box shoes", "Natural movement"],
+        ["Wide toe box shoes", "Bunions"],
+        ["Plantar fasciitis shoes", "Arch support"],
+        ["Orthopedic sandals", "Pain relief"],
+        ["Recovery slides", "After sport"],
+        ["Compression socks", "Circulation"],
+        ["Barefoot boots", "Zero drop"],
+        ["Insoles", "Custom mold"],
+        ["Heel pain", "Cushioning"]
+      ]
+    },
+    "VIRAL_CLEAN": {
+      "description": "Cleaning gadgets that are visually 'satisfying' (TikTok favorites)",
+      "pain_point": "One-trick pony product risk, needing constant viral video output",
+      "outreach_template": "viral_demo_audit",
+      "search_combinations": [
+        ["Portable carpet cleaner", "Stain remover"],
+        ["Steam mop", "Chemical free"],
+        ["Electric spin scrubber", "Bathroom cleaning"],
+        ["Lint remover", "Fabric shaver"],
+        ["Pet hair remover", "Reusable roller"],
+        ["Grout pen", "Tile restore"],
+        ["Ultrasonic cleaner", "Jewelry cleaner"],
+        ["Keyboard vacuum", "Desk setup"]
+      ]
+    },
+    "CLEAN_TECH_HOME": {
+      "description": "High-performance vacuums & floor care (Dyson competitors)",
+      "pain_point": "Demonstrating suction power/battery life vs big brands, handling returns",
+      "outreach_template": "demo_performance_audit",
+      "search_combinations": [
+        ["Cordless vacuum", "Pet hair"],
+        ["Cordless vacuum", "HEPA filter"],
+        ["Wet dry vacuum", "Self cleaning"],
+        ["Wet dry vacuum", "Mop and vacuum"],
+        ["Stick vacuum", "Lightweight"],
+        ["Carpet cleaner", "Professional results"],
+        ["Carpet cleaner", "Remove stains"],
+        ["Steam cleaner", "Chemical free"],
+        ["Upholstery cleaner", "Portable"]
+      ]
+    },
+    "AIR_WATER_PURE": {
+      "description": "Air purifiers, humidifiers & water systems (Health-conscious home)",
+      "pain_point": "Invisible results (users can't 'see' clean air), trust in filter efficacy",
+      "outreach_template": "science_visualization_audit",
+      "search_combinations": [
+        ["HEPA air purifier", "Allergy relief"],
+        ["HEPA air purifier", "Wildfire smoke"],
+        ["Smart humidifier", "Mold free"],
+        ["Smart humidifier", "For baby"],
+        ["Dehumidifier", "Energy efficient"],
+        ["Dehumidifier", "Basement"],
+        ["Countertop RO system", "No installation"],
+        ["Water filter", "Reverse osmosis"],
+        ["Shower filter", "Hair health"]
+      ]
+    },
+    "KITCHEN_ELECTRICS": {
+      "description": "Countertop appliances that claim 'counter space' status",
+      "pain_point": "Kitchen real estate (size objections), noisy operation concerns",
+      "outreach_template": "lifestyle_integration_audit",
+      "search_combinations": [
+        ["Nugget ice maker", "Countertop"],
+        ["Nugget ice maker", "Chewable ice"],
+        ["Air fryer oven", "Rotisserie"],
+        ["Smart oven", "App controlled"],
+        ["Espresso machine", "Compact"],
+        ["Coffee grinder", "Anti static"],
+        ["Electric kettle", "Gooseneck"],
+        ["Compacter bin", "Odor control"],
+        ["Countertop dishwasher", "No hookup"]
+      ]
+    },
+    "LAUNDRY_CARE": {
+      "description": "Niche fabric care devices (Steaming > Ironing trend)",
+      "pain_point": "Educating users on usage, replacing traditional appliances",
+      "outreach_template": "usage_education_audit",
+      "search_combinations": [
+        ["Clothes steamer", "No ironing"],
+        ["Clothes steamer", "Travel size"],
+        ["Fabric shaver", "Rechargeable"],
+        ["Portable washer", "Camping"],
+        ["Portable dryer", "Apartment friendly"],
+        ["Shoe dryer", "Odor removal"],
+        ["Ultrasonic cleaner", "Stain removal"]
+      ]
+    },
+    "WEDDING_ECONOMY": {
+      "description": "DTC Wedding goods (Bridesmaids, Groomsmen, Decor)",
+      "pain_point": "High anxiety (must be perfect), coordination sizing for groups",
+      "outreach_template": "group_order_funnel_audit",
+      "search_combinations": [
+        ["Bridesmaid dresses", "Try at home"],
+        ["Bridesmaid dresses", "Color swatch"],
+        ["Groomsmen gifts", "Bulk discount"],
+        ["Groomsmen gifts", "Personalized set"],
+        ["Wedding decor", "Resell value"],
+        ["Artificial flowers", "Real touch"],
+        ["Wedding signage", "Custom acrylic"],
+        ["Engagement ring", "Home preview"],
+        ["Wedding favors", "Customized"]
+      ]
+    },
+    "FAITH_BASED": {
+      "description": "Christian/Religious apparel & lifestyle (Massive US Market)",
+      "pain_point": "Scaling beyond 'church groups' to broad market, balancing profit vs mission",
+      "outreach_template": "community_mission_audit",
+      "search_combinations": [
+        ["Christian apparel", "Faith over fear"],
+        ["Christian apparel", "Modern design"],
+        ["Bible journal", "Study tool"],
+        ["Bible journal", "Annotating"],
+        ["Faith jewelry", "Mustard seed"],
+        ["Christian home decor", "Scripture wall art"],
+        ["Devotional book", "Daily wisdom"],
+        ["Worship gear", "Guitar strap"]
+      ]
+    },
+    "OPTICAL_DIRECT": {
+      "description": "Prescription eyewear & contacts (Warby Parker clones)",
+      "pain_point": "Trust in prescription accuracy, difficulty of 'virtual try-on' conversion",
+      "outreach_template": "virtual_tryon_audit",
+      "search_combinations": [
+        ["Prescription glasses", "Try at home"],
+        ["Prescription glasses", "Blue light"],
+        ["Progressive lenses", "Digital freeform"],
+        ["Reading glasses", "Anti glare"],
+        ["Contact lenses", "Subscription"],
+        ["Contact lenses", "Daily disposables"],
+        ["Sunglasses", "Prescription ready"],
+        ["Sports glasses", "Impact resistant"]
+      ]
+    },
+    "CRAFT_MAKER_ARTS": {
+      "description": "Adult crafting kits (Knitting, Painting, Pottery)",
+      "pain_point": "Selling the 'outcome' not the supplies, high churn if instructions are bad",
+      "outreach_template": "tutorial_retention_audit",
+      "search_combinations": [
+        ["Knitting kit", "Merino wool"],
+        ["Knitting kit", "Beginner friendly"],
+        ["Paint by number", "For adults"],
+        ["Paint by number", "Custom photo"],
+        ["Pottery kit", "Air dry clay"],
+        ["Pottery kit", "No kiln needed"],
+        ["Embroidery kit", "Modern pattern"],
+        ["Candle making kit", "Soy wax"],
+        ["Rug tufting", "Starter gun"]
+      ]
+    },
+    "MENOPAUSE_REVOLUTION": {
+      "description": "Products targeting perimenopause/menopause (High spending power demographic)",
+      "pain_point": "Trust issues with 'snake oil', needing science-backed education",
+      "outreach_template": "empathy_education_audit",
+      "search_combinations": [
+        ["Menopause supplement", "Hot flash relief"],
+        ["Menopause supplement", "Hormone balance"],
+        ["Cooling pajamas", "Night sweats"],
+        ["Cooling sheets", "Temperature regulating"],
+        ["Vaginal dryness", "Hormone free"],
+        ["Hair thinning", "Women over 40"],
+        ["Collagen for women", "Mature skin"],
+        ["Portable fan", "Hot flashes"],
+        ["Weight management", "Metabolism boost"]
+      ]
+    },
+    "EV_ACCESSORIES": {
+      "description": "Aftermarket parts for Tesla/Rivian (Cult-like following)",
+      "pain_point": "Demonstrating 'OEM quality' fit, high competition on Amazon",
+      "outreach_template": "community_niche_audit",
+      "search_combinations": [
+        ["Tesla floor mats", "All weather"],
+        ["Tesla floor mats", "3D fit"],
+        ["Tesla organizer", "Center console"],
+        ["EV charger", "Level 2"],
+        ["Tesla mattress", "Camping mode"],
+        ["Rivian accessories", "Off road"],
+        ["Screen protector", "Tempered glass"],
+        ["Wheel covers", "Range efficiency"],
+        ["Yoke steering wheel", "Custom install"]
+      ]
+    },
+    "MUSICAL_FLOW": {
+      "description": "Instruments & gear for hobbyist musicians (High passion)",
+      "pain_point": "Sound quality visualization (how to show sound?), high return shipping costs",
+      "outreach_template": "audio_visual_audit",
+      "search_combinations": [
+        ["Guitar pedal", "Boutique"],
+        ["Guitar pedal", "True bypass"],
+        ["Smart guitar", "Learn to play"],
+        ["MIDI controller", "Beat making"],
+        ["Ukulele kit", "Beginner"],
+        ["Digital piano", "Weighted keys"],
+        ["In-ear monitors", "Musician"],
+        ["Acoustic panels", "Home studio"],
+        ["Violin set", "Student"]
+      ]
+    }
+  },
+  "exclude_keywords": [
+    "Amazon", "Etsy", "eBay", "Walmart", "Target", "Wayfair",
+    "Temu", "Shein", "AliExpress", "DHgate",
+    "Affiliate", "Earn money", "Passive income", "Get rich quick",
+    "Course", "Masterclass", "Webinar", "Coaching", "Training", "Tutorial",
+    "Agency", "Consultant", "Consulting", "Service provider",
+    "Crypto", "Forex", "Betting", "Casino", "Gambling", "Lottery",
+    "GoFundMe", "Kickstarter", "Indiegogo", "Patreon", "Donation",
+    "gstatic", "googleusercontent", "googleapis", "doubleclick", "googlesyndication",
+    "facebook", "instagram", "tiktok", "youtube", "twitter", "pinterest", "linkedin", "reddit",
+    "MLM", "Multi-level marketing", "Pyramid scheme", "Business opportunity", "Work from home"
+  ]
+}
